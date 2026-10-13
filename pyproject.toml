@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "biocatalystfeed"
+version = "0.2.0"
+description = "Open-source monitors for biotech catalysts: ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed/Europe PMC/bioRxiv, SEC EDGAR. CLI + MCP server."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+keywords = ["biotech", "clinical-trials", "fda", "pubmed", "mcp", "sec-edgar", "monitoring"]
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent", "Topic :: Scientific/Engineering :: Bio-Informatics"]
+requires-python = ">=3.10"
+dependencies = ["requests>=2.28"]
+[project.optional-dependencies]
+mcp = ["mcp>=1.2"]
+dev = ["pytest"]
+[project.scripts]
+biocatalystfeed = "biocatalystfeed.cli:main"
+bcf = "biocatalystfeed.cli:main"
+biocatalystfeed-mcp = "trialwatch.mcp_server:main"
+# legacy aliases
+trialwatch = "trialwatch.cli:main"
+fdawatch = "fdawatch.cli:main"
+grantwatch = "grantwatch.cli:main"
+paperwatch = "paperwatch.cli:main"
+secwatch = "secwatch.cli:main"
+trialwatch-mcp = "trialwatch.mcp_server:main"
+[tool.setuptools]
+packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch"]

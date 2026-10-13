@@ -1,0 +1,19 @@
+{
+  "title": "BioCatalystFeed ClinicalTrials.gov monitor input",
+  "description": "First run with a given watch name stores a baseline; later runs return only changes. Not investment or medical advice.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "watchName": {"title": "Watch name", "type": "string", "description": "Key used to store snapshots between runs. Use a different name per query.", "editor": "textfield", "default": "default"},
+    "sponsor": {"title": "Sponsor", "type": "string", "description": "Sponsor/collaborator search text, e.g. 'Viking Therapeutics'.", "editor": "textfield", "prefill": "Viking Therapeutics"},
+    "condition": {"title": "Condition", "type": "string", "description": "Condition or disease, e.g. 'obesity'.", "editor": "textfield"},
+    "intervention": {"title": "Intervention", "type": "string", "description": "Drug or intervention, e.g. 'tirzepatide'. OR is allowed.", "editor": "textfield"},
+    "phases": {"title": "Phases", "type": "array", "description": "Any of EARLY_PHASE1, PHASE1, PHASE2, PHASE3, PHASE4, NA.", "editor": "stringList"},
+    "statuses": {"title": "Statuses", "type": "array", "description": "Overall statuses, e.g. RECRUITING, TERMINATED.", "editor": "stringList"},
+    "changedSince": {"title": "Changed since", "type": "string", "description": "Only trials updated on or after this date (YYYY-MM-DD).", "editor": "textfield", "pattern": "^$|^\\d{4}-\\d{2}-\\d{2}$"},
+    "excludeTerms": {"title": "Exclude terms", "type": "array", "description": "Drop trials whose title, conditions or interventions contain any of these words or phrases.", "editor": "stringList"},
+    "maxRecords": {"title": "Max records", "type": "integer", "description": "Maximum trials fetched per run.", "editor": "number", "default": 500, "minimum": 1, "maximum": 5000},
+    "outputMode": {"title": "Output", "type": "string", "description": "'changes' returns detected changes (the first run returns the baseline trials); 'trials' always returns the full trial list.", "editor": "select", "enum": ["changes", "trials"], "enumTitles": ["Changes since last run", "All matching trials"], "default": "changes"}
+  },
+  "required": []
+}

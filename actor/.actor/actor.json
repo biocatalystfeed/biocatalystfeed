@@ -1,0 +1,11 @@
+{
+  "actorSpecification": 1,
+  "name": "biocatalystfeed-clinicaltrials-monitor",
+  "title": "BioCatalystFeed: ClinicalTrials.gov Change Monitor",
+  "description": "Watch ClinicalTrials.gov (API v2) by sponsor, condition, intervention, phase or status and get what changed since the last run: new trials, status, phase, enrollment and date changes. Not investment or medical advice.",
+  "version": "0.2",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "../Dockerfile",
+  "dockerContextDir": ".."
+}

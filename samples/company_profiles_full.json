@@ -1,0 +1,2525 @@
+[
+ {
+  "company": "Eli Lilly",
+  "ticker": "LLY",
+  "alias_known": true,
+  "aliases_used": {
+   "ct_queries": [
+    "Eli Lilly and Company"
+   ],
+   "ct_lead": [
+    "eli lilly"
+   ],
+   "fda_sponsors": [
+    "LILLY",
+    "ELI LILLY AND CO"
+   ],
+   "label_mfrs": [
+    "Eli Lilly and Company"
+   ]
+  },
+  "as_of": "2026-10-12",
+  "trials": {
+   "total": 732,
+   "by_phase": {
+    "PHASE1": 291,
+    "PHASE3": 179,
+    "PHASE2": 161,
+    "PHASE4": 66,
+    "N/A": 16,
+    "PHASE1/PHASE2": 13,
+    "PHASE2/PHASE3": 3,
+    "NA": 2,
+    "EARLY_PHASE1": 1
+   },
+   "by_status": {
+    "COMPLETED": 595,
+    "TERMINATED": 48,
+    "RECRUITING": 46,
+    "ACTIVE_NOT_RECRUITING": 25,
+    "WITHDRAWN": 8,
+    "NOT_YET_RECRUITING": 6,
+    "NO_LONGER_AVAILABLE": 2,
+    "APPROVED_FOR_MARKETING": 1,
+    "AVAILABLE": 1
+   },
+   "active": 77,
+   "next_primary_completions": [
+    {
+     "nct_id": "NCT06297603",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "Effect of Retatrutide Compared With Placebo in Participants With Type 2 Diabetes and Moderate or Severe Renal Impairment, With Inadequate Glycemic Control on Basal Insulin, With or Without Metformin and/or SGLT2 Inhibitor (TRANSCEND-T2D-3)",
+     "primary_completion_date": "2026-10"
+    },
+    {
+     "nct_id": "NCT07794592",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study Comparing Two Ways of Taking Olomorasib (LY3537982) in Healthy Participants",
+     "primary_completion_date": "2026-10"
+    },
+    {
+     "nct_id": "NCT06662383",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "A Study of Retatrutide (LY3437943) Compared to Tirzepatide (LY3298176) in Adults Who Have Obesity",
+     "primary_completion_date": "2026-11"
+    },
+    {
+     "nct_id": "NCT06914895",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "A Study of Tirzepatide (LY3298176) Compared With Placebo in Adults With Type 1 Diabetes and Obesity or Overweight",
+     "primary_completion_date": "2026-11"
+    },
+    {
+     "nct_id": "NCT07818967",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study of Abemaciclib (LY2835219) in Healthy Participants",
+     "primary_completion_date": "2026-11"
+    },
+    {
+     "nct_id": "NCT07169851",
+     "phase": "PHASE2",
+     "status": "RECRUITING",
+     "title": "A Study to Evaluate LY3537021 for the Treatment of Nausea and Vomiting Caused by Chemotherapy in Adults With Cancer",
+     "primary_completion_date": "2026-12"
+    },
+    {
+     "nct_id": "NCT05307705",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study of LOXO-783 in Patients With Breast Cancer/Other Solid Tumors",
+     "primary_completion_date": "2026-12"
+    },
+    {
+     "nct_id": "NCT07867327",
+     "phase": "PHASE1",
+     "status": "NOT_YET_RECRUITING",
+     "title": "A Study of LY4515100 in Healthy Male Participants",
+     "primary_completion_date": "2026-12"
+    },
+    {
+     "nct_id": "NCT07258836",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study of [18F]LY4214835 in Healthy Volunteers and Participants With Cancer",
+     "primary_completion_date": "2027-01"
+    },
+    {
+     "nct_id": "NCT07867340",
+     "phase": "PHASE1",
+     "status": "NOT_YET_RECRUITING",
+     "title": "A Study of Single and Multiple Doses of LY5625573 in Healthy Participants, Including Japanese and Chinese Populations, and Participants With Inflammation (High C-Reactive Protein)",
+     "primary_completion_date": "2027-01"
+    },
+    {
+     "nct_id": "NCT07476118",
+     "phase": "PHASE1",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "A Study of Brenipatide (LY3537031) in Healthy Participants With Overweight or Obesity",
+     "primary_completion_date": "2027-02"
+    },
+    {
+     "nct_id": "NCT07446101",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study of Mirikizumab Solution (LY3074828) in Healthy Participants",
+     "primary_completion_date": "2027-02"
+    },
+    {
+     "nct_id": "NCT06297590",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A First-In-Human Study of LY3954068 in Participants With Early Symptomatic Alzheimer's Disease",
+     "primary_completion_date": "2027-02"
+    },
+    {
+     "nct_id": "NCT07339722",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study of LY4515100 in Healthy Participants",
+     "primary_completion_date": "2027-03"
+    },
+    {
+     "nct_id": "NCT07401862",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Study of Eloralintide (LY3841136) in Participants With Different Levels of Liver Damage and in Participants With Healthy Livers.",
+     "primary_completion_date": "2027-03"
+    }
+   ],
+   "recently_stopped": [
+    {
+     "nct_id": "NCT07085468",
+     "phase": "PHASE2",
+     "status": "TERMINATED",
+     "title": "A Study of LY3549492 in Healthy Weight Adult Participants",
+     "why_stopped": "Study terminated for strategic business reasons",
+     "last_update_posted": "2026-09-21"
+    },
+    {
+     "nct_id": "NCT07152002",
+     "phase": "PHASE1",
+     "status": "TERMINATED",
+     "title": "A Study of LY4064912 in Healthy Participants and With Overweight or Obesity",
+     "why_stopped": "Sponsor Decision",
+     "last_update_posted": "2026-09-14"
+    },
+    {
+     "nct_id": "NCT07030868",
+     "phase": "PHASE2",
+     "status": "TERMINATED",
+     "title": "A Study of LY3549492 in Adults With Obesity or Overweight With Type 2 Diabetes",
+     "why_stopped": "Study terminated for strategic business reasons",
+     "last_update_posted": "2026-08-31"
+    },
+    {
+     "nct_id": "NCT04396574",
+     "phase": "PHASE3",
+     "status": "TERMINATED",
+     "title": "A 12-Month Study of Lasmiditan (LY573144) Treatment in Children Aged 6 to 17 With Migraine",
+     "why_stopped": "Study terminated due to strategic business decision",
+     "last_update_posted": "2026-06-25"
+    },
+    {
+     "nct_id": "NCT06859294",
+     "phase": "PHASE2",
+     "status": "TERMINATED",
+     "title": "A Study of LY3541860 in Adult Participants With Moderately to Severely Active Rheumatoid Arthritis",
+     "why_stopped": "The interim analysis data failed to demonstrate the intended treatment effect.",
+     "last_update_posted": "2026-06-17"
+    },
+    {
+     "nct_id": "NCT06007651",
+     "phase": "PHASE1",
+     "status": "TERMINATED",
+     "title": "A Study of LY3885125 in Participants With Dyslipidemia or Non-Alcoholic Fatty Liver Disease (NAFLD)",
+     "why_stopped": "Participants were not dosed in Part B as per the protocol.",
+     "last_update_posted": "2026-04-13"
+    },
+    {
+     "nct_id": "NCT05911841",
+     "phase": "PHASE2",
+     "status": "TERMINATED",
+     "title": "A Study of LY3454738 in the Treatment of Adult Participants With Moderate-to-Severe Atopic Dermatitis",
+     "why_stopped": "The decision to terminate the study was due to efficacy/effectiveness reasons.",
+     "last_update_posted": "2025-12-02"
+    },
+    {
+     "nct_id": "NCT03764774",
+     "phase": "PHASE1",
+     "status": "TERMINATED",
+     "title": "A Study of LY3463251 in Healthy Participants",
+     "why_stopped": "Trial was terminated due to an insufficient benefit/tolerability ratio",
+     "last_update_posted": "2025-11-04"
+    }
+   ]
+  },
+  "fda": {
+   "applications": 107,
+   "original_approvals": 105,
+   "novel_approvals": [
+    {
+     "application_number": "BLA761408",
+     "brand_names": "ONSWIK",
+     "active_ingredients": "INSULIN EFSITORA ALFA-GOBE",
+     "submission_status_date": "2026-09-23",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761408"
+    },
+    {
+     "application_number": "NDA220934",
+     "brand_names": "FOUNDAYO",
+     "active_ingredients": "ORFORGLIPRON CALCIUM",
+     "submission_status_date": "2026-04-01",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=220934"
+    },
+    {
+     "application_number": "NDA218881",
+     "brand_names": "INLURIYO",
+     "active_ingredients": "IMLUNESTRANT TOSYLATE",
+     "submission_status_date": "2025-09-25",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=218881"
+    },
+    {
+     "application_number": "BLA761306",
+     "brand_names": "EBGLYSS",
+     "active_ingredients": "LEBRIKIZUMAB-LBKZ",
+     "submission_status_date": "2024-09-13",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761306"
+    },
+    {
+     "application_number": "BLA761279",
+     "brand_names": "OMVOH",
+     "active_ingredients": "MIRIKIZUMAB-MRKZ",
+     "submission_status_date": "2023-10-26",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761279"
+    },
+    {
+     "application_number": "NDA215866",
+     "brand_names": "MOUNJARO; MOUNJARO (AUTOINJECTOR); MOUNJARO KWIKPEN",
+     "active_ingredients": "TIRZEPATIDE",
+     "submission_status_date": "2022-05-13",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+    },
+    {
+     "application_number": "NDA213246",
+     "brand_names": "RETEVMO",
+     "active_ingredients": "SELPERCATINIB",
+     "submission_status_date": "2020-05-08",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=213246"
+    },
+    {
+     "application_number": "NDA211280",
+     "brand_names": "REYVOW",
+     "active_ingredients": "LASMIDITAN SUCCINATE",
+     "submission_status_date": "2019-10-11",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=211280"
+    },
+    {
+     "application_number": "BLA761063",
+     "brand_names": "EMGALITY",
+     "active_ingredients": "GALCANEZUMAB-GNLM",
+     "submission_status_date": "2018-09-27",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761063"
+    },
+    {
+     "application_number": "NDA207924",
+     "brand_names": "OLUMIANT",
+     "active_ingredients": "BARICITINIB",
+     "submission_status_date": "2018-05-31",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=207924"
+    },
+    {
+     "application_number": "NDA208716",
+     "brand_names": "VERZENIO",
+     "active_ingredients": "ABEMACICLIB",
+     "submission_status_date": "2017-09-28",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=208716"
+    },
+    {
+     "application_number": "BLA761038",
+     "brand_names": "LARTRUVO",
+     "active_ingredients": "OLARATUMAB",
+     "submission_status_date": "2016-10-19",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761038"
+    },
+    {
+     "application_number": "BLA125521",
+     "brand_names": "TALTZ",
+     "active_ingredients": "IXEKIZUMAB",
+     "submission_status_date": "2016-03-22",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=125521"
+    },
+    {
+     "application_number": "BLA125469",
+     "brand_names": "TRULICITY",
+     "active_ingredients": "DULAGLUTIDE",
+     "submission_status_date": "2014-09-18",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=125469"
+    },
+    {
+     "application_number": "BLA125477",
+     "brand_names": "CYRAMZA",
+     "active_ingredients": "RAMUCIRUMAB",
+     "submission_status_date": "2014-04-21",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=125477"
+    },
+    {
+     "application_number": "NDA021427",
+     "brand_names": "CYMBALTA",
+     "active_ingredients": "DULOXETINE HYDROCHLORIDE",
+     "submission_status_date": "2004-08-03",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021427"
+    },
+    {
+     "application_number": "NDA021462",
+     "brand_names": "ALIMTA",
+     "active_ingredients": "PEMETREXED DISODIUM",
+     "submission_status_date": "2004-02-04",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021462"
+    },
+    {
+     "application_number": "NDA021368",
+     "brand_names": "CIALIS",
+     "active_ingredients": "TADALAFIL",
+     "submission_status_date": "2003-11-21",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021368"
+    },
+    {
+     "application_number": "NDA021411",
+     "brand_names": "STRATTERA",
+     "active_ingredients": "ATOMOXETINE HYDROCHLORIDE",
+     "submission_status_date": "2002-11-26",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021411"
+    },
+    {
+     "application_number": "BLA021017",
+     "brand_names": "HUMALOG MIX 75/25; HUMALOG MIX 75/25 KWIKPEN; HUMALOG MIX 75/25 PEN",
+     "active_ingredients": "INSULIN LISPRO PROTAMINE RECOMBINANT; INSULIN LISPRO RECOMBINANT",
+     "submission_status_date": "1999-12-22",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 3 - New Dosage Form and Type 4 - New Combination",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021017"
+    },
+    {
+     "application_number": "BLA021018",
+     "brand_names": "HUMALOG MIX 50/50; HUMALOG MIX 50/50 KWIKPEN; HUMALOG MIX 50/50 PEN",
+     "active_ingredients": "INSULIN LISPRO PROTAMINE RECOMBINANT; INSULIN LISPRO RECOMBINANT",
+     "submission_status_date": "1999-12-22",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 3 - New Dosage Form and Type 4 - New Combination",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021018"
+    },
+    {
+     "application_number": "NDA020815",
+     "brand_names": "EVISTA",
+     "active_ingredients": "RALOXIFENE HYDROCHLORIDE",
+     "submission_status_date": "1997-12-09",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=020815"
+    },
+    {
+     "application_number": "BLA020563",
+     "brand_names": "HUMALOG; HUMALOG KWIKPEN; HUMALOG PEN; HUMALOG TEMPO PEN",
+     "active_ingredients": "INSULIN LISPRO RECOMBINANT",
+     "submission_status_date": "1996-06-14",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=020563"
+    },
+    {
+     "application_number": "NDA020509",
+     "brand_names": "GEMZAR",
+     "active_ingredients": "GEMCITABINE HYDROCHLORIDE",
+     "submission_status_date": "1996-05-15",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=020509"
+    },
+    {
+     "application_number": "NDA019693",
+     "brand_names": "DECABID",
+     "active_ingredients": "INDECAINIDE HYDROCHLORIDE",
+     "submission_status_date": "1989-12-29",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=019693"
+    },
+    {
+     "application_number": "NDA018936",
+     "brand_names": "PROZAC; SARAFEM",
+     "active_ingredients": "FLUOXETINE HYDROCHLORIDE",
+     "submission_status_date": "1987-12-29",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018936"
+    },
+    {
+     "application_number": "BLA018780",
+     "brand_names": "HUMULIN R; HUMULIN R KWIKPEN; HUMULIN R PEN",
+     "active_ingredients": "INSULIN HUMAN; INSULIN RECOMBINANT HUMAN",
+     "submission_status_date": "1982-10-28",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018780"
+    },
+    {
+     "application_number": "BLA018781",
+     "brand_names": "HUMULIN N",
+     "active_ingredients": "INSULIN SUSP ISOPHANE RECOMBINANT HUMAN",
+     "submission_status_date": "1982-10-28",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 3 - New Dosage Form",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018781"
+    },
+    {
+     "application_number": "NDA018067",
+     "brand_names": "CINOBAC",
+     "active_ingredients": "CINOXACIN",
+     "submission_status_date": "1980-06-13",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018067"
+    },
+    {
+     "application_number": "NDA050521",
+     "brand_names": "CECLOR",
+     "active_ingredients": "CEFACLOR",
+     "submission_status_date": "1979-04-04",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=050521"
+    },
+    {
+     "application_number": "NDA050504",
+     "brand_names": "MANDOL",
+     "active_ingredients": "CEFAMANDOLE NAFATE",
+     "submission_status_date": "1978-09-27",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=050504"
+    },
+    {
+     "application_number": "NDA017820",
+     "brand_names": "DOBUTREX",
+     "active_ingredients": "DOBUTAMINE HYDROCHLORIDE",
+     "submission_status_date": "1978-07-18",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=017820"
+    },
+    {
+     "application_number": "NDA050477",
+     "brand_names": "NEBCIN",
+     "active_ingredients": "TOBRAMYCIN SULFATE",
+     "submission_status_date": "1975-06-11",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=050477"
+    },
+    {
+     "application_number": "NDA012665",
+     "brand_names": "VELBAN",
+     "active_ingredients": "VINBLASTINE SULFATE",
+     "submission_status_date": "1965-11-25",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=012665"
+    },
+    {
+     "application_number": "NDA013378",
+     "brand_names": "DYMELOR",
+     "active_ingredients": "ACETOHEXAMIDE",
+     "submission_status_date": "1964-12-23",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=013378"
+    },
+    {
+     "application_number": "NDA014684",
+     "brand_names": "AVENTYL HYDROCHLORIDE",
+     "active_ingredients": "NORTRIPTYLINE HYDROCHLORIDE",
+     "submission_status_date": "1964-11-06",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=014684"
+    },
+    {
+     "application_number": "NDA013157",
+     "brand_names": "ANHYDRON",
+     "active_ingredients": "CYCLOTHIAZIDE",
+     "submission_status_date": "1963-08-20",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=013157"
+    },
+    {
+     "application_number": "NDA014103",
+     "brand_names": "ONCOVIN",
+     "active_ingredients": "VINCRISTINE SULFATE",
+     "submission_status_date": "1963-07-10",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=014103"
+    },
+    {
+     "application_number": "NDA012772",
+     "brand_names": "HALDRONE",
+     "active_ingredients": "PARAMETHASONE ACETATE",
+     "submission_status_date": "1961-04-17",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=012772"
+    },
+    {
+     "application_number": "NDA012122",
+     "brand_names": "GLUCAGON",
+     "active_ingredients": "GLUCAGON HYDROCHLORIDE",
+     "submission_status_date": "1960-11-14",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=012122"
+    },
+    {
+     "application_number": "NDA008951",
+     "brand_names": "PAGITANE",
+     "active_ingredients": "CYCRIMINE HYDROCHLORIDE",
+     "submission_status_date": "1953-07-22",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=008951"
+    },
+    {
+     "application_number": "NDA006632",
+     "brand_names": "METUBINE IODIDE",
+     "active_ingredients": "METOCURINE IODIDE",
+     "submission_status_date": "1949-01-04",
+     "review_priority": "STANDARD",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=006632"
+    }
+   ],
+   "recent_submissions": [
+    {
+     "application_number": "NDA207924",
+     "brand_names": "OLUMIANT",
+     "submission_type": "SUPPL",
+     "submission_number": "9",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-09-25",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=207924"
+    },
+    {
+     "application_number": "BLA761408",
+     "brand_names": "ONSWIK",
+     "submission_type": "ORIG",
+     "submission_number": "1",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-09-23",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761408"
+    },
+    {
+     "application_number": "NDA218881",
+     "brand_names": "INLURIYO",
+     "submission_type": "SUPPL",
+     "submission_number": "1",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-09-18",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=218881"
+    },
+    {
+     "application_number": "NDA208716",
+     "brand_names": "VERZENIO",
+     "submission_type": "SUPPL",
+     "submission_number": "22",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-09-18",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=208716"
+    },
+    {
+     "application_number": "NDA215866",
+     "brand_names": "MOUNJARO; MOUNJARO (AUTOINJECTOR); MOUNJARO KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "44",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-08-27",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+    },
+    {
+     "application_number": "NDA215866",
+     "brand_names": "MOUNJARO; MOUNJARO (AUTOINJECTOR); MOUNJARO KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "45",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-08-27",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+    },
+    {
+     "application_number": "NDA217806",
+     "brand_names": "ZEPBOUND; ZEPBOUND (AUTOINJECTOR); ZEPBOUND KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "41",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-08-26",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217806"
+    },
+    {
+     "application_number": "NDA220934",
+     "brand_names": "FOUNDAYO",
+     "submission_type": "SUPPL",
+     "submission_number": "3",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-08-04",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=220934"
+    },
+    {
+     "application_number": "NDA021318",
+     "brand_names": "FORTEO",
+     "submission_type": "SUPPL",
+     "submission_number": "59",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-08-03",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021318"
+    },
+    {
+     "application_number": "NDA213246",
+     "brand_names": "RETEVMO",
+     "submission_type": "SUPPL",
+     "submission_number": "17",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-07-14",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=213246"
+    },
+    {
+     "application_number": "NDA218160",
+     "brand_names": "RETEVMO",
+     "submission_type": "SUPPL",
+     "submission_number": "7",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-07-14",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=218160"
+    },
+    {
+     "application_number": "NDA208716",
+     "brand_names": "VERZENIO",
+     "submission_type": "SUPPL",
+     "submission_number": "21",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-07-13",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=208716"
+    },
+    {
+     "application_number": "NDA207924",
+     "brand_names": "OLUMIANT",
+     "submission_type": "SUPPL",
+     "submission_number": "11",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-06-30",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=207924"
+    },
+    {
+     "application_number": "NDA021411",
+     "brand_names": "STRATTERA",
+     "submission_type": "SUPPL",
+     "submission_number": "53",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-06-29",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021411"
+    },
+    {
+     "application_number": "BLA761306",
+     "brand_names": "EBGLYSS",
+     "submission_type": "SUPPL",
+     "submission_number": "6",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-06-09",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761306"
+    },
+    {
+     "application_number": "BLA761063",
+     "brand_names": "EMGALITY",
+     "submission_type": "SUPPL",
+     "submission_number": "13",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-06-05",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=761063"
+    },
+    {
+     "application_number": "NDA220934",
+     "brand_names": "FOUNDAYO",
+     "submission_type": "ORIG",
+     "submission_number": "1",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-04-01",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=220934"
+    },
+    {
+     "application_number": "BLA125469",
+     "brand_names": "TRULICITY",
+     "submission_type": "SUPPL",
+     "submission_number": "65",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-03-12",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=125469"
+    },
+    {
+     "application_number": "NDA217806",
+     "brand_names": "ZEPBOUND; ZEPBOUND (AUTOINJECTOR); ZEPBOUND KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "42",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-02-25",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217806"
+    },
+    {
+     "application_number": "NDA217806",
+     "brand_names": "ZEPBOUND; ZEPBOUND (AUTOINJECTOR); ZEPBOUND KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "2",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-01-20",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217806"
+    },
+    {
+     "application_number": "NDA215866",
+     "brand_names": "MOUNJARO; MOUNJARO (AUTOINJECTOR); MOUNJARO KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "9",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-01-20",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+    },
+    {
+     "application_number": "NDA217806",
+     "brand_names": "ZEPBOUND; ZEPBOUND (AUTOINJECTOR); ZEPBOUND KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "37",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-01-07",
+     "submission_class": "Manufacturing (CMC)",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217806"
+    },
+    {
+     "application_number": "NDA215866",
+     "brand_names": "MOUNJARO; MOUNJARO (AUTOINJECTOR); MOUNJARO KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "41",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-01-07",
+     "submission_class": "Manufacturing (CMC)",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+    },
+    {
+     "application_number": "NDA215866",
+     "brand_names": "MOUNJARO; MOUNJARO (AUTOINJECTOR); MOUNJARO KWIKPEN",
+     "submission_type": "SUPPL",
+     "submission_number": "39",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2025-12-19",
+     "submission_class": "Efficacy",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+    },
+    {
+     "application_number": "BLA019640",
+     "brand_names": "HUMATROPE",
+     "submission_type": "SUPPL",
+     "submission_number": "110",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2025-11-25",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=019640"
+    }
+   ],
+   "recent_label_updates": [
+    {
+     "key": "487cd7e7-434c-4925-99fa-aa80b1cc776b",
+     "set_id": "487cd7e7-434c-4925-99fa-aa80b1cc776b",
+     "version": "40",
+     "effective_time": "2026-08-28",
+     "brand_name": "Zepbound",
+     "generic_name": "TIRZEPATIDE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA217806",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=487cd7e7-434c-4925-99fa-aa80b1cc776b"
+    },
+    {
+     "key": "d2d7da5d-ad07-4228-955f-cf7e355c8cc0",
+     "set_id": "d2d7da5d-ad07-4228-955f-cf7e355c8cc0",
+     "version": "40",
+     "effective_time": "2026-08-27",
+     "brand_name": "Mounjaro",
+     "generic_name": "TIRZEPATIDE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA215866",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=d2d7da5d-ad07-4228-955f-cf7e355c8cc0"
+    },
+    {
+     "key": "a774e1ae-3997-49ee-8b0e-99a2b315d409",
+     "set_id": "a774e1ae-3997-49ee-8b0e-99a2b315d409",
+     "version": "45",
+     "effective_time": "2026-08-20",
+     "brand_name": "HUMATROPE",
+     "generic_name": "SOMATROPIN",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA019640",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=a774e1ae-3997-49ee-8b0e-99a2b315d409"
+    },
+    {
+     "key": "aae667c5-381f-4f92-93df-2ed6158d07b0",
+     "set_id": "aae667c5-381f-4f92-93df-2ed6158d07b0",
+     "version": "44",
+     "effective_time": "2026-08-03",
+     "brand_name": "Forteo",
+     "generic_name": "TERIPARATIDE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA021318",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=aae667c5-381f-4f92-93df-2ed6158d07b0"
+    },
+    {
+     "key": "8ac446c5-feba-474f-a103-23facb9b5c62",
+     "set_id": "8ac446c5-feba-474f-a103-23facb9b5c62",
+     "version": "10",
+     "effective_time": "2026-07-29",
+     "brand_name": "FOUNDAYO",
+     "generic_name": "ORFORGLIPRON",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA220934",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ac446c5-feba-474f-a103-23facb9b5c62"
+    },
+    {
+     "key": "b34cd3ff-d0af-4852-b4ef-2a8b4a93aeae",
+     "set_id": "b34cd3ff-d0af-4852-b4ef-2a8b4a93aeae",
+     "version": "55",
+     "effective_time": "2026-07-27",
+     "brand_name": "Humalog Mix50/50 KwikPen",
+     "generic_name": "INSULIN LISPRO",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA021018",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=b34cd3ff-d0af-4852-b4ef-2a8b4a93aeae"
+    },
+    {
+     "key": "b60e8dd0-1d48-4dc9-87fd-e14675255e8c",
+     "set_id": "b60e8dd0-1d48-4dc9-87fd-e14675255e8c",
+     "version": "41",
+     "effective_time": "2026-07-01",
+     "brand_name": "Humulin R U-500 KwikPen",
+     "generic_name": "INSULIN HUMAN",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA018780",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=b60e8dd0-1d48-4dc9-87fd-e14675255e8c"
+    },
+    {
+     "key": "309de576-c318-404a-bc15-660c2b1876fb",
+     "set_id": "309de576-c318-404a-bc15-660c2b1876fb",
+     "version": "69",
+     "effective_time": "2026-06-30",
+     "brand_name": "Strattera",
+     "generic_name": "ATOMOXETINE HYDROCHLORIDE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA021411",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=309de576-c318-404a-bc15-660c2b1876fb"
+    },
+    {
+     "key": "e245e0c5-b2d6-418b-baa4-1c3324292885",
+     "set_id": "e245e0c5-b2d6-418b-baa4-1c3324292885",
+     "version": "50",
+     "effective_time": "2026-06-17",
+     "brand_name": "Humulin 70/30",
+     "generic_name": "INSULIN HUMAN",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA019717",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=e245e0c5-b2d6-418b-baa4-1c3324292885"
+    },
+    {
+     "key": "0ad21db3-2b1c-4ed9-a687-bdd6a74d0aae",
+     "set_id": "0ad21db3-2b1c-4ed9-a687-bdd6a74d0aae",
+     "version": "35",
+     "effective_time": "2026-06-16",
+     "brand_name": "BASAGLAR KwikPen",
+     "generic_name": "INSULIN GLARGINE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA205692",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=0ad21db3-2b1c-4ed9-a687-bdd6a74d0aae"
+    },
+    {
+     "key": "463050bd-2b1c-40f5-b3c3-0a04bb433309",
+     "set_id": "463050bd-2b1c-40f5-b3c3-0a04bb433309",
+     "version": "62",
+     "effective_time": "2026-06-16",
+     "brand_name": "Trulicity",
+     "generic_name": "DULAGLUTIDE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA125469",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=463050bd-2b1c-40f5-b3c3-0a04bb433309"
+    },
+    {
+     "key": "472cbe04-263e-433d-9a0f-58c1b50b715a",
+     "set_id": "472cbe04-263e-433d-9a0f-58c1b50b715a",
+     "version": "19",
+     "effective_time": "2026-06-16",
+     "brand_name": "Omvoh",
+     "generic_name": "MIRIKIZUMAB-MRKZ",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA761279",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=472cbe04-263e-433d-9a0f-58c1b50b715a"
+    },
+    {
+     "key": "b519bd83-038c-4ec5-a231-a51ec5cc291f",
+     "set_id": "b519bd83-038c-4ec5-a231-a51ec5cc291f",
+     "version": "35",
+     "effective_time": "2026-06-16",
+     "brand_name": "Humulin R",
+     "generic_name": "INSULIN HUMAN",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA018780",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=b519bd83-038c-4ec5-a231-a51ec5cc291f"
+    },
+    {
+     "key": "c5a056e2-b568-4ca6-9ed8-79c010942d00",
+     "set_id": "c5a056e2-b568-4ca6-9ed8-79c010942d00",
+     "version": "12",
+     "effective_time": "2026-06-16",
+     "brand_name": "LYUMJEV",
+     "generic_name": "INSULIN LISPRO-AABC",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA761109",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c5a056e2-b568-4ca6-9ed8-79c010942d00"
+    },
+    {
+     "key": "c73da51a-1899-45ad-b6cf-9c52c36a25dd",
+     "set_id": "c73da51a-1899-45ad-b6cf-9c52c36a25dd",
+     "version": "54",
+     "effective_time": "2026-06-16",
+     "brand_name": "Humalog Mix75/25",
+     "generic_name": "INSULIN LISPRO",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA021017",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c73da51a-1899-45ad-b6cf-9c52c36a25dd"
+    },
+    {
+     "key": "c8ecbd7a-0e22-4fc7-a503-faa58c1b6f3f",
+     "set_id": "c8ecbd7a-0e22-4fc7-a503-faa58c1b6f3f",
+     "version": "87",
+     "effective_time": "2026-06-16",
+     "brand_name": "Humalog",
+     "generic_name": "INSULIN LISPRO",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA020563",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c8ecbd7a-0e22-4fc7-a503-faa58c1b6f3f"
+    },
+    {
+     "key": "c6080942-dee6-423e-b688-1272c2ae90d4",
+     "set_id": "c6080942-dee6-423e-b688-1272c2ae90d4",
+     "version": "48",
+     "effective_time": "2026-06-09",
+     "brand_name": "CYRAMZA",
+     "generic_name": "RAMUCIRUMAB",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA125477",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c6080942-dee6-423e-b688-1272c2ae90d4"
+    },
+    {
+     "key": "33a147be-233a-40e8-a55e-e40936e28db0",
+     "set_id": "33a147be-233a-40e8-a55e-e40936e28db0",
+     "version": "17",
+     "effective_time": "2026-06-05",
+     "brand_name": "EMGALITY",
+     "generic_name": "GALCANEZUMAB-GNLM",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA761063",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=33a147be-233a-40e8-a55e-e40936e28db0"
+    },
+    {
+     "key": "bcd8f8ab-81a2-4891-83db-24a0b0e25895",
+     "set_id": "bcd8f8ab-81a2-4891-83db-24a0b0e25895",
+     "version": "52",
+     "effective_time": "2026-06-03",
+     "brand_name": "Cialis",
+     "generic_name": "TADALAFIL",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA021368",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=bcd8f8ab-81a2-4891-83db-24a0b0e25895"
+    },
+    {
+     "key": "bd551845-0878-49a4-860f-839b83f6b801",
+     "set_id": "bd551845-0878-49a4-860f-839b83f6b801",
+     "version": "14",
+     "effective_time": "2026-03-06",
+     "brand_name": "JAYPIRCA",
+     "generic_name": "PIRTOBRUTINIB",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA216059",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=bd551845-0878-49a4-860f-839b83f6b801"
+    },
+    {
+     "key": "fcaaa6dc-74e8-4fb8-800c-5574bf0f8de9",
+     "set_id": "fcaaa6dc-74e8-4fb8-800c-5574bf0f8de9",
+     "version": "32",
+     "effective_time": "2026-02-11",
+     "brand_name": "Evista",
+     "generic_name": "RALOXIFENE HYDROCHLORIDE",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA020815",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=fcaaa6dc-74e8-4fb8-800c-5574bf0f8de9"
+    },
+    {
+     "key": "ac96658a-d7dc-4c7c-8928-2adcdf4318b2",
+     "set_id": "ac96658a-d7dc-4c7c-8928-2adcdf4318b2",
+     "version": "40",
+     "effective_time": "2026-01-22",
+     "brand_name": "TALTZ",
+     "generic_name": "IXEKIZUMAB",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA125521",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=ac96658a-d7dc-4c7c-8928-2adcdf4318b2"
+    },
+    {
+     "key": "aea3358c-ff41-4490-9e6d-c7bf7b3de13f",
+     "set_id": "aea3358c-ff41-4490-9e6d-c7bf7b3de13f",
+     "version": "16",
+     "effective_time": "2026-01-08",
+     "brand_name": "Reyvow",
+     "generic_name": "LASMIDITAN",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA211280",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=aea3358c-ff41-4490-9e6d-c7bf7b3de13f"
+    },
+    {
+     "key": "190352d4-ef62-4679-b4fa-e846e2766afa",
+     "set_id": "190352d4-ef62-4679-b4fa-e846e2766afa",
+     "version": "8",
+     "effective_time": "2025-12-30",
+     "brand_name": "Kisunla",
+     "generic_name": "DONANEMAB-AZBT",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "BLA761248",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=190352d4-ef62-4679-b4fa-e846e2766afa"
+    },
+    {
+     "key": "b483abad-5230-462a-adfb-1a65160f01d0",
+     "set_id": "b483abad-5230-462a-adfb-1a65160f01d0",
+     "version": "10",
+     "effective_time": "2025-12-30",
+     "brand_name": "TAUVID",
+     "generic_name": "FLORTAUCIPIR F-18",
+     "manufacturer": "Eli Lilly and Company",
+     "application_number": "NDA212123",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=b483abad-5230-462a-adfb-1a65160f01d0"
+    }
+   ]
+  },
+  "pdufa": "No 8-K text mentioning 'PDUFA' found via EDGAR full-text search in the last 3 years (company may disclose dates only in press releases not furnished as 8-K exhibits).",
+  "sources": [
+   "ClinicalTrials.gov API v2 (NLM)",
+   "openFDA drug/drugsfda + drug/label (FDA, CC0)",
+   "NIH RePORTER API v2",
+   "PubMed E-utilities (NLM) + bioRxiv/medRxiv API",
+   "SEC EDGAR full-text search + submissions API"
+  ],
+  "grants": {
+   "org_names": [
+    "ELI LILLY AND COMPANY"
+   ],
+   "org_grants_total": 7,
+   "org_grants_recent": [],
+   "org_grants_latest": [
+    {
+     "project_num": "5U54GM074945-06",
+     "fiscal_year": 2009,
+     "title": "NYSGXRC:A Large Scale Center for the PSI",
+     "org_name": "ELI LILLY AND COMPANY",
+     "pis": "Stephen Kevin Burley",
+     "agency": "NIGMS",
+     "award_amount": 9596801,
+     "award_notice_date": "2009-07-01",
+     "url": "https://reporter.nih.gov/project-details/7640674"
+    },
+    {
+     "project_num": "6U54GM074945-05",
+     "fiscal_year": 2008,
+     "title": "NYSGXRC:A Large Scale Center for the PSI",
+     "org_name": "ELI LILLY AND COMPANY",
+     "pis": "Stephen Kevin Burley",
+     "agency": "NIGMS",
+     "award_amount": 6998224,
+     "award_notice_date": "2009-03-09",
+     "url": "https://reporter.nih.gov/project-details/7751993"
+    },
+    {
+     "project_num": "6U54GM074945-05",
+     "fiscal_year": 2008,
+     "title": "SUB PROJECT 1",
+     "org_name": "ELI LILLY AND COMPANY",
+     "pis": "STEVEN C. ALMO",
+     "agency": "NIGMS",
+     "award_amount": 3017881,
+     "award_notice_date": null,
+     "url": "https://reporter.nih.gov/project-details/7782736"
+    },
+    {
+     "project_num": "6U54GM074945-05",
+     "fiscal_year": 2008,
+     "title": "SUBPROJECT 4",
+     "org_name": "ELI LILLY AND COMPANY",
+     "pis": "CHRISTOPHER D. LIMA",
+     "agency": "NIGMS",
+     "award_amount": 1155229,
+     "award_notice_date": null,
+     "url": "https://reporter.nih.gov/project-details/7782739"
+    },
+    {
+     "project_num": "6U54GM074945-05",
+     "fiscal_year": 2008,
+     "title": "SUBPROJECT 5",
+     "org_name": "ELI LILLY AND COMPANY",
+     "pis": "ANDREJ  SALI",
+     "agency": "NIGMS",
+     "award_amount": 1144593,
+     "award_notice_date": null,
+     "url": "https://reporter.nih.gov/project-details/7782740"
+    }
+   ],
+   "drug_terms": [
+    "tirzepatide",
+    "orforglipron",
+    "retatrutide"
+   ],
+   "drug_grants_total": 55,
+   "drug_grants_latest": [
+    {
+     "project_num": "1R01DK148666-01",
+     "fiscal_year": 2026,
+     "title": "OFF-RAMP Feasibility: a pilot trial comparing different off-ramping strategies for maintaining weight loss among adults using incretin based therapies for obesity",
+     "org_name": "UNIVERSITY OF PITTSBURGH AT PITTSBURGH",
+     "pis": "Jing  Luo",
+     "agency": "NIDDK",
+     "award_amount": 307380,
+     "award_notice_date": "2026-09-11",
+     "url": "https://reporter.nih.gov/project-details/11425980"
+    },
+    {
+     "project_num": "1R01HD120349-01A1",
+     "fiscal_year": 2026,
+     "title": "Evaluating the safety and efficacy of glucagon-like peptide-1 receptor agonists for pre-pregnancy weight management and improved pregnancy outcomes",
+     "org_name": "VANDERBILT UNIVERSITY MEDICAL CENTER",
+     "pis": "Margaret A. Adgent",
+     "agency": "NICHD",
+     "award_amount": 785385,
+     "award_notice_date": "2026-09-02",
+     "url": "https://reporter.nih.gov/project-details/11450921"
+    },
+    {
+     "project_num": "1K23HL183843-01A1",
+     "fiscal_year": 2026,
+     "title": "Identifying Therapeutic Mechanisms for Incretin-Based Treatment in Obesity-Related HFpEF",
+     "org_name": "COLUMBIA UNIVERSITY HEALTH SCIENCES",
+     "pis": "Elissa  Driggin",
+     "agency": "NHLBI",
+     "award_amount": 172800,
+     "award_notice_date": "2026-09-02",
+     "url": "https://reporter.nih.gov/project-details/11452130"
+    },
+    {
+     "project_num": "1R03DK145927-01A1",
+     "fiscal_year": 2026,
+     "title": "Glucagon Like Peptide-1 Medicine Outcomes in Real World Patients with Type 1 Diabetes",
+     "org_name": "ADVENTHEALTH ORLANDO",
+     "pis": "Kaitlin M Love",
+     "agency": "NIDDK",
+     "award_amount": 151816,
+     "award_notice_date": "2026-08-31",
+     "url": "https://reporter.nih.gov/project-details/11455043"
+    },
+    {
+     "project_num": "5P50CA302572-02",
+     "fiscal_year": 2026,
+     "title": "Project 3: GLP1R and GIPR Agonists in GEP NETs Project",
+     "org_name": "UNIVERSITY OF IOWA",
+     "pis": "Po Hien  Ear",
+     "agency": "NCI",
+     "award_amount": 404300,
+     "award_notice_date": "2026-08-25",
+     "url": "https://reporter.nih.gov/project-details/11401213"
+    },
+    {
+     "project_num": "1R01DK148554-01",
+     "fiscal_year": 2026,
+     "title": "Strategies to prevent weight regain after GLP-1 agonist discontinuation",
+     "org_name": "MASSACHUSETTS GENERAL HOSPITAL",
+     "pis": "Deborah J Wexler",
+     "agency": "NIDDK",
+     "award_amount": 835245,
+     "award_notice_date": "2026-08-19",
+     "url": "https://reporter.nih.gov/project-details/11428011"
+    },
+    {
+     "project_num": "1R01DK145692-01A1",
+     "fiscal_year": 2026,
+     "title": "Comparative effectiveness of pharmacotherapies and bariatric surgery for metabolic dysfunction associated steateohepatitis",
+     "org_name": "SEATTLE INST FOR BIOMEDICAL/CLINICAL RES",
+     "pis": "George  Ioannou",
+     "agency": "NIDDK",
+     "award_amount": 272400,
+     "award_notice_date": "2026-08-18",
+     "url": "https://reporter.nih.gov/project-details/11448529"
+    },
+    {
+     "project_num": "1R01AG099323-01",
+     "fiscal_year": 2026,
+     "title": "Uncovering the Therapeutic Potential of Semaglutide in Alzheimer's Disease: Insights from Animal Models and Real-World Clinical Data",
+     "org_name": "CASE WESTERN RESERVE UNIVERSITY",
+     "pis": "XIN  QI; Rong  Xu",
+     "agency": "NIA",
+     "award_amount": 655673,
+     "award_notice_date": "2026-08-13",
+     "url": "https://reporter.nih.gov/project-details/11320235"
+    },
+    {
+     "project_num": "1R01HL189487-01",
+     "fiscal_year": 2026,
+     "title": "Real-World Effects of GLP-1 Receptor Agonists on Cardiovascular-Kidney\u2013Metabolic Syndrome Progression and Lifetime Costs in People with HIV and Type 2 Diabetes",
+     "org_name": "BOSTON UNIVERSITY MEDICAL CAMPUS",
+     "pis": "Alana Teresa Brennan",
+     "agency": "NHLBI",
+     "award_amount": 837125,
+     "award_notice_date": "2026-08-13",
+     "url": "https://reporter.nih.gov/project-details/11470780"
+    },
+    {
+     "project_num": "5K23DK143312-02",
+     "fiscal_year": 2026,
+     "title": "Use of Adjuvant Anti-Obesity Medication to Enhance Surgical Weight Loss",
+     "org_name": "VANDERBILT UNIVERSITY MEDICAL CENTER",
+     "pis": "Jason  Samuels",
+     "agency": "NIDDK",
+     "award_amount": 176728,
+     "award_notice_date": "2026-07-27",
+     "url": "https://reporter.nih.gov/project-details/11413530"
+    }
+   ]
+  },
+  "papers": {
+   "since": "2025-10-12",
+   "pubmed_affiliation": {
+    "term": "(\"Eli Lilly and Company\"[ad] OR \"Lilly Research Laboratories\"[ad])",
+    "total_since": 641,
+    "latest": [
+     {
+      "key": "pmid:42100922",
+      "source": "pubmed",
+      "id": "42100922",
+      "title": "Machine learning predictions of IgG1 and IgG4 self-association and high-concentration solution properties.",
+      "authors": "Kwon NY, Brown CN, Chen HT, Cottle SR, Kelly RM, Jones BE et al.",
+      "journal": "mAbs",
+      "date": "2026-12-31",
+      "doi": "10.1080/19420862.2026.2663641",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42100922/"
+     },
+     {
+      "key": "pmid:41275875",
+      "source": "pubmed",
+      "id": "41275875",
+      "title": "Orforglipron, an oral small-molecule GLP-1 receptor agonist, for the treatment of obesity in people with type 2 diabetes (ATTAIN-2): a phase 3, double-blind, randomised, multicentre, placebo-controlled trial.",
+      "authors": "Horn DB, Ryan DH, Kis SG, Alves B, Mu Y, Kim SG et al.",
+      "journal": "Lancet (London, England)",
+      "date": "2026-12-20",
+      "doi": "10.1016/S0140-6736(25)02165-8",
+      "pub_types": "Journal Article, Randomized Controlled Trial, Multicenter Study, Clinical Trial, Phase III, Research Support, Non-U.S. Gov't",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41275875/"
+     },
+     {
+      "key": "pmid:42831032",
+      "source": "pubmed",
+      "id": "42831032",
+      "title": "Evaluation of clinical relevance of weight nadirs and weight regain during 3 years of treatment with tirzepatide in participants with obesity or overweight and prediabetes.",
+      "authors": "Aronne LJ, Vincent RP, Klein KR, Brumm JF, Jouravskaya I, Cao D et al.",
+      "journal": "Obesity pillars",
+      "date": "2026-09-18",
+      "doi": "10.1016/j.obpill.2026.100333",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42831032/"
+     },
+     {
+      "key": "pmid:42830762",
+      "source": "pubmed",
+      "id": "42830762",
+      "title": "Study design, rationale, and baseline characteristics of ATTAIN-HYPERTENSION, a phase 3 trial of the oral GLP-1 receptor agonist orforglipron for hypertension.",
+      "authors": "Laffin L, Schlaich MP, Hall ME, Xie CC, Rao G, Rettiganti M et al.",
+      "journal": "American journal of preventive cardiology",
+      "date": "2026-08-06",
+      "doi": "10.1016/j.ajpc.2026.101783",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42830762/"
+     },
+     {
+      "key": "pmid:42775070",
+      "source": "pubmed",
+      "id": "42775070",
+      "title": "Exploring the impact of adult obesity in Spain: Insights from a systematic literature review.",
+      "authors": "Redondo-Ant\u00f3n J, D\u00edaz-Cerezo S, Artime E, Rubio-de Santos M, Rubio-Herrera M\u00c1",
+      "journal": "Obesity pillars",
+      "date": "2026-09-12",
+      "doi": "10.1016/j.obpill.2026.100334",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42775070/"
+     },
+     {
+      "key": "pmid:42763547",
+      "source": "pubmed",
+      "id": "42763547",
+      "title": "Patient and healthcare professional perceptions of weight reduction in the treatment of knee osteoarthritis: A systematic literature review.",
+      "authors": "Conaghan PG, Rolland C, Frampton J, Lavoie L, Giblin K, Robinson R et al.",
+      "journal": "Osteoarthritis and cartilage open",
+      "date": "2026-09-07",
+      "doi": "10.1016/j.ocarto.2026.100875",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42763547/"
+     },
+     {
+      "key": "pmid:42697406",
+      "source": "pubmed",
+      "id": "42697406",
+      "title": "Beyond NAMs versus animal models: Context of use as the governing framework for integrated nonclinical strategies in drug development.",
+      "authors": "Gaburro S, Berridge B, Kelley NW, Keutz EV, Ferrer M, Roper C et al.",
+      "journal": "Regulatory toxicology and pharmacology : RTP",
+      "date": "2026-12-01",
+      "doi": "10.1016/j.yrtph.2026.106237",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42697406/"
+     },
+     {
+      "key": "pmid:42674149",
+      "source": "pubmed",
+      "id": "42674149",
+      "title": "Commentary - In silico acute oral toxicity models are fit for inclusion in GHS and DG Model regulations classification criteria.",
+      "authors": "Schmitz M, Bercu J, Graham J, Blum K, Hillegass J, Johnson C et al.",
+      "journal": "Regulatory toxicology and pharmacology : RTP",
+      "date": "2026-12-01",
+      "doi": "10.1016/j.yrtph.2026.106236",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42674149/"
+     },
+     {
+      "key": "pmid:42021523",
+      "source": "pubmed",
+      "id": "42021523",
+      "title": "Enhancing economic modelling in obesity: integrating novel type 2 diabetes progression & obstructive sleep apnea remission - a UK case study.",
+      "authors": "Annemans L, Johansson E, Spaepen E, van Hest N, Grist J, Zimner-Rapuch S et al.",
+      "journal": "Journal of medical economics",
+      "date": "2026-12-01",
+      "doi": "10.1080/13696998.2026.2646079",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42021523/"
+     },
+     {
+      "key": "pmid:42012820",
+      "source": "pubmed",
+      "id": "42012820",
+      "title": "Cost-effectiveness of tirzepatide versus semaglutide for patients with obesity or overweight in the US: evidence from the SURMOUNT-5 head-to-head phase-3 trial.",
+      "authors": "Johansson E, Wilding JPH, Upadhyay N, van Hest N, Kirk M, Spaepen E et al.",
+      "journal": "Journal of medical economics",
+      "date": "2026-12-01",
+      "doi": "10.1080/13696998.2026.2646078",
+      "pub_types": "Journal Article, Clinical Trial, Phase III, Comparative Study",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42012820/"
+     }
+    ]
+   },
+   "pubmed_drugs": {
+    "term": "(\"tirzepatide\"[tiab] OR \"tirzepatide\"[nm] OR \"orforglipron\"[tiab] OR \"orforglipron\"[nm] OR \"retatrutide\"[tiab] OR \"retatrutide\"[nm])",
+    "total_since": 1385,
+    "latest": [
+     {
+      "key": "pmid:41275875",
+      "source": "pubmed",
+      "id": "41275875",
+      "title": "Orforglipron, an oral small-molecule GLP-1 receptor agonist, for the treatment of obesity in people with type 2 diabetes (ATTAIN-2): a phase 3, double-blind, randomised, multicentre, placebo-controlled trial.",
+      "authors": "Horn DB, Ryan DH, Kis SG, Alves B, Mu Y, Kim SG et al.",
+      "journal": "Lancet (London, England)",
+      "date": "2026-12-20",
+      "doi": "10.1016/S0140-6736(25)02165-8",
+      "pub_types": "Journal Article, Randomized Controlled Trial, Multicenter Study, Clinical Trial, Phase III, Research Support, Non-U.S. Gov't",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41275875/"
+     },
+     {
+      "key": "pmid:42745421",
+      "source": "pubmed",
+      "id": "42745421",
+      "title": "Detection and Excretion Profile of Retatrutide in Human Plasma and Urine by LC-HRMS: Implications for Antidoping Analysis.",
+      "authors": "Carneiro GRA, da Costa Nunes IK, Dos Santos Cardoso GR, Dos Santos PF, Padilha MC, Nogueira FCS et al.",
+      "journal": "Rapid communications in mass spectrometry : RCM",
+      "date": "2026-12-15",
+      "doi": "10.1002/rcm.70179",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42745421/"
+     },
+     {
+      "key": "pmid:42850698",
+      "source": "pubmed",
+      "id": "42850698",
+      "title": "Weight-Loss Outcomes After Sleeve Gastrectomy Versus Tirzepatide in a Minority Cohort With Severe Obesity: Results From a Propensity Score Matched Cohort.",
+      "authors": "Manueli Laos EG, Fontaine-Nicola A, Serafica B, Zhang L, Layden BT, Berger R et al.",
+      "journal": "Clinical obesity",
+      "date": "2026-12-01",
+      "doi": "10.1111/cob.70116",
+      "pub_types": "Journal Article, Comparative Study",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42850698/"
+     },
+     {
+      "key": "pmid:42840232",
+      "source": "pubmed",
+      "id": "42840232",
+      "title": "Cardiovascular outcomes with tirzepatide versus semaglutide in type 2 diabetes.",
+      "authors": "Al-Nusair M, Khurana S, Eysha M, Elchouemi M, Zaki IH",
+      "journal": "Journal of diabetes and metabolic disorders",
+      "date": "2026-10-05",
+      "doi": "10.1007/s40200-026-02087-z",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42840232/"
+     },
+     {
+      "key": "pmid:42831032",
+      "source": "pubmed",
+      "id": "42831032",
+      "title": "Evaluation of clinical relevance of weight nadirs and weight regain during 3 years of treatment with tirzepatide in participants with obesity or overweight and prediabetes.",
+      "authors": "Aronne LJ, Vincent RP, Klein KR, Brumm JF, Jouravskaya I, Cao D et al.",
+      "journal": "Obesity pillars",
+      "date": "2026-09-18",
+      "doi": "10.1016/j.obpill.2026.100333",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42831032/"
+     },
+     {
+      "key": "pmid:42830762",
+      "source": "pubmed",
+      "id": "42830762",
+      "title": "Study design, rationale, and baseline characteristics of ATTAIN-HYPERTENSION, a phase 3 trial of the oral GLP-1 receptor agonist orforglipron for hypertension.",
+      "authors": "Laffin L, Schlaich MP, Hall ME, Xie CC, Rao G, Rettiganti M et al.",
+      "journal": "American journal of preventive cardiology",
+      "date": "2026-08-06",
+      "doi": "10.1016/j.ajpc.2026.101783",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42830762/"
+     },
+     {
+      "key": "pmid:42828252",
+      "source": "pubmed",
+      "id": "42828252",
+      "title": "Incretin therapy prescription in a high cardiovascular risk population: Insights from a cardiology-based cardiometabolic program.",
+      "authors": "Patel A, Trivedi L, Prasad R, Avennati E, Alexander S, Nguyen V et al.",
+      "journal": "American journal of preventive cardiology",
+      "date": "2026-06-06",
+      "doi": "10.1016/j.ajpc.2026.101699",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42828252/"
+     },
+     {
+      "key": "pmid:42802751",
+      "source": "pubmed",
+      "id": "42802751",
+      "title": "Incretin-based injectable strategies versus intensified insulin for treatment intensification and simplification in type 2 diabetes: a systematic review and meta-analysis.",
+      "authors": "Mahmood T, Myrtziou I, Kanakis I",
+      "journal": "Journal of diabetes and metabolic disorders",
+      "date": "2026-09-26",
+      "doi": "10.1007/s40200-026-02089-x",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802751/"
+     },
+     {
+      "key": "pmid:42710812",
+      "source": "pubmed",
+      "id": "42710812",
+      "title": "Association of tirzepatide with reverse cardiac remodeling and improved diastolic function in obesity-related HFpEF: A prospective real-world cohort study.",
+      "authors": "Karanxha J, Guni M, Xhabija N, Dede M, Mone I, Prifti E",
+      "journal": "International journal of cardiology",
+      "date": "2026-12-01",
+      "doi": "10.1016/j.ijcard.2026.134773",
+      "pub_types": "Journal Article, Observational Study",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42710812/"
+     },
+     {
+      "key": "pmid:42639925",
+      "source": "pubmed",
+      "id": "42639925",
+      "title": "Clinical practice patterns and unmet needs in the use of GLP-1 receptor agonists in sleep medicine: A pan-European survey performed in the European sleep apnoea database network.",
+      "authors": "Testelmans D, Bonsignore MR, Pataka A, Fanfulla F, Ryan S, Lombardi C et al.",
+      "journal": "Pulmonology",
+      "date": "2026-12-01",
+      "doi": "10.1080/25310429.2026.2722795",
+      "pub_types": "Journal Article, Multicenter Study",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42639925/"
+     }
+    ]
+   },
+   "preprints": [
+    {
+     "key": "doi:10.64898/2026.09.30.754652",
+     "source": "biorxiv",
+     "id": "10.64898/2026.09.30.754652",
+     "title": "Danuglipron and orforglipron engage GLP-1R through materially different interfaces: an unbiased molecular dynamics study",
+     "authors": "Oztekin, A., Turker, S.",
+     "journal": "biorxiv",
+     "date": "2026-10-06",
+     "doi": "10.64898/2026.09.30.754652",
+     "version": "1",
+     "corresponding_institution": "Bilkent University",
+     "license": "cc_by_nc",
+     "category": "biophysics",
+     "published_doi": null,
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.754652v1"
+    },
+    {
+     "key": "doi:10.64898/2026.10.04.26364715",
+     "source": "medrxiv",
+     "id": "10.64898/2026.10.04.26364715",
+     "title": "Post-Initiation Care Patterns and Weight Loss With Semaglutide and Tirzepatide for Obesity in Clinical Practice",
+     "authors": "Yang, H., Kim, C., Ross, J. S., Huang, C., Choi, K., Kang, B. et al.",
+     "journal": "medrxiv",
+     "date": "2026-10-06",
+     "doi": "10.64898/2026.10.04.26364715",
+     "version": "1",
+     "corresponding_institution": "Yale University",
+     "license": "cc_by",
+     "category": "cardiovascular medicine",
+     "published_doi": null,
+     "url": "https://www.medrxiv.org/content/10.64898/2026.10.04.26364715v1"
+    }
+   ],
+   "preprint_window_days": 7
+  },
+  "sec": {
+   "cik": "59478",
+   "name": "ELI LILLY & Co",
+   "tickers": [
+    "LLY"
+   ],
+   "recent_8k_count": 44,
+   "latest_8k": "2026-08-05",
+   "pdufa_mentions": [],
+   "label": "UNVERIFIED - regex extraction from SEC filing text; confirm in the linked document before use"
+  }
+ },
+ {
+  "company": "Madrigal Pharmaceuticals",
+  "ticker": "MDGL",
+  "alias_known": true,
+  "aliases_used": {
+   "ct_queries": [
+    "Madrigal Pharmaceuticals"
+   ],
+   "ct_lead": [
+    "madrigal"
+   ],
+   "fda_sponsors": [
+    "MADRIGAL"
+   ],
+   "label_mfrs": [
+    "Madrigal Pharmaceuticals, Inc."
+   ]
+  },
+  "as_of": "2026-10-12",
+  "trials": {
+   "total": 21,
+   "by_phase": {
+    "PHASE1": 11,
+    "PHASE3": 4,
+    "PHASE2": 4,
+    "PHASE4": 1,
+    "N/A": 1
+   },
+   "by_status": {
+    "COMPLETED": 13,
+    "ACTIVE_NOT_RECRUITING": 3,
+    "RECRUITING": 3,
+    "NOT_YET_RECRUITING": 2
+   },
+   "active": 8,
+   "next_primary_completions": [
+    {
+     "nct_id": "NCT05500222",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "A Phase 3 Study to Evaluate the Effect of Resmetirom on Clinical Outcomes in Patients With Well-compensated NASH Cirrhosis (MAESTRO-NASH-OUTCOMES)",
+     "primary_completion_date": "2026-12"
+    },
+    {
+     "nct_id": "NCT04951219",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "A Phase 3 Study to Evaluate Safety and Biomarkers of Resmetirom (MGL-3196) in Patients With Non-alcoholic Fatty Liver Disease (NAFLD), MAESTRO-NAFLD-Open-Label-Extension (MAESTRO-NAFLD-OLE)",
+     "primary_completion_date": "2027-03"
+    },
+    {
+     "nct_id": "NCT07848191",
+     "phase": "PHASE4",
+     "status": "NOT_YET_RECRUITING",
+     "title": "Rezdiffra\u00ae With Concomitant Therapies Commonly Used to Treat Comorbidities in Adults With MASH and F2-F3 Fibrosis",
+     "primary_completion_date": "2027-11"
+    },
+    {
+     "nct_id": "NCT07830758",
+     "phase": "PHASE1",
+     "status": "NOT_YET_RECRUITING",
+     "title": "Resmetirom in Patients With MASH and HFpEF",
+     "primary_completion_date": "2027-11"
+    },
+    {
+     "nct_id": "NCT03900429",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "A Phase 3 Study to Evaluate the Efficacy and Safety of MGL-3196 (Resmetirom) in Patients With NASH and Fibrosis",
+     "primary_completion_date": "2028-01"
+    },
+    {
+     "nct_id": "NCT07335601",
+     "phase": "PHASE2",
+     "status": "RECRUITING",
+     "title": "Study to Evaluate Resmetirom in Post-Liver Transplant Patients With MASH",
+     "primary_completion_date": "2028-08"
+    },
+    {
+     "nct_id": "NCT07763015",
+     "phase": "PHASE2",
+     "status": "RECRUITING",
+     "title": "Study of Resmetirom in Children and Adolescents With MASH",
+     "primary_completion_date": "2029-07"
+    },
+    {
+     "nct_id": "NCT07541469",
+     "phase": null,
+     "status": "RECRUITING",
+     "title": "Rezdiffra Pregnancy and Lactation Registry",
+     "primary_completion_date": "2030-04-08"
+    }
+   ],
+   "recently_stopped": []
+  },
+  "fda": {
+   "applications": 1,
+   "original_approvals": 1,
+   "novel_approvals": [
+    {
+     "application_number": "NDA217785",
+     "brand_names": "REZDIFFRA",
+     "active_ingredients": "RESMETIROM",
+     "submission_status_date": "2024-03-14",
+     "review_priority": "PRIORITY",
+     "submission_class": "Type 1 - New Molecular Entity",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217785"
+    }
+   ],
+   "recent_submissions": [
+    {
+     "application_number": "NDA217785",
+     "brand_names": "REZDIFFRA",
+     "submission_type": "SUPPL",
+     "submission_number": "6",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2026-07-24",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217785"
+    },
+    {
+     "application_number": "NDA217785",
+     "brand_names": "REZDIFFRA",
+     "submission_type": "SUPPL",
+     "submission_number": "5",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2025-12-19",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217785"
+    },
+    {
+     "application_number": "NDA217785",
+     "brand_names": "REZDIFFRA",
+     "submission_type": "SUPPL",
+     "submission_number": "4",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2025-12-19",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217785"
+    },
+    {
+     "application_number": "NDA217785",
+     "brand_names": "REZDIFFRA",
+     "submission_type": "SUPPL",
+     "submission_number": "2",
+     "submission_status": "APPROVED",
+     "submission_status_date": "2025-12-19",
+     "submission_class": "Labeling",
+     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217785"
+    }
+   ],
+   "recent_label_updates": [
+    {
+     "key": "e67ea09f-a840-439c-86c8-f98585f978b2",
+     "set_id": "e67ea09f-a840-439c-86c8-f98585f978b2",
+     "version": "4",
+     "effective_time": "2026-07-29",
+     "brand_name": "REZDIFFRA",
+     "generic_name": "RESMETIROM",
+     "manufacturer": "Madrigal Pharmaceuticals, Inc.",
+     "application_number": "NDA217785",
+     "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=e67ea09f-a840-439c-86c8-f98585f978b2"
+    }
+   ]
+  },
+  "pdufa": {
+   "status": "UNVERIFIED candidates extracted from SEC 8-K text - confirm in source",
+   "candidates": [
+    {
+     "date": "March 14, 2024",
+     "filed": "2024-02-28",
+     "url": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524049116/d743882dex991.htm",
+     "context": "Results \u2022 Announced appointment of Mardi C. Dier as Chief Financial Officer \u2022 Anticipates resmetirom to become the first medicine approved for NASH; PDUFA date March 14, 2024 \u2022 Reports year-end 2023 cash, cash equivalents and marketable sec"
+    },
+    {
+     "date": "2024-03-14",
+     "filed": "2024-01-08",
+     "url": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524004269/d669791dex991.htm",
+     "context": "ith NASH with significant fibrosis (315,000) Positive Phase 3 MAESTRO-NASH Data Breakthrough Therapy & Priority Review Specialty Launch of Resmetirom PDUFA: March 14 Full Approval + Compensated Cirrhosis Label Complete 2024 Future"
+    }
+   ]
+  },
+  "sources": [
+   "ClinicalTrials.gov API v2 (NLM)",
+   "openFDA drug/drugsfda + drug/label (FDA, CC0)",
+   "NIH RePORTER API v2",
+   "PubMed E-utilities (NLM) + bioRxiv/medRxiv API",
+   "SEC EDGAR full-text search + submissions API"
+  ],
+  "grants": {
+   "org_names": [],
+   "org_grants_total": 0,
+   "org_grants_recent": [],
+   "org_grants_latest": [],
+   "drug_terms": [
+    "resmetirom",
+    "MGL-3196"
+   ],
+   "drug_grants_total": 6,
+   "drug_grants_latest": [
+    {
+     "project_num": "2R44DK129102-04A1",
+     "fiscal_year": 2026,
+     "title": "cGMP Production, IND-enabling studies, and Phase I Clinical Studies to Test a Novel siRNA drug product for the Treatment of Metabolic Dysfunction-Associated Steatohepatitis (MASH)",
+     "org_name": "MITOTHERAPEUTIX, LLC",
+     "pis": "Cynthia  Arbeeny",
+     "agency": "NIDDK",
+     "award_amount": 996169,
+     "award_notice_date": "2026-09-17",
+     "url": "https://reporter.nih.gov/project-details/11312337"
+    },
+    {
+     "project_num": "2R44DK122903-03A1",
+     "fiscal_year": 2026,
+     "title": "A FIRST IN CLASS TREATMENT FOR LIVER CIRRHOSIS",
+     "org_name": "XFIBRA, INC.",
+     "pis": "MARTINA  BUCK; MARIO  CHOJKIER",
+     "agency": "NIDDK",
+     "award_amount": 1188325,
+     "award_notice_date": "2026-09-07",
+     "url": "https://reporter.nih.gov/project-details/11406381"
+    },
+    {
+     "project_num": "1R01DK148711-01",
+     "fiscal_year": 2026,
+     "title": "S100A9+ macrophages and monocytic myeloid-derived suppressor cells as drivers of liver fibrosis in MASLD/MASH",
+     "org_name": "MASSACHUSETTS GENERAL HOSPITAL",
+     "pis": "Nadia  Alatrakchi",
+     "agency": "NIDDK",
+     "award_amount": 850096,
+     "award_notice_date": "2026-08-24",
+     "url": "https://reporter.nih.gov/project-details/11429726"
+    },
+    {
+     "project_num": "1R01DK145692-01A1",
+     "fiscal_year": 2026,
+     "title": "Comparative effectiveness of pharmacotherapies and bariatric surgery for metabolic dysfunction associated steateohepatitis",
+     "org_name": "SEATTLE INST FOR BIOMEDICAL/CLINICAL RES",
+     "pis": "George  Ioannou",
+     "agency": "NIDDK",
+     "award_amount": 272400,
+     "award_notice_date": "2026-08-18",
+     "url": "https://reporter.nih.gov/project-details/11448529"
+    },
+    {
+     "project_num": "5R01DK143170-02",
+     "fiscal_year": 2026,
+     "title": "Fat and Iron-Corrected Quantitative MRI T1 Mapping for Evaluation of Chronic Liver Disease",
+     "org_name": "NEW YORK UNIVERSITY SCHOOL OF MEDICINE",
+     "pis": "Hersh  Chandarana; Li  Feng",
+     "agency": "NIDDK",
+     "award_amount": 847497,
+     "award_notice_date": "2026-08-04",
+     "url": "https://reporter.nih.gov/project-details/11406093"
+    },
+    {
+     "project_num": "1R01DK143170-01",
+     "fiscal_year": 2025,
+     "title": "Fat and Iron-Corrected Quantitative MRI T1 Mapping for Evaluation of Chronic Liver Disease",
+     "org_name": "NEW YORK UNIVERSITY SCHOOL OF MEDICINE",
+     "pis": "Hersh  Chandarana; Li  Feng",
+     "agency": "NIDDK",
+     "award_amount": 830401,
+     "award_notice_date": "2025-09-04",
+     "url": "https://reporter.nih.gov/project-details/11107374"
+    }
+   ]
+  },
+  "papers": {
+   "since": "2025-10-12",
+   "pubmed_affiliation": {
+    "term": "(\"Madrigal Pharmaceuticals\"[ad])",
+    "total_since": 24,
+    "latest": [
+     {
+      "key": "pmid:42833311",
+      "source": "pubmed",
+      "id": "42833311",
+      "title": "Effects of MASH risk genotypes on resmetirom efficacy in patients with MASH and fibrosis.",
+      "authors": "Chalasani NP, Taub R, Mogg R, Labriola D, Camacho RC, Zhang H et al.",
+      "journal": "Journal of hepatology",
+      "date": "2026-10-05",
+      "doi": "10.1016/j.jhep.2026.08.037",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42833311/"
+     },
+     {
+      "key": "pmid:42690133",
+      "source": "pubmed",
+      "id": "42690133",
+      "title": "Prognostic value of liver histology in steatotic liver disease: a systematic literature review and meta-analysis.",
+      "authors": "Barritt AS 4th, Qasim A, Kim Y, Miller SD, O'Donnell J, Johnston K",
+      "journal": "Journal of comparative effectiveness research",
+      "date": "2026-10-01",
+      "doi": "10.57264/cer-2026-0148",
+      "pub_types": "Journal Article, Systematic Review, Meta-Analysis",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42690133/"
+     },
+     {
+      "key": "pmid:42527732",
+      "source": "pubmed",
+      "id": "42527732",
+      "title": "Clinical Trial: Phase 3 Trial of Resmetirom Versus Placebo in Metabolic Dysfunction-Associated Steatohepatitis-Reanalysis of Fibrosis Stage 2-3 Subset.",
+      "authors": "Mironova M, Padmanabhan K, Schneider D, Schattenberg JM, Loomba R",
+      "journal": "Alimentary pharmacology & therapeutics",
+      "date": "2026-10-01",
+      "doi": "10.1111/apt.70888",
+      "pub_types": "Journal Article, Randomized Controlled Trial, Clinical Trial, Phase III, Multicenter Study",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42527732/"
+     },
+     {
+      "key": "pmid:42742475",
+      "source": "pubmed",
+      "id": "42742475",
+      "title": "Quantitative Systems Pharmacology (QSP): Bridging Biology and Mechanism with Clinical Drug Development Decisions.",
+      "authors": "Wang W, Ratushny AV, Chang S, Cheng Y, Gong JQX, Gulati A et al.",
+      "journal": "Journal of clinical pharmacology",
+      "date": "2026-09-01",
+      "doi": "10.1002/jcph.70289",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42742475/"
+     },
+     {
+      "key": "pmid:41448477",
+      "source": "pubmed",
+      "id": "41448477",
+      "title": "Assessing Predictive Performance of Fibrosis-4 Index in Settings With Lower Prevalence of Liver Fibrosis.",
+      "authors": "Rinella ME, Charlton MR, Kim Y, Hosmane S, O'Connell T",
+      "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+      "date": "2026-09-01",
+      "doi": "10.1016/j.cgh.2025.12.014",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41448477/"
+     },
+     {
+      "key": "pmid:42483986",
+      "source": "pubmed",
+      "id": "42483986",
+      "title": "Understanding the economic and healthcare burden of metabolic dysfunction-associated steatohepatitis: a real-world claims data analysis from Germany.",
+      "authors": "Tacke F, Kim Y, Haas JS, Daumont MJ, Maas C, O'Donnell J et al.",
+      "journal": "Journal of comparative effectiveness research",
+      "date": "2026-08-01",
+      "doi": "10.57264/cer-2026-0092",
+      "pub_types": "Journal Article, Research Support, Non-U.S. Gov't",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42483986/"
+     },
+     {
+      "key": "pmid:42224454",
+      "source": "pubmed",
+      "id": "42224454",
+      "title": "Explainable machine learning in healthcare: methods, interpretation, and applications for clinical research.",
+      "authors": "Padmanabhan K, Lu M, Feng D, Kan-Dobrosky N, Konduri S, Litman HJ et al.",
+      "journal": "Journal of the American Medical Informatics Association : JAMIA",
+      "date": "2026-08-01",
+      "doi": "10.1093/jamia/ocag077",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42224454/"
+     },
+     {
+      "key": "pmid:41895606",
+      "source": "pubmed",
+      "id": "41895606",
+      "title": "Quantitative regression of qFibrosis with resmetirom: Exploratory histologic endpoints from the MAESTRO-NASH phase III clinical trial.",
+      "authors": "Schattenberg JM, Bedossa P, Guy CD, Taub R, Labriola D, Zhang H et al.",
+      "journal": "Journal of hepatology",
+      "date": "2026-08-01",
+      "doi": "10.1016/j.jhep.2026.03.021",
+      "pub_types": "Journal Article, Clinical Trial, Phase III, Multicenter Study, Randomized Controlled Trial",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41895606/"
+     },
+     {
+      "key": "pmid:42501868",
+      "source": "pubmed",
+      "id": "42501868",
+      "title": "A framework and shared vocabulary to identify actionable protein biomarkers and enable optimal precision medicine: Myth-busting with unicorn biomarkers.",
+      "authors": "Karsdal MA, Bay-Jensen AC, Kring Rasmussen DG, Krag A, Johansen S, Anstee QM et al.",
+      "journal": "Journal of hepatology",
+      "date": "2026-07-25",
+      "doi": "10.1016/j.jhep.2026.07.016",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42501868/"
+     },
+     {
+      "key": "pmid:42303324",
+      "source": "pubmed",
+      "id": "42303324",
+      "title": "Accuracy of the FIB-4 and LiverRisk score for use in primary risk assessment for liver fibrosis, and variation by age.",
+      "authors": "Rinella ME, Charlton MR, Kim Y, Hosmane S, Woolley JJ, O'Connell T",
+      "journal": "Digestive and liver disease : official journal of the Italian Society of Gastroenterology and the Italian Association for the Study of the Liver",
+      "date": "2026-07-01",
+      "doi": "10.1016/j.dld.2026.04.011",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42303324/"
+     }
+    ]
+   },
+   "pubmed_drugs": {
+    "term": "(\"resmetirom\"[tiab] OR \"resmetirom\"[nm] OR \"MGL-3196\"[tiab] OR \"MGL-3196\"[nm])",
+    "total_since": 226,
+    "latest": [
+     {
+      "key": "pmid:42805503",
+      "source": "pubmed",
+      "id": "42805503",
+      "title": "EASL-EASD-EASO Guidance for the Use of Resmetirom and Semaglutide as MASH-Targeted Therapy.",
+      "authors": "",
+      "journal": "Journal of hepatology",
+      "date": "2026-12-01",
+      "doi": "10.1016/j.jhep.2026.08.028",
+      "pub_types": "Journal Article, Practice Guideline",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42805503/"
+     },
+     {
+      "key": "pmid:42850916",
+      "source": "pubmed",
+      "id": "42850916",
+      "title": "C. butyricum Combined With Resmetirom Provides Therapeutic Benefits in MASH Associated With Gut-Liver-Brain Axis Modulation.",
+      "authors": "Zhang K, Zeng Y, Wu J, Liu Y, Zhang Y, Liao Z et al.",
+      "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+      "date": "2026-11-01",
+      "doi": "10.1111/liv.70905",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42850916/"
+     },
+     {
+      "key": "pmid:42683763",
+      "source": "pubmed",
+      "id": "42683763",
+      "title": "Integrating the liver into the cardiovascular-kidney-metabolic syndrome: pathophysiology and therapeutic implications.",
+      "authors": "Marshall WR, Sinha S, Green D, Kalra PA",
+      "journal": "Current opinion in nephrology and hypertension",
+      "date": "2026-11-01",
+      "doi": "10.1097/MNH.0000000000001225",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42683763/"
+     },
+     {
+      "key": "pmid:42614695",
+      "source": "pubmed",
+      "id": "42614695",
+      "title": "Genetics of Metabolic Dysfunction-associated Steatotic Liver Disease (MASLD) in the Indian Ethnicity: An Update.",
+      "authors": "Vishnubhotla R, Bale G, Kulkarni AV, Duvvur NR, Padaki NR",
+      "journal": "Journal of clinical and experimental hepatology",
+      "date": "2026-11-01",
+      "doi": "10.1016/j.jceh.2026.103616",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42614695/"
+     },
+     {
+      "key": "pmid:42608656",
+      "source": "pubmed",
+      "id": "42608656",
+      "title": "Review Article: Fibrosis Reversal in Metabolic Dysfunction-Associated Steatohepatitis-The Promise of Emerging Therapeutics.",
+      "authors": "Ayoub M, Tsutsumi T, Rinella ME",
+      "journal": "Alimentary pharmacology & therapeutics",
+      "date": "2026-11-01",
+      "doi": "10.1111/apt.70921",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42608656/"
+     },
+     {
+      "key": "pmid:42680287",
+      "source": "pubmed",
+      "id": "42680287",
+      "title": "Lipid-lowering and hepatoprotective effects of Ocimum sanctum L. (Thai holy basil) flower against MASLD and liver inflammation in rats.",
+      "authors": "Inchai J, Phatsara M, Yoonakorn R, Holasut P, Saithong T, Tunkaew K et al.",
+      "journal": "Food research international (Ottawa, Ont.)",
+      "date": "2026-10-31",
+      "doi": "10.1016/j.foodres.2026.119968",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42680287/"
+     },
+     {
+      "key": "pmid:42833311",
+      "source": "pubmed",
+      "id": "42833311",
+      "title": "Effects of MASH risk genotypes on resmetirom efficacy in patients with MASH and fibrosis.",
+      "authors": "Chalasani NP, Taub R, Mogg R, Labriola D, Camacho RC, Zhang H et al.",
+      "journal": "Journal of hepatology",
+      "date": "2026-10-05",
+      "doi": "10.1016/j.jhep.2026.08.037",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42833311/"
+     },
+     {
+      "key": "pmid:42827168",
+      "source": "pubmed",
+      "id": "42827168",
+      "title": "Comorbid Cardiovascular-Liver Disease Disparities: Current Understanding and Future Directions.",
+      "authors": "Hafez A, Nour M, Ibrahim R, Othman J, Mohamed MR, Awad K et al.",
+      "journal": "Current cardiology reports",
+      "date": "2026-10-03",
+      "doi": "10.1007/s11886-026-02426-9",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42827168/"
+     },
+     {
+      "key": "pmid:42764643",
+      "source": "pubmed",
+      "id": "42764643",
+      "title": "Applicability of Non-Invasive Eligibility Criteria for MASH Pharmacotherapy: A Multicentre Cohort Study.",
+      "authors": "Pugliese N, Polverini D, Bertazzoni A, Cerini F, Pennisi G, Lombardi R et al.",
+      "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+      "date": "2026-10-01",
+      "doi": "10.1111/liv.70882",
+      "pub_types": "Journal Article, Multicenter Study, Observational Study",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42764643/"
+     },
+     {
+      "key": "pmid:42748411",
+      "source": "pubmed",
+      "id": "42748411",
+      "title": "Prime editing models the MTARC1 A165T variant in human liver organoids, demonstrating reduced steatosis, inflammation, and fibrosis.",
+      "authors": "Ben Saad A, Arghiani N, Weilheimer AD, Gentile SD, Toles BJ, Tripathi S et al.",
+      "journal": "Hepatology communications",
+      "date": "2026-09-16",
+      "doi": "10.1097/HC9.0000000000001022",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42748411/"
+     }
+    ]
+   },
+   "preprints": [],
+   "preprint_window_days": 7
+  },
+  "sec": {
+   "cik": "1157601",
+   "name": "MADRIGAL PHARMACEUTICALS, INC.",
+   "tickers": [
+    "MDGL"
+   ],
+   "recent_8k_count": 166,
+   "latest_8k": "2026-08-12",
+   "pdufa_mentions": [
+    {
+     "key": "0001193125-24-072706:d774533dex11.htm",
+     "company": "MADRIGAL PHARMACEUTICALS, INC.  (MDGL)  (CIK 0001157601)",
+     "form": "8-K",
+     "file_type": "EX-1.1",
+     "file_date": "2024-03-20",
+     "items": [
+      "1.01",
+      "9.01"
+     ],
+     "title": "8-K EX-1.1 filed 2024-03-20",
+     "url": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524072706/d774533dex11.htm",
+     "filing_index": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524072706/",
+     "candidates": [],
+     "status": "UNVERIFIED - regex extraction from SEC filing text; confirm in the linked document before use"
+    },
+    {
+     "key": "0001193125-24-049116:d743882dex991.htm",
+     "company": "MADRIGAL PHARMACEUTICALS, INC.  (MDGL)  (CIK 0001157601)",
+     "form": "8-K",
+     "file_type": "EX-99.1",
+     "file_date": "2024-02-28",
+     "items": [
+      "2.02",
+      "9.01"
+     ],
+     "title": "8-K EX-99.1 filed 2024-02-28",
+     "url": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524049116/d743882dex991.htm",
+     "filing_index": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524049116/",
+     "candidates": [
+      {
+       "date_text": "March 14, 2024",
+       "gap_chars": 6,
+       "year_inferred": false,
+       "context": "Results \u2022 Announced appointment of Mardi C. Dier as Chief Financial Officer \u2022 Anticipates resmetirom to become the first medicine approved for NASH; PDUFA date March 14, 2024 \u2022 Reports year-end 2023 cash, cash equivalents and marketable securities of $634 million CONSHOHOCKEN, PA , February 28, 2024 \u2013 Madrigal Pharmaceuticals, Inc. (NASDAQ:MDGL), a cli",
+       "best": true
+      }
+     ],
+     "status": "UNVERIFIED - regex extraction from SEC filing text; confirm in the linked document before use"
+    },
+    {
+     "key": "0001193125-24-004269:d669791dex991.htm",
+     "company": "MADRIGAL PHARMACEUTICALS, INC.  (MDGL)  (CIK 0001157601)",
+     "form": "8-K",
+     "file_type": "EX-99.1",
+     "file_date": "2024-01-08",
+     "items": [
+      "8.01",
+      "9.01"
+     ],
+     "title": "8-K EX-99.1 filed 2024-01-08",
+     "url": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524004269/d669791dex991.htm",
+     "filing_index": "https://www.sec.gov/Archives/edgar/data/1157601/000119312524004269/",
+     "candidates": [
+      {
+       "date_text": "March 14",
+       "gap_chars": 2,
+       "year_inferred": true,
+       "context": "ith NASH with significant fibrosis (315,000) Positive Phase 3 MAESTRO-NASH Data Breakthrough Therapy & Priority Review Specialty Launch of Resmetirom PDUFA: March 14 Full Approval + Compensated Cirrhosis Label Complete 2024 Future",
+       "best": true,
+       "date_guess": "2024-03-14"
+      }
+     ],
+     "status": "UNVERIFIED - regex extraction from SEC filing text; confirm in the linked document before use"
+    }
+   ],
+   "label": "UNVERIFIED - regex extraction from SEC filing text; confirm in the linked document before use"
+  }
+ },
+ {
+  "company": "Viking Therapeutics",
+  "ticker": "VKTX",
+  "alias_known": true,
+  "aliases_used": {
+   "ct_queries": [
+    "Viking Therapeutics"
+   ],
+   "ct_lead": [
+    "viking therapeutics"
+   ],
+   "fda_sponsors": [],
+   "label_mfrs": []
+  },
+  "as_of": "2026-10-12",
+  "trials": {
+   "total": 13,
+   "by_phase": {
+    "PHASE2": 5,
+    "PHASE3": 4,
+    "PHASE1": 4
+   },
+   "by_status": {
+    "COMPLETED": 7,
+    "NOT_YET_RECRUITING": 2,
+    "ACTIVE_NOT_RECRUITING": 2,
+    "RECRUITING": 2
+   },
+   "active": 6,
+   "next_primary_completions": [
+    {
+     "nct_id": "NCT07846033",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Phase 1 Study of VK3019 in Overweight and Obese Adults Without Comorbidities",
+     "primary_completion_date": "2026-10-02"
+    },
+    {
+     "nct_id": "NCT07838740",
+     "phase": "PHASE1",
+     "status": "RECRUITING",
+     "title": "A Phase 1 Study of VK2735 in Obese Adults Without Comorbidities",
+     "primary_completion_date": "2027-05"
+    },
+    {
+     "nct_id": "NCT07104383",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "VK2735 for Weight Management Type 2 Diabetes Phase 3 (VANQUISH 2)",
+     "primary_completion_date": "2027-07-01"
+    },
+    {
+     "nct_id": "NCT07104500",
+     "phase": "PHASE3",
+     "status": "ACTIVE_NOT_RECRUITING",
+     "title": "VK2735 for Weight Management Phase 3",
+     "primary_completion_date": "2027-07-01"
+    },
+    {
+     "nct_id": "NCT07868835",
+     "phase": "PHASE3",
+     "status": "NOT_YET_RECRUITING",
+     "title": "Oral VK2735 for Weight Management Phase 3 (SUNRISE 1)",
+     "primary_completion_date": "2028-07"
+    },
+    {
+     "nct_id": "NCT07868939",
+     "phase": "PHASE3",
+     "status": "NOT_YET_RECRUITING",
+     "title": "Oral VK2735 for Weight Management in Adults With Type 2 Diabetes Mellitus Phase 3 (SUNRISE 2)",
+     "primary_completion_date": "2028-10"
+    }
+   ],
+   "recently_stopped": []
+  },
+  "fda": {
+   "applications": 0,
+   "original_approvals": 0,
+   "novel_approvals": [],
+   "recent_submissions": [],
+   "recent_label_updates": []
+  },
+  "pdufa": "No 8-K text mentioning 'PDUFA' found via EDGAR full-text search in the last 3 years (company may disclose dates only in press releases not furnished as 8-K exhibits).",
+  "sources": [
+   "ClinicalTrials.gov API v2 (NLM)",
+   "openFDA drug/drugsfda + drug/label (FDA, CC0)",
+   "NIH RePORTER API v2",
+   "PubMed E-utilities (NLM) + bioRxiv/medRxiv API",
+   "SEC EDGAR full-text search + submissions API"
+  ],
+  "grants": {
+   "org_names": [],
+   "org_grants_total": 0,
+   "org_grants_recent": [],
+   "org_grants_latest": [],
+   "drug_terms": [
+    "VK2735",
+    "VK2809",
+    "VK0214"
+   ],
+   "drug_grants_total": 0,
+   "drug_grants_latest": []
+  },
+  "papers": {
+   "since": "2025-10-12",
+   "pubmed_affiliation": {
+    "term": "(\"Viking Therapeutics\"[ad])",
+    "total_since": 2,
+    "latest": [
+     {
+      "key": "pmid:41796094",
+      "source": "pubmed",
+      "id": "41796094",
+      "title": "Prevalence of Cardiovascular-Kidney-Metabolic Conditions Across Body Mass Index Categories: The Distinct Burden of Severe (Class III) Obesity.",
+      "authors": "Rathore SS, Chung KC, Akkas YB, Epstein AJ, Lian B",
+      "journal": "Diabetes, obesity & metabolism",
+      "date": "2026-05-01",
+      "doi": "10.1111/dom.70628",
+      "pub_types": "Letter",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41796094/"
+     },
+     {
+      "key": "pmid:41508550",
+      "source": "pubmed",
+      "id": "41508550",
+      "title": "Weekly Subcutaneous VK2735, a GIP/GLP-1 Receptor Dual\u00a0Agonist, for Weight Management: Phase 2, Randomized, 13-Week VENTURE Study.",
+      "authors": "Bays HE, Toth P, Alkhouri N, Pullman J, Freilich B, Neutel J et al.",
+      "journal": "Obesity (Silver Spring, Md.)",
+      "date": "2026-03-01",
+      "doi": "10.1002/oby.70106",
+      "pub_types": "Journal Article, Randomized Controlled Trial, Clinical Trial, Phase II",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41508550/"
+     }
+    ]
+   },
+   "pubmed_drugs": {
+    "term": "(\"VK2735\"[tiab] OR \"VK2735\"[nm] OR \"VK2809\"[tiab] OR \"VK2809\"[nm] OR \"VK0214\"[tiab] OR \"VK0214\"[nm])",
+    "total_since": 4,
+    "latest": [
+     {
+      "key": "pmid:42768195",
+      "source": "pubmed",
+      "id": "42768195",
+      "title": "Future GLP-1 receptor co-agonists and their cardiac effects.",
+      "authors": "Neumann J, Kirchefer U, Hofmann B, Gergs U",
+      "journal": "Naunyn-Schmiedeberg's archives of pharmacology",
+      "date": "2026-09-22",
+      "doi": "10.1007/s00210-026-05908-3",
+      "pub_types": "Journal Article",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42768195/"
+     },
+     {
+      "key": "pmid:42710788",
+      "source": "pubmed",
+      "id": "42710788",
+      "title": "The role of thyroid hormone receptor beta 1 (THR\u03b21) in metabolic dysfunction associated steatohepatitis (MASH): from dysregulation to therapeutic target.",
+      "authors": "Patil RB, Viswanatha GL, Andugulapati SB, Bojja SL, Pai A, Satyanarayan ND et al.",
+      "journal": "Biochemical pharmacology",
+      "date": "2026-09-08",
+      "doi": "10.1016/j.bcp.2026.118434",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42710788/"
+     },
+     {
+      "key": "pmid:41508550",
+      "source": "pubmed",
+      "id": "41508550",
+      "title": "Weekly Subcutaneous VK2735, a GIP/GLP-1 Receptor Dual\u00a0Agonist, for Weight Management: Phase 2, Randomized, 13-Week VENTURE Study.",
+      "authors": "Bays HE, Toth P, Alkhouri N, Pullman J, Freilich B, Neutel J et al.",
+      "journal": "Obesity (Silver Spring, Md.)",
+      "date": "2026-03-01",
+      "doi": "10.1002/oby.70106",
+      "pub_types": "Journal Article, Randomized Controlled Trial, Clinical Trial, Phase II",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41508550/"
+     },
+     {
+      "key": "pmid:41750342",
+      "source": "pubmed",
+      "id": "41750342",
+      "title": "Nuclear Receptor-Targeted Therapies: Reprogramming Metabolism with TR\u03b2, ERR\u03b1, and LXR Modulators.",
+      "authors": "Di Giovanni C, Lavecchia A",
+      "journal": "Biomolecules",
+      "date": "2026-02-09",
+      "doi": "10.3390/biom16020272",
+      "pub_types": "Journal Article, Review",
+      "version": null,
+      "published_doi": null,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41750342/"
+     }
+    ]
+   },
+   "preprints": [],
+   "preprint_window_days": 7
+  },
+  "sec": {
+   "cik": "1607678",
+   "name": "Viking Therapeutics, Inc.",
+   "tickers": [
+    "VKTX"
+   ],
+   "recent_8k_count": 109,
+   "latest_8k": "2026-09-28",
+   "pdufa_mentions": [],
+   "label": "UNVERIFIED - regex extraction from SEC filing text; confirm in the linked document before use"
+  }
+ }
+]

@@ -1,0 +1,26 @@
+BioCatalystFeed
+Copyright 2026 The BioCatalystFeed authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+BioCatalystFeed is an independent open-source project. It is not affiliated with, endorsed by, or sponsored by any of
+the agencies or services below. Their names are used only to identify the source of data.
+
+Data sources and attributions
+-----------------------------
+- ClinicalTrials.gov, U.S. National Library of Medicine (NLM), National Institutes of Health. Data retrieved via the
+  ClinicalTrials.gov API v2. NLM does not endorse this product. Some records may reference third-party rights.
+- Data provided by the U.S. Food and Drug Administration (https://open.fda.gov). openFDA data is not validated for
+  clinical or production use; do not rely on it for medical decisions.
+- NIH RePORTER, National Institutes of Health (https://reporter.nih.gov). U.S. federal award data.
+- PubMed / NCBI E-utilities, U.S. National Library of Medicine. Citations are retrieved as metadata; abstracts may be
+  subject to publisher copyright and are not stored or redistributed by this software.
+- Europe PMC (https://europepmc.org), via the Europe PMC RESTful Web Service. Metadata and links only.
+- bioRxiv and medRxiv preprint servers (https://www.biorxiv.org, https://www.medrxiv.org), via api.biorxiv.org and via
+  Europe PMC. Each preprint carries its own licence; this software keeps metadata and links only.
+- SEC EDGAR, U.S. Securities and Exchange Commission. Public filing data accessed under the SEC fair-access policy.
+
+Disclaimer
+----------
+Not investment, legal or medical advice. Data may be incomplete, delayed or wrong; PDUFA dates are unverified
+candidates extracted from SEC filings.
