@@ -18,9 +18,13 @@ TRACKED = ("title", "journal", "version", "published_doi")
 
 class PubMedClient(Throttled):
     def __init__(self, **kw):
-        super().__init__(min_interval=kw.pop("min_interval", 0.4), **kw)  # <=3 req/s without API key
+        mi = kw.pop("min_interval", None)
+        super().__init__(min_interval=0.4 if mi is None else mi, **kw)  # <=3 req/s without API key
         self.base = {"tool": TOOL, "retmode": "json"}
         if os.environ.get("NCBI_EMAIL"): self.base["email"] = os.environ["NCBI_EMAIL"]
+        if os.environ.get("NCBI_API_KEY"):
+            self.base["api_key"] = os.environ["NCBI_API_KEY"]
+            if mi is None: self.min_interval = 0.12  # NCBI allows 10 req/s with a key
 
     def esearch(self, term: str, mindate: str | None = None, maxdate: str | None = None, retmax: int = 100) -> tuple[int, list[str]]:
         p = {**self.base, "db": "pubmed", "term": term, "retmax": retmax, "sort": "pub_date"}

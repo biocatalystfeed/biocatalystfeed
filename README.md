@@ -52,9 +52,11 @@ Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_pro
 ### Configuration
 | Env var | Purpose |
 |---|---|
-| `BIOCATALYSTFEED_CONTACT` | contact email put in the SEC User-Agent (SEC fair-access policy). Default is a placeholder (`contact@biocatalystfeed.invalid`); **set it to your own contact before heavy SEC use** |
+| `BIOCATALYSTFEED_CONTACT` | contact email put in the SEC User-Agent (SEC fair-access policy). Default is the project contact (`contact@biocatalystfeed.com`); set it to your own contact for heavy SEC use |
 | `SEC_USER_AGENT` | full SEC User-Agent override |
 | `NCBI_EMAIL` | optional email sent to NCBI E-utilities |
+| `OPENFDA_API_KEY` | optional openFDA API key (free at open.fda.gov/apis/authentication); raises daily/minute rate limits. Never logged |
+| `NCBI_API_KEY` | optional NCBI E-utilities API key (free from your NCBI account settings); raises the PubMed limit from 3 to 10 req/s. Never logged |
 | `BIOCATALYSTFEED_DB` (or `TRIALWATCH_DB`) | SQLite DB for the MCP server |
 | `FDAWATCH_ALIASES` | JSON file extending the company alias table |
 

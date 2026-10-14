@@ -132,7 +132,7 @@ def test_sec_private_company_message_and_ua(monkeypatch):
     r = sw.company_sec(object(), {"canonical": "Zealand Pharma", "sec_cik": None, "ticker": None})
     assert r["not_sec_registered"] and "Zealand Pharma" in r["message"] and "privately held" in r["message"]
     monkeypatch.delenv("SEC_USER_AGENT", raising=False); monkeypatch.delenv("BIOCATALYSTFEED_CONTACT", raising=False)
-    assert sw.user_agent() == "BioCatalystFeed/0.2 contact@biocatalystfeed.invalid"
+    assert sw.user_agent() == "BioCatalystFeed/0.2 contact@biocatalystfeed.com"
     monkeypatch.setenv("BIOCATALYSTFEED_CONTACT", "ops@example.com")
     assert sw.user_agent().endswith("ops@example.com") and sw.SECClient().s.headers["User-Agent"].endswith("ops@example.com")
     monkeypatch.setenv("SEC_USER_AGENT", "X y@z")
@@ -185,7 +185,7 @@ def test_bcf_cli_dispatch(capsys):
     assert cli.main(["nope"]) == 2
     with pytest.raises(SystemExit): cli.main(["grants", "--help"])
     assert "grantwatch" in capsys.readouterr().out
-    assert __version__ == "0.2.1"
+    assert __version__ == "0.2.2"
 
 
 def test_license_notice_docs_present():

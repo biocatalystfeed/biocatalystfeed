@@ -8,14 +8,14 @@ import html, os, re
 from biowatch.http import Throttled
 from biowatch.store import ItemStore
 
-PLACEHOLDER_CONTACT = "contact@biocatalystfeed.invalid"  # replace via env once a product contact address is approved
+DEFAULT_CONTACT = "contact@biocatalystfeed.com"
 
 
 def user_agent() -> str:
     """SEC asks for a User-Agent naming the organisation and a contact email. Override fully with SEC_USER_AGENT, or set
     BIOCATALYSTFEED_CONTACT to a product contact address. The default is a non-routable placeholder (no personal name)."""
     if os.environ.get("SEC_USER_AGENT"): return os.environ["SEC_USER_AGENT"]
-    return f"BioCatalystFeed/0.2 {os.environ.get('BIOCATALYSTFEED_CONTACT') or PLACEHOLDER_CONTACT}"
+    return f"BioCatalystFeed/0.2 {os.environ.get('BIOCATALYSTFEED_CONTACT') or DEFAULT_CONTACT}"
 
 
 UA = user_agent()

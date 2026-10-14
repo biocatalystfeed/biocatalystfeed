@@ -2,6 +2,7 @@
 Limits without key: 240 req/min and 1,000 req/day per IP (open.fda.gov/apis/authentication). We throttle to ~1 req/s,
 back off on 429/5xx, and treat 404 NOT_FOUND as an empty result."""
 from __future__ import annotations
+import os
 import time
 import requests
 from biowatch.http import retry_delay, is_retryable
@@ -27,7 +28,7 @@ class OpenFDAClient:
         self.min_interval = min_interval
         self.s = session or requests.Session()
         self.s.headers["User-Agent"] = UA
-        self.api_key = api_key
+        self.api_key = api_key or os.environ.get("OPENFDA_API_KEY") or None
         self._last = 0.0
         self.calls = 0
 
