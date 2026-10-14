@@ -1,3 +1,5 @@
+<p><img src="assets/brand/logo-icon.svg" alt="BioCatalystFeed logo" width="64" height="64"></p>
+
 # BioCatalystFeed
 
 <!-- mcp-name: io.github.biocatalystfeed/biocatalystfeed -->
