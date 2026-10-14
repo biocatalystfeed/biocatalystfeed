@@ -1,0 +1,25 @@
+name: Bug report
+description: Something broke or returned wrong data
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Security issue? Please use the private report form instead (see SECURITY.md)."
+  - type: input
+    id: version
+    attributes: {label: "Version (`bcf --version`) and Python version", placeholder: "0.2.1 / 3.12"}
+    validations: {required: true}
+  - type: textarea
+    id: command
+    attributes: {label: Exact command or MCP tool call, render: shell}
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes: {label: What happened vs. what you expected (add `BCF_DEBUG=1` for a traceback)}
+    validations: {required: true}
+  - type: dropdown
+    id: source
+    attributes:
+      label: Data source involved
+      multiple: true
+      options: [ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR, Website demo, Other]

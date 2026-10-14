@@ -18,6 +18,11 @@ _fda = OpenFDAClient()
 _db = os.environ.get("BIOCATALYSTFEED_DB") or os.environ.get("TRIALWATCH_DB") or os.path.expanduser("~/.trialwatch.db")
 
 
+def _clamp(n, hi: int, lo: int = 1) -> int:
+    """MCP clients (LLMs) can pass any number; keep request sizes bounded so one call can't fan out unboundedly."""
+    return max(lo, min(int(n), hi))
+
+
 @mcp.tool()
 def search_trials(sponsor: str | None = None, condition: str | None = None, intervention: str | None = None,
                   phases: list[str] | None = None, statuses: list[str] | None = None,
@@ -26,7 +31,7 @@ def search_trials(sponsor: str | None = None, condition: str | None = None, inte
     """Search ClinicalTrials.gov. phases e.g. ["PHASE2","PHASE3"]; statuses e.g. ["RECRUITING"]; changed_since YYYY-MM-DD.
     exclude drops trials whose title/conditions/interventions contain any term; rank sorts by relevance to the query."""
     from biowatch import filters
-    rows = filters.exclude(search(_client, max_records=min(max_records, 500), sponsor=sponsor, condition=condition,
+    rows = filters.exclude(search(_client, max_records=_clamp(max_records, 500), sponsor=sponsor, condition=condition,
                   intervention=intervention, phases=phases, statuses=statuses, changed_since=changed_since), exclude)
     return filters.rank(rows, condition, intervention, date_field="last_update_posted") if rank else rows
 
@@ -55,7 +60,7 @@ def trial_changes_since(since: str, watch: str | None = None) -> list[dict]:
 @mcp.tool()
 def sponsor_pipeline(sponsor: str, max_records: int = 300) -> dict:
     """Summarize a sponsor's trial pipeline by phase and status, with active trials sorted by primary completion."""
-    return _pipeline(search(_client, sponsor=sponsor, max_records=max_records))
+    return _pipeline(search(_client, sponsor=sponsor, max_records=_clamp(max_records, 1000)))
 
 
 @mcp.tool()
@@ -64,7 +69,7 @@ def fda_approvals(sponsor: str | None = None, since: str | None = None, until: s
     """Drugs@FDA submissions/approvals from openFDA (ORIG + supplements), newest first. sponsor is alias-resolved
     (e.g. 'Lilly', 'MDGL'); since/until filter submission status date YYYY-MM-DD; novel_only = original NME/BLA approvals."""
     from fdawatch.core import fda_approvals as _fa
-    return _fa(_fda, sponsor=sponsor, since=since, until=until, application_number=application_number, novel_only=novel_only)[:max_results]
+    return _fa(_fda, sponsor=sponsor, since=since, until=until, application_number=application_number, novel_only=novel_only)[:_clamp(max_results, 1000)]
 
 
 @mcp.tool()
@@ -102,7 +107,7 @@ def search_grants(org: list[str] | None = None, pi: str | None = None, keyword: 
     (include_future=False drops them). exclude drops grants mentioning any term; rank sorts by relevance."""
     from grantwatch.core import ReporterClient, search_grants as _sg
     return _sg(ReporterClient(), org=org, pi=pi, keyword=keyword, since=since, until=until, fiscal_years=fiscal_years,
-               org_exact=org_exact, max_records=min(max_results, 500), pi_exact=pi_exact, exclude=exclude, rank=rank,
+               org_exact=org_exact, max_records=_clamp(max_results, 500), pi_exact=pi_exact, exclude=exclude, rank=rank,
                include_future=include_future)
 
 
@@ -133,10 +138,10 @@ def search_papers(affiliation: list[str] | None = None, drug: list[str] | None =
     src = set(sources or ["pubmed", "europepmc", "preprints"])
     epmc = EuropePMCClient() if src & {"europepmc", "preprints"} else None
     res = search_all(PubMedClient() if "pubmed" in src else None, epmc if "europepmc" in src else None, None,
-                     affiliation, drug, keyword, since=since, preprint_days=0, max_records=min(max_results, 500))
+                     affiliation, drug, keyword, since=since, preprint_days=0, max_records=_clamp(max_results, 500))
     if "preprints" in src and preprint_days > 0:
         from paperwatch.core import search_preprints_fast, combined
-        pre = search_preprints_fast(epmc, RxivClient(), affiliation, drug, keyword, days=preprint_days, max_records=max_results)
+        pre = search_preprints_fast(epmc, RxivClient(), affiliation, drug, keyword, days=preprint_days, max_records=_clamp(max_results, 500))
         res["papers"] = res["papers"] + pre
     from paperwatch.core import combined
     res["papers"] = combined(res["papers"], (affiliation, drug, keyword), exclude, rank)
@@ -166,13 +171,16 @@ def sec_pdufa_mentions(company: str, since: str | None = None, until: str | None
     from secwatch.core import SECClient, pdufa_mentions
     from secwatch.cli import _cik
     c = SECClient()
-    return pdufa_mentions(c, _cik(c, company), since=since, until=until, max_docs=min(max_docs, 25))
+    return pdufa_mentions(c, _cik(c, company), since=since, until=until, max_docs=_clamp(max_docs, 25))
 
 
 @mcp.tool()
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
     tool: trials | fda | grants | papers | sec."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec")
+    if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")
     from biowatch import digest
     import json as _json
     if tool == "trials": ch = Store(_db).changes(watch=watch, since=since)

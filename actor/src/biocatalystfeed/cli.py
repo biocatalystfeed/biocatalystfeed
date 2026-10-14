@@ -1,6 +1,6 @@
 """`biocatalystfeed` / `bcf` umbrella CLI: dispatches to the per-source tools (old commands still work as aliases)."""
 from __future__ import annotations
-import importlib, sys
+import importlib, os, sys
 from . import __version__, DISCLAIMER
 
 TOOLS = {"trials": "trialwatch.cli", "fda": "fdawatch.cli", "grants": "grantwatch.cli", "papers": "paperwatch.cli",
@@ -36,7 +36,29 @@ def main(argv=None):
     if argv[0] == "profile": rest = ["profile"] + rest
     mod = importlib.import_module(TOOLS[tool])
     if tool == "mcp": return mod.main()
-    return mod.main(rest)
+    try:
+        return mod.main(rest)
+    except KeyboardInterrupt:
+        return 130
+    except Exception as e:  # friendly one-line errors; BCF_DEBUG=1 for the traceback
+        if os.environ.get("BCF_DEBUG"): raise
+        print(f"bcf {argv[0]}: error: {_explain(e)}", file=sys.stderr)
+        return 1
+
+
+def _explain(e: Exception) -> str:
+    import requests
+    if isinstance(e, requests.HTTPError) and e.response is not None:
+        r = e.response
+        host = r.url.split("/")[2] if "://" in r.url else r.url
+        if r.status_code == 429:
+            return f"{host} is rate-limiting requests (HTTP 429). Wait a minute and retry."
+        if r.status_code >= 500:
+            return f"{host} is having problems (HTTP {r.status_code}). Retry later."
+        return f"{host} rejected the request (HTTP {r.status_code}). Check your arguments."
+    if isinstance(e, (requests.ConnectionError, requests.Timeout)):
+        return f"network problem reaching the data source ({type(e).__name__}). Check your connection and retry."
+    return str(e) or type(e).__name__
 
 
 if __name__ == "__main__":

@@ -93,5 +93,5 @@ A paid hosted version (scheduled watches, persisted history, hosted MCP) is plan
 [`TERMS.md`](TERMS.md), [`PRIVACY.md`](PRIVACY.md) (drafts, not legal advice, not in effect).
 
 ## Contributing & licence
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). Licensed under the [Apache License 2.0](LICENSE). BioCatalystFeed is
+See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) and [`SECURITY.md`](SECURITY.md) (report vulnerabilities privately). Licensed under the [Apache License 2.0](LICENSE). BioCatalystFeed is
 independent and not endorsed by NLM, NIH, FDA, SEC, EMBL-EBI/Europe PMC, or bioRxiv/medRxiv.

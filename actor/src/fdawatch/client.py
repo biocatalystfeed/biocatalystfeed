@@ -4,6 +4,7 @@ back off on 429/5xx, and treat 404 NOT_FOUND as an empty result."""
 from __future__ import annotations
 import time
 import requests
+from biowatch.http import retry_delay, is_retryable
 
 BASE = "https://api.fda.gov"
 UA = "BioCatalystFeed-fdawatch/0.2"
@@ -39,11 +40,15 @@ class OpenFDAClient:
             wait = self.min_interval - (time.monotonic() - self._last)
             if wait > 0: time.sleep(wait)
             self._last = time.monotonic(); self.calls += 1
-            r = self.s.get(f"{BASE}{path}?{qs}", timeout=60)
+            try:
+                r = self.s.get(f"{BASE}{path}?{qs}", timeout=60)
+            except (requests.ConnectionError, requests.Timeout):
+                if attempt == 3: raise
+                time.sleep(retry_delay(attempt, base=3.0)); continue
             if r.status_code == 404:
                 return {"results": [], "meta": {"results": {"total": 0}}}
-            if r.status_code == 429 or r.status_code >= 500:
-                time.sleep(5 * (attempt + 1)); continue
+            if is_retryable(r) and attempt < 3:
+                time.sleep(retry_delay(attempt, r, base=3.0)); continue
             r.raise_for_status()
             return r.json()
         r.raise_for_status()

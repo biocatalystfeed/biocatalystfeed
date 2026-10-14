@@ -1,0 +1,3 @@
+- [ ] `pytest` passes and `python scripts/sync_actor.py` was run if library code changed
+- [ ] New network calls go through a throttled client (no unthrottled `requests.get`)
+- [ ] Docs/README updated if commands or MCP tools changed

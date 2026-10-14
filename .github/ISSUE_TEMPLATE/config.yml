@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/biocatalystfeed/biocatalystfeed/security/advisories/new
+    about: Please do not file security issues publicly.
+  - name: Upstream data looks wrong
+    url: https://github.com/biocatalystfeed/biocatalystfeed/blob/main/docs/DEVELOPER-NOTES.md
+    about: Upstream APIs (ClinicalTrials.gov, openFDA, ...) are the source of truth; check them first.

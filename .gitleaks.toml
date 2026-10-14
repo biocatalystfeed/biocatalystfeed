@@ -1,0 +1,5 @@
+[extend]
+useDefault = true
+[allowlist]
+description = "sample outputs contain public record UUIDs under a 'key' field"
+paths = ['''samples/.*\.json''']

@@ -1,0 +1,11 @@
+name: Feature request
+description: New data source, command or MCP tool
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes: {label: What are you trying to track or answer?}
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes: {label: Proposed command / tool / source (link the public API docs if relevant)}

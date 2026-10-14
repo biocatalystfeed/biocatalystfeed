@@ -1,8 +1,9 @@
 """Minimal ClinicalTrials.gov API v2 client (public, no key). No official numeric rate limit is published; ~50 req/min/IP is
 reported by third parties, so we throttle to <=46/min and back off on 429/5xx."""
 from __future__ import annotations
-import time
+import re, time
 import requests
+from biowatch.http import retry_delay, is_retryable
 
 BASE = "https://clinicaltrials.gov/api/v2"
 UA = "BioCatalystFeed-trialwatch/0.2"
@@ -19,6 +20,15 @@ STATUSES = {"NOT_YET_RECRUITING", "RECRUITING", "ENROLLING_BY_INVITATION",
             "WITHDRAWN", "UNKNOWN", "AVAILABLE", "NO_LONGER_AVAILABLE",
             "TEMPORARILY_NOT_AVAILABLE", "APPROVED_FOR_MARKETING", "WITHHELD"}
 
+NCT_RE = re.compile(r"^NCT\d{8}$")
+
+
+def validate_nct(nct_id: str) -> str:
+    v = str(nct_id or "").strip().upper()
+    if not NCT_RE.match(v):
+        raise ValueError(f"invalid NCT ID {nct_id!r}: expected NCT followed by 8 digits, e.g. NCT04184622")
+    return v
+
 
 class CTGovClient:
     def __init__(self, min_interval: float = 1.3, session: requests.Session | None = None):
@@ -33,9 +43,13 @@ class CTGovClient:
             if wait > 0:
                 time.sleep(wait)
             self._last = time.monotonic()
-            r = self.s.get(BASE + path, params=params, timeout=60)
-            if r.status_code == 429 or r.status_code >= 500:
-                time.sleep(5 * (attempt + 1))
+            try:
+                r = self.s.get(BASE + path, params=params, timeout=60)
+            except (requests.ConnectionError, requests.Timeout):
+                if attempt == 3: raise
+                time.sleep(retry_delay(attempt, base=3.0)); continue
+            if is_retryable(r) and attempt < 3:
+                time.sleep(retry_delay(attempt, r, base=3.0))
                 continue
             r.raise_for_status()
             return r.json()
@@ -78,4 +92,5 @@ class CTGovClient:
             params["pageToken"] = tok
 
     def get(self, nct_id: str) -> dict:
+        nct_id = validate_nct(nct_id)
         return self._get(f"/studies/{nct_id.upper()}", {"fields": FIELDS})
