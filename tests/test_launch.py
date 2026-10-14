@@ -132,7 +132,7 @@ def test_sec_private_company_message_and_ua(monkeypatch):
     r = sw.company_sec(object(), {"canonical": "Zealand Pharma", "sec_cik": None, "ticker": None})
     assert r["not_sec_registered"] and "Zealand Pharma" in r["message"] and "privately held" in r["message"]
     monkeypatch.delenv("SEC_USER_AGENT", raising=False); monkeypatch.delenv("BIOCATALYSTFEED_CONTACT", raising=False)
-    assert sw.user_agent() == "BioCatalystFeed/0.2 contact@biocatalystfeed.com"
+    assert sw.user_agent() == "BioCatalystFeed/0.2 contact@biocat.ai"
     monkeypatch.setenv("BIOCATALYSTFEED_CONTACT", "ops@example.com")
     assert sw.user_agent().endswith("ops@example.com") and sw.SECClient().s.headers["User-Agent"].endswith("ops@example.com")
     monkeypatch.setenv("SEC_USER_AGENT", "X y@z")

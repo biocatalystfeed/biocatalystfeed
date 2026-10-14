@@ -2,6 +2,8 @@
 
 <!-- mcp-name: io.github.biocatalystfeed/biocatalystfeed -->
 
+Website: https://biocat.ai · Contact: contact@biocat.ai
+
 **An open-source catalyst feed for biotech: see what changed across clinical trials, FDA actions, NIH grants,
 papers/preprints and SEC filings for the companies and drugs you follow.** Use it as a CLI, as an MCP server for AI
 agents (Claude, Cursor, …), or as an Apify actor.
@@ -52,7 +54,7 @@ Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_pro
 ### Configuration
 | Env var | Purpose |
 |---|---|
-| `BIOCATALYSTFEED_CONTACT` | contact email put in the SEC User-Agent (SEC fair-access policy). Default is the project contact (`contact@biocatalystfeed.com`); set it to your own contact for heavy SEC use |
+| `BIOCATALYSTFEED_CONTACT` | contact email put in the SEC User-Agent (SEC fair-access policy). Default is the project contact (`contact@biocat.ai`); set it to your own contact for heavy SEC use |
 | `SEC_USER_AGENT` | full SEC User-Agent override |
 | `NCBI_EMAIL` | optional email sent to NCBI E-utilities |
 | `OPENFDA_API_KEY` | optional openFDA API key (free at open.fda.gov/apis/authentication); raises daily/minute rate limits. Never logged |

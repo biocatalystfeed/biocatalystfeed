@@ -51,4 +51,4 @@ Standard Contractual Clauses), we will rely on one before serving those users.
 We'll post updates here and notify account holders of material changes.
 
 ## Contact
-contact@biocatalystfeed.com
+contact@biocat.ai

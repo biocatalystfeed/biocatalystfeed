@@ -29,7 +29,7 @@ BioCatalystFeed is open-source software you run yourself (CLI, MCP server, Apify
 | Historical backfill | No: changes only between your own runs | Unknown | [1] |
 | Exclude terms / relevance ranking | Yes (`--exclude`, `--rank`) | Saved-search filters exist; details unknown | [1] |
 | Setup | Python install (`pip install biocatalystfeed`) | "2 minutes" (their claim) | [1] |
-| Support | GitHub issues; contact@biocatalystfeed.com | support@datalookout.com (stated for cancellations) | [1] |
+| Support | GitHub issues; contact@biocat.ai | support@datalookout.com (stated for cancellations) | [1] |
 
 **Which to pick.** For a hosted, emailed ClinicalTrials.gov-only digest with a UI and no setup, DataLookout fits.
 For several public sources per company or ticker, agent/MCP access, scripting, or self-hosting at no cost,

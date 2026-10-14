@@ -4,6 +4,8 @@
 
 Please **do not open a public issue** for security problems.
 
+You can also email contact@biocat.ai.
+
 Report privately via GitHub: **Security → Report a vulnerability** on
 <https://github.com/biocatalystfeed/biocatalystfeed/security/advisories/new>.
 
@@ -18,7 +20,7 @@ Only the latest release on PyPI receives fixes.
 ## Scope
 
 In scope: the `biocatalystfeed` Python package (CLI, MCP server, local SQLite stores), the Apify
-actor in `actor/`, and the website/demo at biocatalystfeed.com (separate repo).
+actor in `actor/`, and the website/demo at https://biocat.ai (separate repo).
 Out of scope: the upstream public data APIs (ClinicalTrials.gov, openFDA, NIH RePORTER, NCBI,
 Europe PMC, bioRxiv, SEC EDGAR) and the accuracy of their data.
 

@@ -8,7 +8,7 @@ import html, os, re
 from biowatch.http import Throttled
 from biowatch.store import ItemStore
 
-DEFAULT_CONTACT = "contact@biocatalystfeed.com"
+DEFAULT_CONTACT = "contact@biocat.ai"
 
 
 def user_agent() -> str:

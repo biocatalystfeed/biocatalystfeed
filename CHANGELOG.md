@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Primary website is now https://biocat.ai; project contact and SEC User-Agent default contact are now `contact@biocat.ai`.
+
 ## 0.2.2 — 2026-10-14
 - SEC User-Agent default contact is now `contact@biocatalystfeed.com` (was a `.invalid` placeholder).
 - Optional `OPENFDA_API_KEY` and `NCBI_API_KEY` environment variables are now read and documented in the README.

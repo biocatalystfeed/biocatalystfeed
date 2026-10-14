@@ -3,7 +3,7 @@ from __future__ import annotations
 import random, time
 import requests
 
-DEFAULT_UA = "BioCatalystFeed/0.2 (+https://biocatalystfeed.com)"
+DEFAULT_UA = "BioCatalystFeed/0.2 (+https://biocat.ai)"
 RETRY_STATUS = {429, 500, 502, 503, 504}
 MAX_WAIT = 60.0
 

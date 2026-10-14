@@ -69,4 +69,4 @@ you live gives you the right to bring a claim locally.
 We'll post updates here and, for material changes, notify account holders by email before they take effect.
 
 ## Contact
-contact@biocatalystfeed.com
+contact@biocat.ai

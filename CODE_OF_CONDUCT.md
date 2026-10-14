@@ -8,4 +8,4 @@ investment solicitation.
 
 Report unacceptable behaviour privately through the repository's
 [private vulnerability/report form](https://github.com/biocatalystfeed/biocatalystfeed/security/advisories/new)
-(mark the title "Conduct"); maintainers will review every report and keep it confidential.
+(mark the title "Conduct") or email contact@biocat.ai; maintainers will review every report and keep it confidential.
