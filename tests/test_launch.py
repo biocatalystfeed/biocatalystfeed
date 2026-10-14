@@ -24,7 +24,7 @@ def test_rank_title_weighting():
             {"title": "Unrelated", "date": "2026-12-01"}]
     r = filters.rank(rows, '"resmetirom"[tiab] OR liver')
     assert [x["title"] for x in r] == ["Resmetirom and liver fat", "Liver outcomes", "Unrelated"]
-    assert r[0]["relevance"] == 6 and r[2]["relevance"] == 0
+    assert r[0]["relevance"] == 8 and r[2]["relevance"] == 0
     assert filters.query_terms('("A b"[ad]) AND (VK2735)', ["x"]) == ["a b", "vk2735"]
 
 
@@ -185,7 +185,7 @@ def test_bcf_cli_dispatch(capsys):
     assert cli.main(["nope"]) == 2
     with pytest.raises(SystemExit): cli.main(["grants", "--help"])
     assert "grantwatch" in capsys.readouterr().out
-    assert __version__ == "0.2.0"
+    assert __version__ == "0.2.1"
 
 
 def test_license_notice_docs_present():

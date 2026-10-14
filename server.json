@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.biocatalystfeed/biocatalystfeed",
+  "title": "BioCatalystFeed",
+  "description": "Biotech catalyst feed: ClinicalTrials.gov, openFDA, NIH grants, PubMed/Europe PMC, SEC EDGAR.",
+  "repository": {
+    "url": "https://github.com/biocatalystfeed/biocatalystfeed",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/biocatalystfeed/biocatalystfeed",
+  "version": "0.2.1",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "biocatalystfeed",
+      "version": "0.2.1",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" },
+      "packageArguments": [
+        { "type": "positional", "value": "mcp", "description": "Run the MCP server (stdio)" }
+      ],
+      "environmentVariables": [
+        { "name": "BIOCATALYSTFEED_DB", "description": "Path to the SQLite snapshot DB (default ~/.trialwatch.db)", "isRequired": false, "format": "filepath", "isSecret": false }
+      ]
+    }
+  ]
+}

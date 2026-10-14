@@ -120,7 +120,8 @@ def norm_epmc(r: dict) -> dict:
             "title": (r.get("title") or "").rstrip("."), "authors": ", ".join(au[:6]) + (" et al." if len(au) > 6 else ""),
             "journal": ((ji.get("journal") or {}).get("title")) or pub or None, "date": r.get("firstPublicationDate"),
             "doi": doi, "version": str(r["versionNumber"]) if r.get("versionNumber") else None, "published_doi": None,
-            "is_preprint": ppr, "url": url}
+            "is_preprint": ppr, "url": url,
+            "keywords": list(((r.get("keywordList") or {}).get("keyword")) or [])}
 
 
 def search_europepmc(client: EuropePMCClient, affiliation=None, drug=None, keyword=None, since=None, until=None,

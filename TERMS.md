@@ -1,11 +1,12 @@
 # BioCatalystFeed Hosted Service: Terms of Service
 
-> **DRAFT, NOT LEGAL ADVICE.** Not yet reviewed by a lawyer and not in effect. Placeholders are in [brackets].
+> **DRAFT, NOT LEGAL ADVICE.** This is a plain-language draft prepared by the BioCatalystFeed project; it has not been
+> reviewed by a lawyer. It applies only once a hosted BioCatalystFeed service is offered.
 
-_Last updated: [date]_
+_Last updated: 2026-10-14_
 
 These terms cover the hosted BioCatalystFeed service (hosted MCP server, scheduled watches, digests, and marketplace
-listings such as Apify) ("the Service"), operated by [operator legal name] ("we"). The open-source software is
+listings such as Apify) ("the Service"), operated by BioCatalystFeed ("BioCatalystFeed", "we", "us"). The open-source software is
 licensed separately under Apache-2.0; these terms don't restrict your rights under that licence.
 
 ## 1. What the Service is
@@ -22,7 +23,7 @@ You must give accurate account information and keep your credentials secure. You
 person unless your plan allows seats.
 
 ## 4. Acceptable use
-Don't: break the law; resell or redistribute raw Service output as a competing data feed [unless your plan allows];
+Don't: break the law; resell or redistribute raw Service output as a competing data feed unless your plan expressly allows it;
 try to bypass usage limits; overload or probe the Service; use it to break any data source's terms (e.g. rate limits)
 or to infringe third-party rights in records (e.g. preprint licences).
 
@@ -32,10 +33,10 @@ endorsement), openFDA (attribution: "Data provided by the U.S. FDA"), NCBI/PubMe
 bioRxiv/medRxiv (per-item licences), SEC EDGAR fair-access policy. See `NOTICE`.
 
 ## 6. Plans, billing, and cancellation
-Prices are shown at purchase [or on the marketplace listing]. Subscriptions renew until cancelled; cancellation takes
-effect at the end of the billing period. Fees are non-refundable except where the law requires [or: as stated on the
-marketplace]. Marketplace purchases (e.g. Apify, MCPize) are also governed by that marketplace's terms. We may change
-prices with [30] days' notice.
+Prices are shown at purchase or on the marketplace listing. Subscriptions renew until cancelled; cancellation takes
+effect at the end of the billing period. Fees are non-refundable except where the law requires or as stated on the
+marketplace listing. Marketplace purchases (e.g. Apify, MCPize) are also governed by that marketplace's terms. We may change
+prices with 30 days' notice.
 
 ## 7. Availability and changes
 We aim for reliable service but don't guarantee uptime. Upstream sources change or go offline; we may change, suspend,
@@ -51,7 +52,7 @@ FOR A PARTICULAR PURPOSE, ACCURACY, AND NON-INFRINGEMENT.
 ## 10. Limitation of liability
 TO THE EXTENT THE LAW ALLOWS, WE ARE NOT LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES,
 OR FOR TRADING LOSSES OR LOST PROFITS. OUR TOTAL LIABILITY IS LIMITED TO THE GREATER OF THE AMOUNT YOU PAID US IN THE
-12 MONTHS BEFORE THE CLAIM OR US$[50].
+12 MONTHS BEFORE THE CLAIM OR US$50.
 
 ## 11. Indemnity
 You will indemnify us against claims arising from your misuse of the Service or your breach of these terms.
@@ -60,11 +61,12 @@ You will indemnify us against claims arising from your misuse of the Service or 
 You may stop using the Service at any time. We may suspend or terminate accounts that breach these terms.
 
 ## 13. Governing law
-[State/country] law governs these terms; disputes go to the courts of [venue]. [Consider arbitration/small-claims
-clause: lawyer to advise.]
+The laws of the United States and of the U.S. state in which BioCatalystFeed's operator is established govern these
+terms, without regard to conflict-of-law rules; disputes go to the courts of that state, except where the law where
+you live gives you the right to bring a claim locally.
 
 ## 14. Changes to these terms
-We'll post updates here and, for material changes, notify account holders [by email] before they take effect.
+We'll post updates here and, for material changes, notify account holders by email before they take effect.
 
 ## Contact
-[product contact email]
+contact@biocatalystfeed.com

@@ -11,6 +11,16 @@ def _L(x) -> list[str]:
     return [x] if isinstance(x, str) else [t for t in x if t]
 
 
+def exclude_terms(x) -> list[str]:
+    """Normalize exclusion input: list or comma-separated string; strips quotes, leading '-' and blanks."""
+    out = []
+    for t in _L(x):
+        for part in str(t).split(","):
+            part = part.strip().strip('"').lstrip("-").strip()
+            if part: out.append(part)
+    return list(dict.fromkeys(out))
+
+
 def _text(r: dict, fields=TEXT_FIELDS) -> str:
     parts = []
     for f in fields:
@@ -21,12 +31,25 @@ def _text(r: dict, fields=TEXT_FIELDS) -> str:
 
 
 def _hit(text: str, term: str) -> bool:
-    return re.search(r"(?<![a-z0-9])" + re.escape(term.lower()) + r"(?![a-z0-9])", text) is not None
+    """Whole word/phrase, case-insensitive. A trailing '*' is a prefix wildcard (e.g. 'murin*')."""
+    t = term.lower().strip()
+    if t.endswith("*"):
+        return re.search(r"(?<![a-z0-9])" + re.escape(t.rstrip("*")), text) is not None
+    return re.search(r"(?<![a-z0-9])" + re.escape(t) + r"(?![a-z0-9])", text) is not None
+
+
+def _hit_loose(text: str, term: str) -> bool:
+    """Like _hit, but tolerant of simple plurals (trial/trials, study/studies) for ranking."""
+    if _hit(text, term): return True
+    t = term.lower()
+    variants = {t + "s", t + "es"} | ({t[:-1] + "ies"} if t.endswith("y") else set()) | \
+               ({t[:-3] + "y"} if t.endswith("ies") else set()) | ({t[:-1]} if t.endswith("s") and len(t) > 3 else set())
+    return any(_hit(text, v) for v in variants)
 
 
 def exclude(rows: list[dict], terms, fields=TEXT_FIELDS) -> list[dict]:
     """Drop rows whose text fields contain any exclusion term (whole word/phrase, case-insensitive)."""
-    terms = _L(terms)
+    terms = exclude_terms(terms)
     if not terms: return rows
     return [r for r in rows if not any(_hit(_text(r, fields), t) for t in terms)]
 
@@ -44,10 +67,20 @@ def query_terms(*values) -> list[str]:
 
 
 def score(r: dict, terms: list[str]) -> float:
-    """Transparent relevance: each term found in the title scores 3, found only in other text fields scores 1."""
+    """Transparent relevance:
+    - each term found in the title scores 3, found only in other text fields scores 1 (simple plurals tolerated);
+    - +2 when every query term matches somewhere (full coverage beats partial matches);
+    - +1 per multi-word term matched as an exact phrase in the title."""
+    if not terms: return 0.0
     title = (r.get("title") or r.get("brief_title") or "").lower()
-    rest = _text(r)
-    return float(sum(3 if _hit(title, t) else 1 if _hit(rest, t) else 0 for t in terms))
+    rest = _text(r) + " " + str(r.get("abstract") or "").lower()
+    s, hits = 0.0, 0
+    for t in terms:
+        if _hit_loose(title, t): s += 3; hits += 1
+        elif _hit_loose(rest, t): s += 1; hits += 1
+        if " " in t and _hit(title, t): s += 1
+    if hits == len(terms) and len(terms) > 1: s += 2
+    return s
 
 
 def rank(rows: list[dict], *query, date_field: str = "date") -> list[dict]:

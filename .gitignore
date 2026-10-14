@@ -8,3 +8,5 @@ actor/storage/
 !samples/sample.db
 *.rss
 *.feed.json
+dist/
+build/

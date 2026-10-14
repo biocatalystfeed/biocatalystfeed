@@ -1,5 +1,7 @@
 # BioCatalystFeed
 
+<!-- mcp-name: io.github.biocatalystfeed/biocatalystfeed -->
+
 **An open-source catalyst feed for biotech: see what changed across clinical trials, FDA actions, NIH grants,
 papers/preprints and SEC filings for the companies and drugs you follow.** Use it as a CLI, as an MCP server for AI
 agents (Claude, Cursor, …), or as an Apify actor.
@@ -22,7 +24,7 @@ files on every `watch` (local files you can serve or feed into any reader; nothi
 
 ## Quickstart
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e '.[mcp]'     # PyPI package: not yet published
+pip install biocatalystfeed            # or: uvx biocatalystfeed --help
 source .venv/bin/activate
 
 bcf trials search --sponsor "Viking Therapeutics" --phase PHASE3
@@ -39,9 +41,11 @@ The old commands (`trialwatch`, `fdawatch`, `grantwatch`, `paperwatch`, `secwatc
 
 ### MCP server
 ```json
-{"mcpServers": {"biocatalystfeed": {"command": "/path/to/.venv/bin/biocatalystfeed-mcp",
+{"mcpServers": {"biocatalystfeed": {"command": "uvx", "args": ["biocatalystfeed", "mcp"],
   "env": {"BIOCATALYSTFEED_DB": "/path/to/bcf.db"}}}}
 ```
+(or point `command` at an installed `biocatalystfeed-mcp`). Listed in the official MCP Registry as
+`io.github.biocatalystfeed/biocatalystfeed`.
 Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_profile`, `search_grants`,
 `search_papers`, `sec_pdufa_mentions`, `snapshot_*` / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
 
@@ -56,7 +60,7 @@ Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_pro
 
 ## How it compares
 Facts about DataLookout are from datalookout.com/citeline-alternative (checked 2026-10-12 PT). We have not tested
-their product.
+their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.md).
 
 | | BioCatalystFeed (open source) | DataLookout |
 |---|---|---|
@@ -70,6 +74,12 @@ their product.
 
 Pick DataLookout for a hosted, emailed, ClinicalTrials.gov-only digest. Pick BioCatalystFeed if you want several
 sources per company or ticker, agent/MCP access, or to self-host.
+
+### Search filters (v0.2.1)
+- `--exclude` takes words or phrases (space- or comma-separated); matching is whole-word and case-insensitive, and a
+  trailing `*` is a prefix wildcard (`--exclude "murin*" rat`).
+- `--rank` scores title hits 3 and other-field hits 1 (simple plurals tolerated), +1 for exact multi-word phrases in
+  the title and +2 when every query term matches; ties break by newest date. The score is in `relevance`.
 
 ## Data sources, limits and etiquette
 Built-in throttles follow each source's published policy (e.g. NIH RePORTER 1 req/s, NCBI ≤3 req/s without key, SEC
