@@ -14,4 +14,4 @@ def test_list_tools(tmp_path):
                 await s.initialize()
                 return {t.name for t in (await s.list_tools()).tools}
     names = asyncio.run(go())
-    assert {"search_trials", "get_trial", "trial_changes_since", "sponsor_pipeline", "snapshot_watch", "fda_approvals", "company_profile", "fda_changes_since", "search_grants", "grant_changes_since", "search_papers", "paper_changes_since", "sec_pdufa_mentions", "snapshot_grants", "snapshot_papers", "changes_feed"} <= names
+    assert {"search_trials", "get_trial", "trial_changes_since", "sponsor_pipeline", "snapshot_watch", "fda_approvals", "company_profile", "fda_changes_since", "search_grants", "grant_changes_since", "search_papers", "paper_changes_since", "sec_pdufa_mentions", "snapshot_grants", "snapshot_papers", "changes_feed", "ema_medicines", "snapshot_ema", "ema_changes_since"} <= names

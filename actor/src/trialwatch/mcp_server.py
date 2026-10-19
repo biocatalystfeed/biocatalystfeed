@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -175,11 +175,41 @@ def sec_pdufa_mentions(company: str, since: str | None = None, until: str | None
 
 
 @mcp.tool()
+def ema_medicines(holder: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
+                  status: list[str] | None = None, since: str | None = None, until: str | None = None,
+                  orphan: bool = False, prime: bool = False, max_results: int = 100, exclude: list[str] | None = None,
+                  rank: bool = False) -> list[dict]:
+    """European Medicines Agency (EU) centrally authorised human medicines: CHMP opinions, EC authorisations,
+    refusals, withdrawals, suspensions. Filter by holder/applicant, drug (name/INN/substance), keyword (indication or
+    therapeutic area), status (e.g. 'Opinion', 'Authorised', 'Refused'), latest regulatory event date window
+    YYYY-MM-DD, orphan / PRIME flags. Newest event first. Data: European Medicines Agency (EMA); cite EMA as the source."""
+    from emawatch.core import EMAClient, search_medicines
+    return search_medicines(EMAClient(), holder=holder, drug=drug, keyword=keyword, status=status, since=since, until=until,
+                            orphan=orphan, prime=prime, max_records=_clamp(max_results, 500), exclude=exclude, rank=rank)
+
+
+@mcp.tool()
+def snapshot_ema(name: str, holder: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
+                 status: list[str] | None = None, since: str | None = None) -> dict:
+    """Snapshot an EMA medicines query into the local DB; returns new medicines and status / opinion / EC decision /
+    withdrawal changes since the previous snapshot. Data: European Medicines Agency (EMA)."""
+    from emawatch.core import EMAClient, run_watch, store
+    return run_watch(EMAClient(), store(_db), name, holder=holder, drug=drug, keyword=keyword, status=status, since=since)
+
+
+@mcp.tool()
+def ema_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected EMA changes (new_medicine, status_change, opinion_date_change, ec_decision_date_change, ...) since an ISO date."""
+    from emawatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
+@mcp.tool()
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
-    tool: trials | fda | grants | papers | sec."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec")
+    tool: trials | fda | grants | papers | sec | ema."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema")
     if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")
     from biowatch import digest
     import json as _json
@@ -187,7 +217,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     return digest.rss(title, ch) if format == "rss" else _json.dumps(digest.json_feed(title, ch), default=str)

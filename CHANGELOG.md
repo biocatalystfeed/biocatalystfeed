@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- New source: European Medicines Agency (EMA) medicines data (`bcf ema` / `emawatch`, MCP tools `ema_medicines`, `snapshot_ema`, `ema_changes_since`; `changes_feed` accepts `ema`). Tracks CHMP opinions, EC decisions, refusals, withdrawals and suspensions from EMA's official daily JSON export; every record carries EMA source attribution as EMA's reuse terms require.
 - Primary website is now https://biocat.ai; project contact and SEC User-Agent default contact are now `contact@biocat.ai`.
 
 ## 0.2.2 — 2026-10-14

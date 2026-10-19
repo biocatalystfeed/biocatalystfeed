@@ -6,7 +6,7 @@
 
 Website: https://biocat.ai · Contact: contact@biocat.ai
 
-**An open-source catalyst feed for biotech: see what changed across clinical trials, FDA actions, NIH grants,
+**An open-source catalyst feed for biotech: see what changed across clinical trials, FDA and EMA actions, NIH grants,
 papers/preprints and SEC filings for the companies and drugs you follow.** Use it as a CLI, as an MCP server for AI
 agents (Claude, Cursor, …), or as an Apify actor.
 
@@ -21,6 +21,7 @@ agents (Claude, Cursor, …), or as an Apify actor.
 | NIH RePORTER | `bcf grants` | grants by org / PI (middle-initial aware) / keyword; new awards, amount changes |
 | PubMed + **Europe PMC** + bioRxiv/medRxiv | `bcf papers` | papers & preprints, **deduplicated by DOI/PMID** across sources |
 | SEC EDGAR | `bcf sec` | 8-K mentions of PDUFA dates (UNVERIFIED candidates, linked to the filing) |
+| European Medicines Agency (EMA) | `bcf ema` | EU centrally authorised medicines: CHMP opinions, EC authorisations, refusals, withdrawals, suspensions; orphan/PRIME flags; diffs |
 | All of the above | `bcf profile` | one merged company profile (name or ticker) |
 
 Across tools: `--exclude TERM …` to drop noise, `--rank` for relevance ordering, and `--rss` / `--json-feed` digest
@@ -36,6 +37,7 @@ bcf papers search --drug resmetirom --since 2026-09-01 --exclude mice rat --rank
 bcf grants search --pi "Ioannou, George N" --since 2024-01-01 --no-future
 bcf sec pdufa MDGL --since 2023-01-01
 bcf profile Lilly MDGL "Viking Therapeutics" --md profiles.md
+bcf ema search --status Opinion --since 2026-09-01          # latest CHMP opinions (EU)
 
 # watches: first run = baseline, later runs report what changed (cron it daily)
 bcf trials --db bcf.db watch --name obesity --condition obesity --phase PHASE3 --rss obesity.rss
@@ -51,7 +53,7 @@ The old commands (`trialwatch`, `fdawatch`, `grantwatch`, `paperwatch`, `secwatc
 (or point `command` at an installed `biocatalystfeed-mcp`). Listed in the official MCP Registry as
 `io.github.biocatalystfeed/biocatalystfeed`.
 Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_profile`, `search_grants`,
-`search_papers`, `sec_pdufa_mentions`, `snapshot_*` / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
+`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `snapshot_*` / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
 
 ### Configuration
 | Env var | Purpose |
@@ -71,7 +73,7 @@ their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.
 | | BioCatalystFeed (open source) | DataLookout |
 |---|---|---|
 | Price | Free (Apache-2.0); hosted tier planned | Free tier; Pro $49/month |
-| Sources | ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR | ClinicalTrials.gov |
+| Sources | ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR, EMA | ClinicalTrials.gov |
 | Change tracking | Diffs between your own runs (trials: status, phase, enrollment, dates, sponsor, title, why stopped, results; plus FDA, grant, paper and SEC changes) | Daily scan; 13 fields incl. status, enrollment, primary endpoints, interventions, results, site counts, completion dates; changes marked Stopped/Notable/Minor |
 | Delivery | CLI, MCP server for AI agents, RSS/JSON Feed files, Apify actor | Morning email digest + dashboard inbox |
 | Watch limits | None when self-hosted | Free: 1 sponsor + 1 disease watchlist + 1 saved search; Pro: 10 of each |

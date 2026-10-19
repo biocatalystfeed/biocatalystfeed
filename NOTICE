@@ -18,6 +18,9 @@ Data sources and attributions
 - Europe PMC (https://europepmc.org), via the Europe PMC RESTful Web Service. Metadata and links only.
 - bioRxiv and medRxiv preprint servers (https://www.biorxiv.org, https://www.medrxiv.org), via api.biorxiv.org and via
   Europe PMC. Each preprint carries its own licence; this software keeps metadata and links only.
+- Source: European Medicines Agency (EMA), https://www.ema.europa.eu. Medicines data from EMA's public "Download
+  medicine data" JSON export, reproduced under EMA's copyright and limited reproduction notice (reuse permitted with
+  acknowledgement of EMA as the source). EMA does not endorse this product.
 - SEC EDGAR, U.S. Securities and Exchange Commission. Public filing data accessed under the SEC fair-access policy.
 
 Disclaimer

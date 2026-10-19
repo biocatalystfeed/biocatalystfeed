@@ -4,8 +4,8 @@ import importlib, os, sys
 from . import __version__, DISCLAIMER
 
 TOOLS = {"trials": "trialwatch.cli", "fda": "fdawatch.cli", "grants": "grantwatch.cli", "papers": "paperwatch.cli",
-         "sec": "secwatch.cli", "mcp": "trialwatch.mcp_server"}
-ALIASES = {"trialwatch": "trials", "fdawatch": "fda", "grantwatch": "grants", "paperwatch": "papers", "secwatch": "sec",
+         "sec": "secwatch.cli", "ema": "emawatch.cli", "mcp": "trialwatch.mcp_server"}
+ALIASES = {"trialwatch": "trials", "fdawatch": "fda", "grantwatch": "grants", "paperwatch": "papers", "secwatch": "sec", "emawatch": "ema",
            "profile": "fda"}
 
 USAGE = f"""BioCatalystFeed {__version__}
@@ -17,6 +17,7 @@ tools:
   grants   NIH RePORTER grants                               (= grantwatch)
   papers   PubMed + Europe PMC + bioRxiv/medRxiv             (= paperwatch)
   sec      SEC EDGAR 8-K PDUFA mentions (UNVERIFIED)         (= secwatch)
+  ema      EMA (EU) opinions, authorisations, withdrawals     (= emawatch)
   profile  merged company profile                            (= fdawatch profile)
   mcp      run the MCP server over stdio                     (= trialwatch-mcp)
 
