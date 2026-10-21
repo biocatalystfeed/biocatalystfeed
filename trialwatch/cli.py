@@ -6,7 +6,13 @@ from .core import search, run_watch
 from .normalize import normalize
 from .report import markdown, write_csv, sponsor_pipeline
 from .store import Store
+from .severity import at_least
 from biowatch import digest, filters
+
+
+def _short(v, n=80):
+    v = "" if v is None else str(v)
+    return v if len(v) <= n else v[:n - 1] + "…"
 
 
 def _q(a):
@@ -26,9 +32,10 @@ def main(argv=None):
         sp.add_argument("--max", type=int, default=200); digest.add_query_args(sp)
     s = sub.add_parser("search"); qargs(s); s.add_argument("--csv"); s.add_argument("--json", action="store_true")
     w = sub.add_parser("watch", help="snapshot a query and diff vs previous run"); qargs(w)
-    digest.add_args(w); w.add_argument("--name", required=True); w.add_argument("--md"); w.add_argument("--csv"); w.add_argument("--changes-csv")
+    sev = dict(choices=["minor", "notable", "critical"], help="only show/report changes at or above this severity")
+    digest.add_args(w); w.add_argument("--min-severity", **sev); w.add_argument("--name", required=True); w.add_argument("--md"); w.add_argument("--csv"); w.add_argument("--changes-csv")
     g = sub.add_parser("get"); g.add_argument("nct_id")
-    c = sub.add_parser("changes"); c.add_argument("--name"); c.add_argument("--since")
+    c = sub.add_parser("changes"); c.add_argument("--name"); c.add_argument("--since"); c.add_argument("--min-severity", **sev)
     pp = sub.add_parser("pipeline"); pp.add_argument("sponsor"); pp.add_argument("--max", type=int, default=500)
     a = p.parse_args(argv)
     cl = CTGovClient()
@@ -48,10 +55,12 @@ def main(argv=None):
             drop = {r["nct_id"] for r in info["trials"]} - {r["nct_id"] for r in filters.exclude(info["trials"], a.exclude)}
             info["trials"] = [r for r in info["trials"] if r["nct_id"] not in drop]
             info["changes_detail"] = [c for c in info["changes_detail"] if c["nct_id"] not in drop]
-        ch = info["changes_detail"]
+        ch = at_least(info["changes_detail"], a.min_severity)
         digest.write(ch, f"BioCatalystFeed trials: {a.name}", a.rss, a.json_feed)
         print(f"watch={a.name} run={info['run_id']} trials={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        for x in ch: print(f"  {x['nct_id']} {x['kind']:18} {x['field'] or '':24} {x['old']} -> {x['new']}")
+        for x in ch:
+            sd = f" ({x['shift_days']:+d} days)" if x.get("shift_days") is not None else ""
+            print(f"  {x['severity']:8} {x['nct_id']} {x['kind']:19} {x['field'] or '':24} {_short(x['old'])} -> {_short(x['new'])}{sd}")
         if a.md:
             open(a.md, "w").write(markdown(f"trialwatch: {a.name}", info["trials"], ch, f"Run {info['run_id']}; query `{json.dumps(_q(a))}`"))
         if a.csv: write_csv(a.csv, info["trials"])
@@ -59,7 +68,7 @@ def main(argv=None):
     elif a.cmd == "get":
         print(json.dumps(normalize(cl.get(a.nct_id)), indent=1))
     elif a.cmd == "changes":
-        for x in Store(a.db).changes(watch=a.name, since=a.since): print(json.dumps(x))
+        for x in Store(a.db).changes(watch=a.name, since=a.since, min_severity=a.min_severity): print(json.dumps(x))
     elif a.cmd == "pipeline":
         print(json.dumps(sponsor_pipeline(search(cl, sponsor=a.sponsor, max_records=a.max)), indent=1))
 

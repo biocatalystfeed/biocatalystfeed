@@ -102,14 +102,14 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
 ## Known limits
 - Diff is snapshot-based: changes are detected only between our own runs (no historical backfill; CT.gov version history not used).
 - Sponsor search is free-text (`query.spons`): matches collaborators/similar names; needs a sponsor alias table.
-- Tracked fields: status, phase, enrollment, start/primary-completion/completion dates, sponsor, title, why_stopped, has_results. Not yet: endpoints, sites/locations, arms.
+- Tracked fields: status, phase, enrollment, start/primary-completion/completion dates, sponsor, title, why_stopped, has_results, and (0.3.0) interventions, primary outcome measures, arm count, site count, results first posted. Site count needs `LocationFacility` in the CT.gov field list, which makes responses roughly 20x larger for big multi-site sponsors; still one page per 1,000 trials. Not tracked: secondary endpoints, eligibility, individual site names.
 - No email/alert delivery, auth, billing, or multi-tenant storage.
 - grantwatch: NIH-funded work only. Companies rarely hold NIH grants, so the useful company signal is grants mentioning their *drugs* (academic and competitor activity). Keyword matching is RePORTER's own and can return loosely related projects.
 - paperwatch: affiliation strings are literal (`[ad]` misses variant spellings). Preprint affiliation covers the corresponding author only. Preprint windows longer than about 30 days are slow (bioRxiv posts about 150/day, 30 per call at 1 req/s). No full-text, citation, or retraction tracking.
 - secwatch: finds only what companies furnish to the SEC as 8-Ks (Lilly and Viking had **zero** 8-K PDUFA mentions in 3 years, and big pharma rarely cites PDUFA dates). EFTS returns at most 100 hits per page, ranked by relevance (we sort by file date after fetching). Regex can mis-assign dates (e.g. an earnings dateline next to "PDUFA"). Not a PDUFA calendar.
 
 ## v0.2 changes (2026-10-12 PT, launch prep)
-- **Branding**: package `biocatalystfeed` (v0.2.2), umbrella CLI `biocatalystfeed` / `bcf` (`bcf trials|fda|grants|papers|sec|profile|mcp`), MCP entry `biocatalystfeed-mcp`; legacy commands kept. Licence Apache-2.0.
+- **Branding**: package `biocatalystfeed` (v0.2.2; v0.3.0 adds `bcf ema` and `bcf adcom`), umbrella CLI `biocatalystfeed` / `bcf` (`bcf trials|fda|grants|papers|sec|ema|adcom|profile|mcp`), MCP entry `biocatalystfeed-mcp`; legacy commands kept. Licence Apache-2.0.
 - **Exclusion + ranking** (`biowatch/filters.py`): `--exclude TERM…` (whole-word, case-insensitive, on title/conditions/interventions/org/PI/brand etc.) and `--rank` (title hit = 3, other field hit = 1, ties by date) on trials, fda approvals, grants, papers; MCP `exclude`/`rank` params. For `trialwatch watch`, exclusion filters the report/feed only; the snapshot keeps the full result.
 - **Europe PMC** (`paperwatch.core.EuropePMCClient`, REST `webservices/rest/search`, no key, 0.5 s spacing, cursor paging): new papers source (`--sources pubmed europepmc preprints`). Query: `AFF:` for affiliation (any author, unlike the bioRxiv API's corresponding author only), `TITLE/ABSTRACT/CHEM` for drugs, raw syntax for keyword, `FIRST_PDATE` window. Europe PMC terms of use were not re-read today (europepmc.org/Copyright did not render for our fetcher): **verify before the paid launch**. Metadata and links only.
 - **Fast preprints**: bioRxiv/medRxiv via Europe PMC `SRC:PPR AND PUBLISHER:"bioRxiv"/"medRxiv"` (1–2 calls instead of about 60 per week of window; Madrigal profile with 30-day preprints ran in about 4.5 s vs about 2 min before). Falls back to the bioRxiv API on error; `--rxiv-api` forces the old path. Europe PMC indexes preprints with some lag (often 1–2 days).
@@ -120,3 +120,18 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
 - **Digests**: every `watch` takes `--rss FILE` / `--json-feed FILE` (RSS 2.0 / JSON Feed 1.1, disclaimer included); `paperwatch changes` too; MCP `changes_feed(tool, since, watch, format)`. No email sending.
 - **Apify actor**: self-contained. `scripts/sync_actor.py` vendors the packages into `actor/src`, the Dockerfile uses `actor/` as its context (`actor.json`: `dockerfile ../Dockerfile`, `dockerContextDir ..`), and `.dockerignore` is added. The input schema now gives every field a description, adds `excludeTerms` and a date `pattern`, and is validated by tests along with `input.json`. Docker isn't installed on the box, so the image build itself is untested.
 - **Patents**: not added (PatentsView key requirement; see above).
+
+## v0.3.0 (2026-10-21 PT)
+- **Trial severity** (`trialwatch/severity.py`): `severity()` labels each change critical / notable / minor (rules in the
+  README), computed when changes are read, so changes stored by older versions get labels too. `shift_days` for date fields
+  (YYYY-MM dates count as the 1st of the month). `Store.changes(min_severity=...)`.
+- **New trial fields**: `primary_outcomes` (measures joined with " | "), `arm_count`, `site_count`, `results_first_posted`.
+  `diff_records` skips these when the stored snapshot predates them (`ADDED_0_3`).
+- **adcomwatch** (Federal Register API, `https://www.federalregister.gov/api/v1/documents.json`, documented, no key,
+  checked 2026-10-21 PT): query = FDA agency + NOTICE type + term "advisory committee" + publication-date window, 100 per
+  page, up to 5 pages. Title rules keep meeting / amendment / postponement / cancellation notices. Area from the committee
+  name (drugs, biologics, devices, tobacco, other). For meeting and amendment notices we fetch the full text
+  (`raw_text_url`, 1 request each, 1 req/s) and parse the `Agenda:` paragraph (minus the standard webcast sentence), the
+  DATES section (or "would be held on <date>" in amendments), NDA/BLA/sNDA numbers and "submitted by / from <sponsor>".
+  Regex parsing can miss sponsors or dates; output says to check the notice and fda.gov. Store prefix `adcom`, key =
+  FR document number.

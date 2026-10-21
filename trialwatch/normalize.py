@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 TRACKED = ["status", "phase", "enrollment", "start_date", "primary_completion_date",
-           "completion_date", "lead_sponsor", "title", "why_stopped", "has_results"]
+           "completion_date", "lead_sponsor", "title", "why_stopped", "has_results",
+           "interventions", "primary_outcomes", "arm_count", "site_count", "results_first_posted"]
+# Fields added in 0.3.0. Snapshots taken by older versions don't have them, so a missing key is not a change.
+ADDED_0_3 = ("primary_outcomes", "arm_count", "site_count", "results_first_posted")
 
 
 def _d(struct):
@@ -16,6 +19,8 @@ def normalize(study: dict) -> dict:
     cond = ps.get("conditionsModule", {})
     arms = ps.get("armsInterventionsModule", {})
     enr = de.get("enrollmentInfo", {}) or {}
+    outc = ps.get("outcomesModule", {}) or {}
+    locs = (ps.get("contactsLocationsModule", {}) or {}).get("locations")
     return {
         "nct_id": idm.get("nctId"),
         "title": idm.get("briefTitle"),
@@ -37,5 +42,9 @@ def normalize(study: dict) -> dict:
         "first_posted": _d(st.get("studyFirstPostDateStruct")),
         "last_update_posted": _d(st.get("lastUpdatePostDateStruct")),
         "has_results": bool(study.get("hasResults", False)),
+        "results_first_posted": _d(st.get("resultsFirstPostDateStruct")),
+        "primary_outcomes": " | ".join((o.get("measure") or "").strip() for o in outc.get("primaryOutcomes", []) or []) or None,
+        "arm_count": len(arms.get("armGroups") or []),
+        "site_count": len(locs or []),
         "url": f"https://clinicaltrials.gov/study/{idm.get('nctId')}",
     }

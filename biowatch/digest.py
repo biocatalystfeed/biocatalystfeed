@@ -12,7 +12,7 @@ HOME = "https://example.invalid/biocatalystfeed"
 
 def _title(c: dict) -> str:
     t = c.get("title") or c.get("brand") or c.get("nct_id") or c.get("key") or ""
-    s = f"[{c.get('kind') or 'change'}] {t}"
+    s = f"[{(c['severity'] + ' ') if c.get('severity') else ''}{c.get('kind') or 'change'}] {t}"
     return s + (f": {c['field']} {c.get('old')} -> {c.get('new')}" if c.get("field") else "")
 
 

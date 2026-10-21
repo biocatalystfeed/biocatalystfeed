@@ -6,13 +6,14 @@ import requests
 from biowatch.http import retry_delay, is_retryable
 
 BASE = "https://clinicaltrials.gov/api/v2"
-UA = "BioCatalystFeed-trialwatch/0.2"
+UA = "BioCatalystFeed-trialwatch/0.3"
 FIELDS = ",".join([
     "NCTId", "BriefTitle", "Acronym", "OverallStatus", "Phase", "StudyType",
     "LeadSponsorName", "LeadSponsorClass", "CollaboratorName", "Condition",
     "InterventionName", "InterventionType", "EnrollmentCount", "EnrollmentType",
     "StartDate", "PrimaryCompletionDate", "CompletionDate", "StudyFirstPostDate",
-    "LastUpdatePostDate", "WhyStopped", "HasResults",
+    "LastUpdatePostDate", "WhyStopped", "HasResults", "ResultsFirstPostDate",
+    "PrimaryOutcomeMeasure", "ArmGroupLabel", "LocationFacility",
 ])
 PHASES = {"EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3", "PHASE4", "NA"}
 STATUSES = {"NOT_YET_RECRUITING", "RECRUITING", "ENROLLING_BY_INVITATION",

@@ -28,9 +28,12 @@ def sponsor_pipeline(records: list[dict]) -> dict:
 def markdown(title: str, records: list[dict], changes: list[dict], note: str = "") -> str:
     L = [f"# {title}", "", note, ""]
     if changes:
-        L += ["## What changed", "", "| NCT | Sponsor | Change | Field | Old → New |", "|---|---|---|---|---|"]
-        for c in changes:
-            L.append(f"| [{c['nct_id']}](https://clinicaltrials.gov/study/{c['nct_id']}) | {c.get('sponsor') or ''} | {c['kind']} | {c['field'] or ''} | {c['old'] or ''} → {c['new'] or ''} |")
+        L += ["## What changed", "", "| Severity | NCT | Sponsor | Change | Field | Old → New |", "|---|---|---|---|---|---|"]
+        order = {"critical": 0, "notable": 1, "minor": 2}
+        for c in sorted(changes, key=lambda c: order.get(c.get("severity"), 3)):
+            sd = f" ({c['shift_days']:+d} d)" if c.get("shift_days") is not None else ""
+            cell = lambda v: str(v or "").replace("|", "/")[:200]
+            L.append(f"| {c.get('severity') or ''} | [{c['nct_id']}](https://clinicaltrials.gov/study/{c['nct_id']}) | {c.get('sponsor') or ''} | {c['kind']} | {c['field'] or ''} | {cell(c['old'])} → {cell(c['new'])}{sd} |")
         L.append("")
     else:
         L += ["## What changed", "", "_No changes vs previous snapshot (or this is the baseline run)._", ""]

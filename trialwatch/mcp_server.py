@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -52,9 +52,12 @@ def snapshot_watch(name: str, sponsor: str | None = None, condition: str | None 
 
 
 @mcp.tool()
-def trial_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """List detected changes (new trials, status/phase/enrollment/date changes) since an ISO date, optionally for one watch."""
-    return Store(_db).changes(watch=watch, since=since)
+def trial_changes_since(since: str, watch: str | None = None, min_severity: str | None = None) -> list[dict]:
+    """List detected changes since an ISO date, optionally for one watch: new trials and status, phase, enrollment,
+    date, primary-endpoint, arm, intervention, site-count and results-posted changes. Each change has a severity
+    (critical = terminated/suspended/withdrawn, why-stopped added, primary endpoint rewritten; notable; minor) and date
+    changes carry shift_days. min_severity ('notable' or 'critical') drops lower levels."""
+    return Store(_db).changes(watch=watch, since=since, min_severity=min_severity)
 
 
 @mcp.tool()
@@ -205,11 +208,46 @@ def ema_changes_since(since: str, watch: str | None = None) -> list[dict]:
 
 
 @mcp.tool()
+def fda_adcom_meetings(since: str | None = None, until: str | None = None, area: list[str] | None = None,
+                       committee: str | None = None, keyword: str | None = None, upcoming: bool = False,
+                       agenda: bool = True, max_results: int = 25, exclude: list[str] | None = None) -> list[dict]:
+    """FDA advisory committee (AdCom) meeting notices from the Federal Register: committee, meeting date, kind
+    (meeting / amendment / postponement / cancellation), and, parsed from the notice's agenda, the NDA/BLA numbers and
+    sponsors under discussion. since/until filter the notice publication date (YYYY-MM-DD; default last 365 days).
+    area: drugs, biologics, devices, tobacco, other (default all but tobacco). upcoming=True keeps meetings dated today
+    or later. keyword matches title/agenda/sponsor (e.g. a drug or company). agenda=True costs one request per notice.
+    Source: Federal Register (U.S. government, public domain); check the notice and fda.gov for late changes."""
+    from datetime import date, timedelta
+    from adcomwatch.core import FRClient, meetings
+    return meetings(FRClient(), since=since or (date.today() - timedelta(days=365)).isoformat(), until=until, area=area,
+                    committee=committee, keyword=keyword, upcoming=upcoming, agenda=agenda,
+                    max_records=_clamp(max_results, 100), exclude=exclude)
+
+
+@mcp.tool()
+def snapshot_adcom(name: str, since: str | None = None, area: list[str] | None = None, committee: str | None = None,
+                   keyword: str | None = None) -> dict:
+    """Snapshot FDA advisory committee notices into the local DB; returns new notices (new meetings, amendments,
+    postponements, cancellations) and meeting-date changes since the previous snapshot. Source: Federal Register."""
+    from datetime import date, timedelta
+    from adcomwatch.core import FRClient, run_watch, store
+    return run_watch(FRClient(), store(_db), name, since=since or (date.today() - timedelta(days=365)).isoformat(),
+                     area=area, committee=committee, keyword=keyword)
+
+
+@mcp.tool()
+def adcom_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected FDA advisory committee changes (new_notice, meeting_date_change, ...) since an ISO date."""
+    from adcomwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
+@mcp.tool()
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
-    tool: trials | fda | grants | papers | sec | ema."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema")
+    tool: trials | fda | grants | papers | sec | ema | adcom."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom")
     if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")
     from biowatch import digest
     import json as _json
@@ -217,7 +255,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     return digest.rss(title, ch) if format == "rss" else _json.dumps(digest.json_feed(title, ch), default=str)

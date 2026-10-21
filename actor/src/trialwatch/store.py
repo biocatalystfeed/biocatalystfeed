@@ -2,7 +2,8 @@
 from __future__ import annotations
 import json, sqlite3
 from datetime import datetime, timezone
-from .normalize import TRACKED
+from .normalize import TRACKED, ADDED_0_3
+from .severity import annotate, at_least, LEVELS
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS trials (watch TEXT, nct_id TEXT, data TEXT, first_seen TEXT, last_seen TEXT,
@@ -14,14 +15,20 @@ CREATE INDEX IF NOT EXISTS ix_changes ON changes(watch, detected_at);
 """
 
 
+KINDS = {"status": "status_change", "phase": "phase_change", "enrollment": "enrollment_change",
+         "primary_outcomes": "endpoint_change", "arm_count": "arm_change", "site_count": "site_change",
+         "interventions": "intervention_change", "results_first_posted": "results_posted"}
+
+
 def classify(field: str) -> str:
-    return {"status": "status_change", "phase": "phase_change", "enrollment": "enrollment_change"}.get(
-        field, "date_change" if field.endswith("date") else "field_change")
+    return KINDS.get(field, "date_change" if field.endswith("date") else "field_change")
 
 
 def diff_records(old: dict, new: dict) -> list[tuple[str, str, object, object]]:
     out = []
     for f in TRACKED:
+        if f in ADDED_0_3 and f not in old:
+            continue  # snapshot from an older version: no baseline for this field yet
         if old.get(f) != new.get(f):
             out.append((classify(f), f, old.get(f), new.get(f)))
     return out
@@ -57,12 +64,15 @@ class Store:
         self.db.commit()
         return {"run_id": run_id, "baseline": first_run, "records": len(records), "changes": len(changes)}
 
-    def changes(self, watch: str | None = None, since: str | None = None, run_id: int | None = None) -> list[dict]:
+    def changes(self, watch: str | None = None, since: str | None = None, run_id: int | None = None,
+                min_severity: str | None = None) -> list[dict]:
+        """Detected changes, oldest first, each with a `severity` (critical / notable / minor) and, for date fields,
+        `shift_days`. min_severity drops lower levels."""
         q, a = "SELECT c.*, json_extract(t.data,'$.title') title, json_extract(t.data,'$.lead_sponsor') sponsor FROM changes c LEFT JOIN trials t ON t.watch=c.watch AND t.nct_id=c.nct_id WHERE 1=1", []
         if watch: q += " AND c.watch=?"; a.append(watch)
         if since: q += " AND c.detected_at>=?"; a.append(since)
         if run_id: q += " AND c.run_id=?"; a.append(run_id)
-        return [dict(r) for r in self.db.execute(q + " ORDER BY c.id", a)]
+        return at_least(annotate([dict(r) for r in self.db.execute(q + " ORDER BY c.id", a)]), min_severity)
 
     def trials(self, watch: str) -> list[dict]:
         return [json.loads(r["data"]) for r in self.db.execute("SELECT data FROM trials WHERE watch=? ORDER BY nct_id", (watch,))]

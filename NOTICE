@@ -21,6 +21,8 @@ Data sources and attributions
 - Source: European Medicines Agency (EMA), https://www.ema.europa.eu. Medicines data from EMA's public "Download
   medicine data" JSON export, reproduced under EMA's copyright and limited reproduction notice (reuse permitted with
   acknowledgement of EMA as the source). EMA does not endorse this product.
+- Federal Register (https://www.federalregister.gov), Office of the Federal Register, National Archives and Records
+  Administration, via the Federal Register API. FDA advisory committee notices are U.S. government works.
 - SEC EDGAR, U.S. Securities and Exchange Commission. Public filing data accessed under the SEC fair-access policy.
 
 Disclaimer

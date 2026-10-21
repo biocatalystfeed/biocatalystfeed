@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-21
+- New source: FDA advisory committee meetings from the Federal Register API (`bcf adcom search|upcoming|watch|changes` / `adcomwatch`; MCP tools `fda_adcom_meetings`, `snapshot_adcom`, `adcom_changes_since`; `changes_feed` accepts `adcom`). Parses committee, meeting date, kind (meeting / amendment / postponement / cancellation), and NDA/BLA numbers and sponsors from each notice's agenda. Federal Register documents are U.S. government works (public domain).
+- ClinicalTrials.gov diffs now also track primary endpoints, arm count, interventions, site count and results-first-posted date. Snapshots from older versions start tracking the new fields on their next run (no false "changes" on upgrade).
+- Every trial change has a `severity` (critical / notable / minor) and date changes have `shift_days`; `--min-severity` on `bcf trials watch` / `changes`, `min_severity` on MCP `trial_changes_since`; markdown reports sort critical first and RSS/JSON Feed titles show the severity.
 - New source: European Medicines Agency (EMA) medicines data (`bcf ema` / `emawatch`, MCP tools `ema_medicines`, `snapshot_ema`, `ema_changes_since`; `changes_feed` accepts `ema`). Tracks CHMP opinions, EC decisions, refusals, withdrawals and suspensions from EMA's official daily JSON export; every record carries EMA source attribution as EMA's reuse terms require.
 - Primary website is now https://biocat.ai; project contact and SEC User-Agent default contact are now `contact@biocat.ai`.
 

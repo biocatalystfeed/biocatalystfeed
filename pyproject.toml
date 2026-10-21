@@ -3,12 +3,12 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "biocatalystfeed"
-version = "0.2.2"
-description = "Open-source monitors for biotech catalysts: ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed/Europe PMC/bioRxiv, SEC EDGAR, EMA. CLI + MCP server."
+version = "0.3.0"
+description = "Open-source monitors for biotech catalysts: ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed/Europe PMC/bioRxiv, SEC EDGAR, EMA, FDA advisory committees (Federal Register). CLI + MCP server."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
-keywords = ["biotech", "clinical-trials", "fda", "pubmed", "mcp", "sec-edgar", "ema", "monitoring"]
+keywords = ["biotech", "clinical-trials", "fda", "pubmed", "mcp", "sec-edgar", "ema", "fda-advisory-committee", "monitoring"]
 classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent", "Topic :: Scientific/Engineering :: Bio-Informatics"]
 requires-python = ">=3.10"
 dependencies = ["requests>=2.28", "mcp>=1.2"]
@@ -31,6 +31,7 @@ grantwatch = "grantwatch.cli:main"
 paperwatch = "paperwatch.cli:main"
 secwatch = "secwatch.cli:main"
 emawatch = "emawatch.cli:main"
+adcomwatch = "adcomwatch.cli:main"
 trialwatch-mcp = "trialwatch.mcp_server:main"
 [tool.setuptools]
-packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch"]
+packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch"]
