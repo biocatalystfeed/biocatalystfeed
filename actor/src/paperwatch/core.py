@@ -29,7 +29,7 @@ class PubMedClient(Throttled):
     def esearch(self, term: str, mindate: str | None = None, maxdate: str | None = None, retmax: int = 100) -> tuple[int, list[str]]:
         p = {**self.base, "db": "pubmed", "term": term, "retmax": retmax, "sort": "pub_date"}
         if mindate or maxdate:
-            p.update(datetype="edat", mindate=(mindate or "1900/01/01").replace("-", "/"), maxdate=(maxdate or "3000/12/31").replace("-", "/"))
+            p.update(datetype="pdat", mindate=(mindate or "1900/01/01").replace("-", "/"), maxdate=(maxdate or "3000/12/31").replace("-", "/"))
         d = self.get_json(f"{EUTILS}/esearch.fcgi", params=p)["esearchresult"]
         return int(d.get("count", 0)), d.get("idlist", [])
 
@@ -64,7 +64,12 @@ def norm_pubmed(s: dict) -> dict:
 def search_pubmed(client: PubMedClient, affiliation=None, drug=None, keyword=None, since=None, until=None, max_records=100) -> dict:
     term = pubmed_term(affiliation, drug, keyword)
     n, ids = client.esearch(term, since, until, retmax=max_records)
-    return {"term": term, "total": n, "papers": [norm_pubmed(s) for s in client.esummary(ids)] if ids else []}
+    papers = [norm_pubmed(s) for s in client.esummary(ids)] if ids else []
+    # --since/--until filter on the publication date we display (`date`, from sortpubdate); the server-side pdat
+    # query is a coarse pre-filter, this makes the shown date and the filter agree exactly.
+    if since: papers = [r for r in papers if not r["date"] or r["date"] >= since]
+    if until: papers = [r for r in papers if not r["date"] or r["date"] <= until]
+    return {"term": term, "total": n, "papers": papers}
 
 
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"

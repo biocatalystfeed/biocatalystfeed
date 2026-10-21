@@ -11,6 +11,9 @@ BASE = "https://api.fda.gov"
 UA = "BioCatalystFeed-fdawatch/0.2"
 PAGE = 100           # openFDA max limit per request for these endpoints is 1000; 100 keeps payloads small
 MAX_SKIP = 25000     # openFDA hard cap on skip
+TIMEOUT = (3.05, 6.0)  # (connect, read) seconds per request
+RETRIES = 2            # retries after the first attempt
+DEADLINE = 15.0        # total seconds budget per request incl. retries, so an outage fails fast
 
 
 def quote(v: str) -> str:
@@ -37,19 +40,25 @@ class OpenFDAClient:
         qs = f"search={search}&limit={limit}&skip={skip}"
         if sort: qs += f"&sort={sort}"
         if self.api_key: qs += f"&api_key={self.api_key}"
-        for attempt in range(4):
+        start = time.monotonic()
+        left = lambda: DEADLINE - (time.monotonic() - start)
+        def pause(d):
+            if left() - d < 1.0: return False
+            time.sleep(d); return True
+        for attempt in range(RETRIES + 1):
             wait = self.min_interval - (time.monotonic() - self._last)
             if wait > 0: time.sleep(wait)
             self._last = time.monotonic(); self.calls += 1
             try:
-                r = self.s.get(f"{BASE}{path}?{qs}", timeout=60)
+                rt = max(1.0, min(TIMEOUT[1], left()))
+                r = self.s.get(f"{BASE}{path}?{qs}", timeout=(min(TIMEOUT[0], rt), rt))
             except (requests.ConnectionError, requests.Timeout):
-                if attempt == 3: raise
-                time.sleep(retry_delay(attempt, base=3.0)); continue
+                if attempt == RETRIES or not pause(min(retry_delay(attempt, base=1.0), 4.0)): raise
+                continue
             if r.status_code == 404:
                 return {"results": [], "meta": {"results": {"total": 0}}}
-            if is_retryable(r) and attempt < 3:
-                time.sleep(retry_delay(attempt, r, base=3.0)); continue
+            if is_retryable(r) and attempt < RETRIES and pause(min(retry_delay(attempt, r, base=1.0), 4.0)):
+                continue
             r.raise_for_status()
             return r.json()
         r.raise_for_status()

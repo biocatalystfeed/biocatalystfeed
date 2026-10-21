@@ -30,8 +30,9 @@ files on every `watch` (local files you can serve or feed into any reader; nothi
 
 ## Quickstart
 ```bash
-pip install biocatalystfeed            # or: uvx biocatalystfeed --help
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate   # macOS/Homebrew Python blocks global pip installs (PEP 668)
+pip install biocatalystfeed
+# no venv needed:  uvx --from biocatalystfeed bcf --help    or    pipx install biocatalystfeed
 
 bcf trials search --sponsor "Viking Therapeutics" --phase PHASE3
 bcf papers search --drug resmetirom --since 2026-09-01 --exclude mice rat --rank
@@ -46,6 +47,10 @@ bcf trials --db bcf.db watch --name obesity --condition obesity --phase PHASE3 -
 bcf trials --db bcf.db changes --name obesity --min-severity critical   # terminations, endpoint rewrites
 bcf papers --db bcf.db watch --name mdgl --affiliation "Madrigal Pharmaceuticals" --json-feed mdgl.feed.json
 ```
+Global flags such as `--db` go **after the tool name and before the subcommand**: `bcf trials --db bcf.db changes`, not `bcf --db bcf.db trials changes` or `bcf trials changes --db bcf.db`.
+`bcf trials changes` prints a readable one-line-per-change summary; add `--json` for one JSON object per line.
+PubMed `--since`/`--until` filter on the publication date shown in the output (Europe PMC uses first-publication date).
+
 The old commands (`trialwatch`, `fdawatch`, `grantwatch`, `paperwatch`, `secwatch`, `trialwatch-mcp`) still work.
 
 ### MCP server
@@ -114,6 +119,15 @@ and per-source terms are in [`docs/DEVELOPER-NOTES.md`](docs/DEVELOPER-NOTES.md)
 ## Hosted tier
 A paid hosted version (scheduled watches, persisted history, hosted MCP) is planned. Draft terms:
 [`TERMS.md`](TERMS.md), [`PRIVACY.md`](PRIVACY.md) (drafts, not legal advice, not in effect).
+
+## Contributing / Testing
+```bash
+git clone https://github.com/biocatalystfeed/biocatalystfeed && cd biocatalystfeed
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e '.[dev]'
+pytest                      # offline tests; live-API tests are skipped by default
+TRIALWATCH_LIVE=1 pytest    # also run tests that call the real public APIs (needs network; slower)
+```
 
 ## Contributing & licence
 See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) and [`SECURITY.md`](SECURITY.md) (report vulnerabilities privately). Licensed under the [Apache License 2.0](LICENSE). BioCatalystFeed is

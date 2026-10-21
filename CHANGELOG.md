@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — 2026-10-21
+- PubMed `--since`/`--until` now filter on the publication date that is displayed (esearch uses `pdat`, plus an exact local filter on the shown date); previously the filter used Entrez date (`edat`), so older-looking papers could appear. Test added.
+- openFDA: per-request timeouts (3 s connect / 6 s read), at most 2 retries with short capped backoff, and a 15 s total budget, so an openFDA outage fails in about 15 s instead of minutes. Tests added.
+- `bcf trials changes` prints a readable summary by default; `--json` gives the previous JSON-lines output.
+- README: venv-first Quickstart (macOS PEP 668), `uvx`/`pipx` options, note that `--db` goes after the tool name, and a Contributing/Testing section (`pip install -e '.[dev]'`, `pytest`, `TRIALWATCH_LIVE=1`).
+
 ## 0.3.0 — 2026-10-21
 - New source: FDA advisory committee meetings from the Federal Register API (`bcf adcom search|upcoming|watch|changes` / `adcomwatch`; MCP tools `fda_adcom_meetings`, `snapshot_adcom`, `adcom_changes_since`; `changes_feed` accepts `adcom`). Parses committee, meeting date, kind (meeting / amendment / postponement / cancellation), and NDA/BLA numbers and sponsors from each notice's agenda. Federal Register documents are U.S. government works (public domain).
 - ClinicalTrials.gov diffs now also track primary endpoints, arm count, interventions, site count and results-first-posted date. Snapshots from older versions start tracking the new fields on their next run (no false "changes" on upgrade).

@@ -9,7 +9,7 @@ SOURCES = ("pubmed", "europepmc", "preprints")
 
 def _q(p):
     p.add_argument("--affiliation", nargs="+"); p.add_argument("--drug", nargs="+"); p.add_argument("--keyword")
-    p.add_argument("--since", help="entry/first-publication date from YYYY-MM-DD"); p.add_argument("--max", type=int, default=100)
+    p.add_argument("--since", help="publication date (the date shown) from YYYY-MM-DD; Europe PMC uses first-publication date"); p.add_argument("--max", type=int, default=100)
     p.add_argument("--sources", nargs="+", choices=SOURCES, default=["pubmed", "europepmc", "preprints"],
                    help="which sources to query (default: all; results are deduped by DOI/PMID)")
     p.add_argument("--preprint-days", type=int, default=14); p.add_argument("--no-preprints", action="store_true")

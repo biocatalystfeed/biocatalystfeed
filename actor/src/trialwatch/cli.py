@@ -35,7 +35,7 @@ def main(argv=None):
     sev = dict(choices=["minor", "notable", "critical"], help="only show/report changes at or above this severity")
     digest.add_args(w); w.add_argument("--min-severity", **sev); w.add_argument("--name", required=True); w.add_argument("--md"); w.add_argument("--csv"); w.add_argument("--changes-csv")
     g = sub.add_parser("get"); g.add_argument("nct_id")
-    c = sub.add_parser("changes"); c.add_argument("--name"); c.add_argument("--since"); c.add_argument("--min-severity", **sev)
+    c = sub.add_parser("changes"); c.add_argument("--name"); c.add_argument("--since"); c.add_argument("--min-severity", **sev); c.add_argument("--json", action="store_true", help="one JSON object per line (previous default)")
     pp = sub.add_parser("pipeline"); pp.add_argument("sponsor"); pp.add_argument("--max", type=int, default=500)
     a = p.parse_args(argv)
     cl = CTGovClient()
@@ -68,7 +68,14 @@ def main(argv=None):
     elif a.cmd == "get":
         print(json.dumps(normalize(cl.get(a.nct_id)), indent=1))
     elif a.cmd == "changes":
-        for x in Store(a.db).changes(watch=a.name, since=a.since, min_severity=a.min_severity): print(json.dumps(x))
+        chs = Store(a.db).changes(watch=a.name, since=a.since, min_severity=a.min_severity)
+        if a.json:
+            for x in chs: print(json.dumps(x))
+        else:
+            for x in chs:
+                sd = f" ({x['shift_days']:+d} days)" if x.get("shift_days") is not None else ""
+                print(f"{(x.get('detected_at') or '')[:10]} {x.get('watch') or '':12} {x.get('severity') or '':8} {x['nct_id']} {x.get('kind') or '':19} {x.get('field') or '':24} {_short(x.get('old'))} -> {_short(x.get('new'))}{sd}")
+            print(f"{len(chs)} changes", file=sys.stderr)
     elif a.cmd == "pipeline":
         print(json.dumps(sponsor_pipeline(search(cl, sponsor=a.sponsor, max_records=a.max)), indent=1))
 
