@@ -1,6 +1,24 @@
 // BioCatalystFeed hosted MCP endpoint: stateless MCP over Streamable HTTP (JSON responses), per-IP rate limited.
 // Built-in read-only tools call public APIs directly (ClinicalTrials.gov, openFDA, PubMed, Federal Register).
 // No request bodies or query arguments are logged; Cloudflare's platform may keep standard request logs.
+import { DurableObject } from "cloudflare:workers";
+const RATE_LIMIT = 30, RATE_WINDOW_MS = 60_000;
+
+// One instance per client IP (idFromName(ip)); single-threaded, so the counter is exact.
+// Stores only {window start, count}; the record is deleted by an alarm after the window ends.
+export class IpRateLimiter extends DurableObject {
+  async hit() {
+    const now = Date.now();
+    let w = (await this.ctx.storage.get("w")) || { start: now, n: 0 };
+    if (now - w.start >= RATE_WINDOW_MS) w = { start: now, n: 0 };
+    w.n++;
+    await this.ctx.storage.put("w", w);
+    if (w.n === 1) await this.ctx.storage.setAlarm(w.start + RATE_WINDOW_MS + 1000);
+    return { ok: w.n <= RATE_LIMIT, remaining: Math.max(0, RATE_LIMIT - w.n), retryAfter: Math.ceil((w.start + RATE_WINDOW_MS - now) / 1000) };
+  }
+  async alarm() { await this.ctx.storage.deleteAll(); }
+}
+
 const PROTOCOL = "2025-06-18";
 const UA = "BioCatalystFeed-hosted/0.1 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
@@ -122,9 +140,11 @@ export default {
     if (url.pathname !== "/mcp") return json({ error: "not found" }, 404);
 
     const ip = req.headers.get("cf-connecting-ip") || "unknown";
-    if (env.RL) {
-      const { success } = await env.RL.limit({ key: ip });
-      if (!success) return json(rpcErr(null, -32000, "rate limit exceeded (30 requests/minute per IP); retry later"), 429, { "retry-after": "60" });
+    let rl = {};
+    if (env.LIMITER) {
+      const r = await env.LIMITER.get(env.LIMITER.idFromName(ip)).hit();
+      if (!r.ok) return json(rpcErr(null, -32000, `rate limit exceeded (${RATE_LIMIT} requests/minute per IP); retry later`), 429, { "retry-after": String(Math.max(1, r.retryAfter)), "x-ratelimit-limit": String(RATE_LIMIT), "x-ratelimit-remaining": "0" });
+      rl = { "x-ratelimit-limit": String(RATE_LIMIT), "x-ratelimit-remaining": String(r.remaining) };
     }
     if (req.method === "GET") return json(rpcErr(null, -32000, "SSE stream not supported; use POST"), 405, { allow: "POST" });
     if (req.method === "DELETE") return new Response(null, { status: 204 });
@@ -138,9 +158,9 @@ export default {
     try { body = await req.json(); } catch { return json(rpcErr(null, -32700, "parse error"), 400); }
     if (Array.isArray(body)) {
       const out = (await Promise.all(body.slice(0, 10).map(handleRpc))).filter(Boolean);
-      return out.length ? json(out) : new Response(null, { status: 202 });
+      return out.length ? json(out, 200, rl) : new Response(null, { status: 202 });
     }
     const out = await handleRpc(body);
-    return out ? json(out) : new Response(null, { status: 202 });
+    return out ? json(out, 200, rl) : new Response(null, { status: 202 });
   },
 };

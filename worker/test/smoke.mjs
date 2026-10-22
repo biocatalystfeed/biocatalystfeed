@@ -8,6 +8,6 @@ const tl = await (await call("tools/list", {}, 2)).json();
 console.log("tools/list:", tl.result?.tools.map(t => t.name).join(", "));
 const tc = await (await call("tools/call", { name: "get_trial", arguments: { nct_id: "NCT04184622" } }, 3)).json();
 console.log("tools/call get_trial:", tc.result?.content?.[0]?.text?.slice(0, 160));
-const codes = await Promise.all(Array.from({ length: 60 }, (_, i) => call("ping", {}, 100 + i).then(r => r.status)));
+const codes = await Promise.all(Array.from({ length: 60 }, (_, i) => call("tools/list", {}, 100 + i).then(r => r.status)));
 const tally = codes.reduce((m, c) => (m[c] = (m[c] || 0) + 1, m), {});
-console.log("burst of 60 pings, status counts:", tally);
+console.log("burst of 60 tools/list, status counts:", tally);

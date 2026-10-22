@@ -10,9 +10,12 @@ workers_dev = true
 # Optional: if set, /mcp requests are proxied to a full Python BCF server (streamable HTTP) instead of the built-in tools.
 UPSTREAM_MCP_URL = ""
 
-# Per-IP rate limit (Workers Rate Limiting binding; available on the free plan).
-# period must be 10 or 60 seconds. namespace_id is any integer unique within the account.
-[[ratelimits]]
-name = "RL"
-namespace_id = "1001"
-simple = { limit = 30, period = 60 }
+# Per-IP rate limit: one SQLite-backed Durable Object per client IP (free plan), fixed 60 s window.
+# Limits: RATE_LIMIT / RATE_WINDOW_MS in src/index.js.
+[[durable_objects.bindings]]
+name = "LIMITER"
+class_name = "IpRateLimiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["IpRateLimiter"]

@@ -1,7 +1,7 @@
 # BioCatalystFeed hosted MCP endpoint (Cloudflare Worker)
 
-Stateless MCP server over Streamable HTTP at `/mcp`, with per-IP rate limiting (30 req/min) via the Workers Rate
-Limiting binding. Built-in read-only tools: `search_trials`, `get_trial`, `fda_approvals`, `search_papers`,
+Stateless MCP server over Streamable HTTP at `/mcp`, with per-IP rate limiting (30 req/min) via a SQLite-backed Durable Object per IP
+(free plan; the Rate Limiting binding did not enforce in production). Built-in read-only tools: `search_trials`, `get_trial`, `fda_approvals`, `search_papers`,
 `fda_adcom_meetings`. Setting `UPSTREAM_MCP_URL` turns it into a thin rate-limiting proxy in front of a full Python
 BCF server. Watch/snapshot tools (local SQLite state) are not offered on the hosted endpoint.
 
