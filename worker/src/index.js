@@ -24,7 +24,9 @@ const UA = "BioCatalystFeed-hosted/0.1 (+https://github.com/biocatalystfeed/bioc
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
 async function getJSON(url) {
-  const r = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" } });
+  let r;
+  try { r = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" }, signal: AbortSignal.timeout(15000) }); }
+  catch (e) { throw new Error(`upstream ${new URL(url).host} unavailable (${e.name === "TimeoutError" ? "timed out after 15 s" : "network error"}); try again later`); }
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(`upstream ${new URL(url).host} HTTP ${r.status}`);
   return r.json();
@@ -44,13 +46,13 @@ function trialRow(s) {
 
 const TOOLS = {
   search_trials: {
-    description: "Search ClinicalTrials.gov. phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
+    description: "Search ClinicalTrials.gov (most recently updated first). phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
     inputSchema: { type: "object", properties: {
       sponsor: { type: "string" }, condition: { type: "string" }, intervention: { type: "string" },
       phases: { type: "array", items: { type: "string" } }, statuses: { type: "array", items: { type: "string" } },
       max_records: { type: "integer", default: 20, maximum: 100 } } },
     async run(a) {
-      const q = new URLSearchParams({ format: "json", pageSize: String(clamp(a.max_records, 100, 20)) });
+      const q = new URLSearchParams({ format: "json", sort: "LastUpdatePostDate:desc", pageSize: String(clamp(a.max_records, 100, 20)) });
       if (a.sponsor) q.set("query.spons", a.sponsor);
       if (a.condition) q.set("query.cond", a.condition);
       if (a.intervention) q.set("query.intr", a.intervention);
@@ -97,14 +99,14 @@ const TOOLS = {
     inputSchema: { type: "object", properties: { since: { type: "string", description: "YYYY-MM-DD" }, max_results: { type: "integer", default: 20, maximum: 100 } } },
     async run(a) {
       const q = new URLSearchParams({ "conditions[agencies][]": "food-and-drug-administration", "conditions[type][]": "NOTICE",
-        "conditions[term]": "\"advisory committee\" meeting", per_page: String(clamp(a.max_results, 100, 20)), order: "newest" });
+        "conditions[term]": "\"advisory committee\" \"notice of meeting\"", per_page: "100", order: "newest" });
       if (a.since && /^\d{4}-\d{2}-\d{2}$/.test(a.since)) q.set("conditions[publication_date][gte]", a.since);
       const d = await getJSON(`https://www.federalregister.gov/api/v1/documents.json?${q}`);
-      return (d?.results || []).map(r => ({ title: r.title, publication_date: r.publication_date, document_number: r.document_number, url: r.html_url }));
+      return (d?.results || []).filter(r => /advisory committee/i.test(r.title) && /notice of (public )?meeting/i.test(r.title)).slice(0, clamp(a.max_results, 100, 20)).map(r => ({ title: r.title, publication_date: r.publication_date, document_number: r.document_number, url: r.html_url }));
     } },
 };
 
-const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*", ...extra } });
+const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining", "x-content-type-options": "nosniff", "cache-control": "no-store", ...extra } });
 const rpcErr = (id, code, message) => ({ jsonrpc: "2.0", id: id ?? null, error: { code, message } });
 
 async function handleRpc(msg) {

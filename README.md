@@ -80,10 +80,10 @@ their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.
 
 | | BioCatalystFeed (open source) | DataLookout |
 |---|---|---|
-| Price | Free (Apache-2.0); hosted tier planned | Free tier; Pro $49/month |
+| Price | Free (Apache-2.0); free rate-limited hosted MCP endpoint | Free tier; Pro $49/month |
 | Sources | ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR, EMA, Federal Register (FDA AdComs) | ClinicalTrials.gov |
 | Change tracking | Diffs between your own runs (trials: status, phase, enrollment, dates, sponsor, title, why stopped, primary endpoints, arms, interventions, site counts, results posting; severity critical/notable/minor; plus FDA, EMA, AdCom, grant, paper and SEC changes) | Daily scan; 13 fields incl. status, enrollment, primary endpoints, interventions, results, site counts, completion dates; changes marked Stopped/Notable/Minor |
-| Delivery | CLI, MCP server for AI agents, RSS/JSON Feed files, Apify actor | Morning email digest + dashboard inbox |
+| Delivery | CLI, MCP server for AI agents (local, or hosted read-only subset), RSS/JSON Feed files, Apify actor | Morning email digest + dashboard inbox |
 | Watch limits | None when self-hosted | Free: 1 sponsor + 1 disease watchlist + 1 saved search; Pro: 10 of each |
 | Scheduling | You run it (cron, Apify schedule) | Hosted, daily |
 | Setup | Python install | "2 minutes" (their claim) |
@@ -113,12 +113,22 @@ doesn't produce a burst of false changes.
 Built-in throttles follow each source's published policy (e.g. NIH RePORTER 1 req/s, NCBI ≤3 req/s without key, SEC
 ≤10 req/s with a declared User-Agent, openFDA 1,000 req/day per IP without key). We store **metadata and links only**
 for papers/preprints, never abstracts. Change detection only covers your own runs; there's no historical backfill.
-PDUFA dates are regex extractions from 8-K text, not a calendar. Attributions are in [`NOTICE`](NOTICE). Design notes
+PDUFA dates are regex extractions from 8-K text, not a calendar. Data provided by the U.S. Food and Drug Administration (https://open.fda.gov). Source: European Medicines Agency
+(EMA), https://www.ema.europa.eu. Full attributions are in [`NOTICE`](NOTICE). Design notes
 and per-source terms are in [`docs/DEVELOPER-NOTES.md`](docs/DEVELOPER-NOTES.md).
 
-## Hosted tier
-A paid hosted version (scheduled watches, persisted history, hosted MCP) is planned. Draft terms:
-[`TERMS.md`](TERMS.md), [`PRIVACY.md`](PRIVACY.md) (drafts, not legal advice, not in effect).
+## Hosted MCP endpoint (free)
+A free, read-only, rate-limited MCP endpoint (Streamable HTTP, no account) runs on Cloudflare Workers:
+
+    https://bcf-mcp.lively-recipe-5a12.workers.dev/mcp
+
+```json
+{"mcpServers": {"biocatalystfeed-hosted": {"type": "http", "url": "https://bcf-mcp.lively-recipe-5a12.workers.dev/mcp"}}}
+```
+It offers 5 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_adcom_meetings`) over
+ClinicalTrials.gov, openFDA, PubMed and the Federal Register. Limit: 30 requests/minute per IP (HTTP 429 above that).
+Watches, change history and the other sources need the local install above. No request logs are kept; see
+[`TERMS.md`](TERMS.md) and [`PRIVACY.md`](PRIVACY.md). Source: [`worker/`](worker/).
 
 ## Contributing / Testing
 ```bash

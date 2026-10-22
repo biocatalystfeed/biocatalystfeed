@@ -192,7 +192,9 @@ def test_license_notice_docs_present():
     assert "Apache License" in (ROOT / "LICENSE").read_text() and "Version 2.0" in (ROOT / "LICENSE").read_text()
     n = (ROOT / "NOTICE").read_text()
     for s in ("National Library of Medicine", "open.fda.gov", "NIH RePORTER", "PubMed", "Europe PMC", "bioRxiv"): assert s in n
-    for f in ("TERMS.md", "PRIVACY.md"): assert "DRAFT, NOT LEGAL ADVICE" in (ROOT / f).read_text()
+    for f in ("TERMS.md", "PRIVACY.md"):
+        t = (ROOT / f).read_text()
+        assert "DRAFT" not in t and "[EFFECTIVE DATE" not in t and "contact@biocat.ai" in t
     assert "Not investment, legal or medical advice" in (ROOT / "README.md").read_text()
     assert 'license = "Apache-2.0"' in (ROOT / "pyproject.toml").read_text()
 

@@ -1,6 +1,6 @@
 # BioCatalystFeed Hosted Services: Privacy Policy
 
-_Effective: [EFFECTIVE DATE, set on publication]_
+_Effective: 2026-10-21_
 
 This policy covers the hosted BioCatalystFeed services: the public hosted MCP endpoint and BioCatalystFeed marketplace
 listings (such as Apify). **The open-source CLI/MCP server you run yourself sends nothing to us.** It talks only to

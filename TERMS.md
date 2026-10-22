@@ -1,6 +1,6 @@
 # BioCatalystFeed Hosted Services: Terms of Service
 
-_Effective: [EFFECTIVE DATE, set on publication]_
+_Effective: 2026-10-21_
 
 These terms cover the hosted BioCatalystFeed services operated by the BioCatalystFeed project ("BioCatalystFeed",
 "we", "us"): the public hosted MCP endpoint (Cloudflare Workers, `/mcp`) and BioCatalystFeed listings on third-party
