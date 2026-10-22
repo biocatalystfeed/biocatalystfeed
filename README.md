@@ -8,7 +8,7 @@ Website: https://biocat.ai · Contact: contact@biocat.ai
 
 **An open-source catalyst feed for biotech: see what changed across clinical trials, FDA and EMA actions, NIH grants,
 papers/preprints and SEC filings for the companies and drugs you follow.** Use it as a CLI, as an MCP server for AI
-agents (Claude, Cursor, …), or as an Apify actor.
+agents (Claude, Cursor, …), or as an [Apify actor](https://apify.com/biocatalystfeed/biocatalystfeed-clinicaltrials-monitor).
 
 > ⚠️ **Not investment, legal or medical advice.** Data may be incomplete, delayed or wrong; PDUFA dates are unverified
 > candidates from SEC filings. Always check the linked primary source.
