@@ -19,3 +19,7 @@ class_name = "IpRateLimiter"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["IpRateLimiter"]
+
+# Workers Logs (dashboard observability) is off: no request logs stored by us. Enable only temporarily for debugging.
+[observability]
+enabled = false

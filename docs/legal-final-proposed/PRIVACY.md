@@ -13,9 +13,10 @@ the public data sources you query.
   about one minute after the window ends. It is not stored as a log.
 - **Our own logging:** our code does not log request bodies, tool arguments, or results.
 - **Our hosting provider:** the endpoint runs on Cloudflare Workers. Cloudflare processes each request (including IP
-  address, user agent, URL path, and timing) to deliver and secure it, and may keep request metadata and
-  aggregate analytics under its own privacy policy. If we turn on Workers logs for debugging, those logs may include
-  request metadata (not bodies) and are kept up to 7 days [check against plan setting before publishing].
+  address, user agent, URL path, and timing) to deliver and secure it, and may keep request metadata and aggregate
+  analytics under its own privacy policy. We have turned off Cloudflare's Workers Logs for this endpoint, so we keep no
+  request logs. If we ever switch them on briefly to fix a problem, they hold request metadata (not bodies) and are
+  deleted automatically after 3 days.
 - **Upstream queries:** to answer a tool call, the endpoint sends your query terms (for example a drug or sponsor name)
   to the relevant public source (ClinicalTrials.gov, openFDA, PubMed, Federal Register). These requests carry no
   information that identifies you; they identify BioCatalystFeed and give contact@biocat.ai as the contact.
@@ -35,7 +36,7 @@ Only with the providers that run the Service (Cloudflare for hosting; the market
 requires it.
 
 ## Retention
-Rate-limit counters: about one minute. Workers logs, if enabled: up to 7 days. Marketplace data: as set by the
+Rate-limit counters: about one minute. Request logs: none kept (Workers Logs off; if briefly enabled for debugging, deleted after 3 days). Marketplace data: as set by the
 marketplace, and for any data we keep, no longer than 90 days unless needed for billing or legal records.
 
 ## Your rights
