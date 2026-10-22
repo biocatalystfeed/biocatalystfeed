@@ -1,54 +1,63 @@
-# BioCatalystFeed Hosted Service: Privacy Policy
+# BioCatalystFeed Hosted Services: Privacy Policy
 
-> **DRAFT, NOT LEGAL ADVICE.** This is a plain-language draft prepared by the BioCatalystFeed project; it has not been
-> reviewed by a lawyer. It applies only once a hosted BioCatalystFeed service is offered.
+_Effective: [EFFECTIVE DATE, set on publication]_
 
-_Last updated: 2026-10-14_
+This policy covers the hosted BioCatalystFeed services: the public hosted MCP endpoint and BioCatalystFeed marketplace
+listings (such as Apify). **The open-source CLI/MCP server you run yourself sends nothing to us.** It talks only to
+the public data sources you query.
 
-This policy covers the hosted BioCatalystFeed service. The open-source CLI/MCP server you run yourself sends nothing
-to us. It talks only to the public data sources you query.
+## Hosted MCP endpoint
+- **No account, no cookies, no trackers.** We don't ask for your name or email.
+- **Rate limiting:** your IP address is used as the key for per-IP rate limiting. A small counter (window start time
+  and request count) is kept in a Cloudflare Durable Object named after your IP address and is deleted automatically
+  about one minute after the window ends. It is not stored as a log.
+- **Our own logging:** our code does not log request bodies, tool arguments, or results.
+- **Our hosting provider:** the endpoint runs on Cloudflare Workers. Cloudflare processes each request (including IP
+  address, user agent, URL path, and timing) to deliver and secure it, and may keep request metadata and aggregate
+  analytics under its own privacy policy. We have turned off Cloudflare's Workers Logs for this endpoint, so we keep no
+  request logs. If we ever switch them on briefly to fix a problem, they hold request metadata (not bodies) and are
+  deleted automatically after 3 days.
+- **Upstream queries:** to answer a tool call, the endpoint sends your query terms (for example a drug or sponsor name)
+  to the relevant public source (ClinicalTrials.gov, openFDA, PubMed, Federal Register). These requests carry no
+  information that identifies you; they identify BioCatalystFeed and give contact@biocat.ai as the contact.
 
-## What we collect
-- **Account data:** email address, an optional display name, authentication data (hashed password or OAuth identifier).
-- **Your configuration:** watchlists (companies, tickers, drugs, keywords), feed settings, API tokens we issue.
-- **Usage data:** requests made, tools called, timestamps, error logs, IP address, and user agent, kept for security,
-  rate limiting, billing, and debugging.
-- **Billing data:** handled by our payment or marketplace provider (for example Apify or another marketplace or payment processor). We get only what they
-  share with us (e.g. plan, payment status), never full card numbers.
-
-## How we use it
-To run the Service (run your watches, deliver digests), bill you, prevent abuse, support you, and improve reliability.
-We use aggregated, non-identifying usage statistics to plan the product.
+## Marketplace listings
+When you use BioCatalystFeed through a marketplace such as Apify, the marketplace handles your account, billing, and
+payment data under its own privacy policy. We see only what it shares with us (for example run inputs, run logs, and
+plan or usage information), and we use it only to run, support, and fix the service. We never receive full card
+numbers.
 
 ## What we don't do
-We don't sell or rent your personal data or your watchlists. We don't use your watchlists to trade or to tip anyone
-off. We don't run third-party advertising trackers.
+We don't sell or rent personal data or your queries, use your queries to trade or tip anyone off, or run advertising
+trackers.
 
 ## Sharing
-Only with processors that help run the Service (our hosting provider, payment or marketplace provider, and email-delivery
-provider if digests are emailed), under contracts that limit their use, or when the law requires it. Queries we send to public
-data sources (e.g. a drug name to PubMed) carry no account information.
+Only with the providers that run the Service (Cloudflare for hosting; the marketplace you chose), or when the law
+requires it.
 
 ## Retention
-Account and configuration data are kept while your account is active and deleted within 30 days after you close it.
-Logs are kept up to 90 days. Billing records are kept as long as tax law requires.
+Rate-limit counters: about one minute. Request logs: none kept (Workers Logs off; if briefly enabled for debugging, deleted after 3 days). Marketplace data: as set by the
+marketplace, and for any data we keep, no longer than 90 days unless needed for billing or legal records.
 
 ## Your rights
-You can access, export, correct, or delete your data by contacting us. Depending on where you live (e.g. GDPR or CCPA),
-you may have more rights, including the right to complain to a regulator.
+Contact us to ask about, access, or delete data relating to you. Because the hosted endpoint has no accounts, we
+may not be able to link data to you without details such as your IP address and time of use. Depending on where you
+live (for example under the GDPR or CCPA), you may have more rights, including the right to complain to a regulator.
 
 ## Security
-We use encryption in transit, restrict access, and keep secrets out of code. No system is perfectly secure.
+Encryption in transit (HTTPS only), least-privilege access, and secrets kept out of code. No system is perfectly
+secure.
 
 ## Children
 The Service isn't for anyone under 18.
 
 ## International transfers
-Data may be processed in the United States. Where the law requires a transfer mechanism for EU/UK users (e.g.
-Standard Contractual Clauses), we will rely on one before serving those users.
+Cloudflare serves requests from its global network, and data may be processed in the United States and other
+countries. Where the law requires a transfer mechanism (for example Standard Contractual Clauses), we rely on our
+providers' mechanisms.
 
 ## Changes
-We'll post updates here and notify account holders of material changes.
+We'll post updates in this file with a new effective date.
 
 ## Contact
 contact@biocat.ai
