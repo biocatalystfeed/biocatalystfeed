@@ -1,0 +1,3 @@
+{ "name": "bcf-mcp-worker", "private": true, "type": "module",
+  "scripts": { "dev": "wrangler dev", "deploy": "wrangler deploy", "test": "node test/smoke.mjs" },
+  "devDependencies": { "wrangler": "^4" } }
