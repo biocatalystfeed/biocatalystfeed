@@ -135,3 +135,16 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
   DATES section (or "would be held on <date>" in amendments), NDA/BLA/sNDA numbers and "submitted by / from <sponsor>".
   Regex parsing can miss sponsors or dates; output says to check the notice and fda.gov. Store prefix `adcom`, key =
   FR document number.
+
+## crlwatch (2026-10-26 PT)
+- **Source**: openFDA `https://api.fda.gov/transparency/crl.json` (documented at open.fda.gov/apis/transparency/completeresponseletters,
+  no key, same throttled `OpenFDAClient` as fdawatch; CC0 per open.fda.gov/license). 458 letters on 2026-10-26, newest
+  2026-08-07, `last_updated` 2026-08-13 (FDA updates "infrequently", so CRLs appear with a lag).
+- **Query**: server-side `letter_date` range, `company_name` phrase(s), `approval_status`, and `application_number:*<digits>*`
+  (the field is an exact keyword with values like `BL 125827` or `BLA 761303/Original 1`, so phrase/number search misses).
+  Keyword/topic/exclude filter locally over up to 1,000 letters. Sort `letter_date:desc`.
+- **Parsing**: topics from all-caps section headings via `TOPIC_RULES` (boilerplate headings and signatory names ignored);
+  excerpt = start of the first deficiency section; product = best-effort regex on the opening sentence (OCR, redactions).
+- **Privacy**: `company_rep`, `approver_name`, `approver_title`, `company_address` are never copied. Store prefix `crl`,
+  key = `file_name`; tracked `application_status`, `letter_type`. PDF link = `https://download.open.fda.gov/crl/<file_name>`.
+- Hosted Cloudflare worker not updated (CLI + local MCP only).

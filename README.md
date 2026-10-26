@@ -23,6 +23,7 @@ agents (Claude, Cursor, …), or as an [Apify actor](https://apify.com/biocataly
 | SEC EDGAR | `bcf sec` | 8-K mentions of PDUFA dates (UNVERIFIED candidates, linked to the filing) |
 | European Medicines Agency (EMA) | `bcf ema` | EU centrally authorised medicines: CHMP opinions, EC authorisations, refusals, withdrawals, suspensions; orphan/PRIME flags; diffs |
 | Federal Register (FDA notices) | `bcf adcom` | FDA advisory committee meetings: committee, meeting date, NDA/BLA numbers and sponsors from the agenda; postponements/cancellations; diffs |
+| openFDA complete response letters (FDA) | `bcf crl` | FDA complete response letters (CRLs) for NDAs/BLAs: company, application, product, deficiency topics (facility, product quality, clinical, safety ...), first-deficiency excerpt, PDF link; diffs flag new letters and Unapproved → Approved |
 | All of the above | `bcf profile` | one merged company profile (name or ticker) |
 
 **Optional global coverage (`--global` / `include_global`).** Off by default. When you turn it on, BCF also links to records in trial registries outside the US and EU, such as China's ChiCTR and other WHO-listed national registries, and flags papers from other jurisdictions. These records may come from research run under regulatory, ethics and data standards different from, and sometimes lighter than, those of the US or EU. They are labelled "non-FDA/EMA registry". The option is for users who want to see everything that is out there. Inclusion is not an endorsement or recommendation and is not medical, legal or investment advice.
@@ -45,6 +46,7 @@ bcf sec pdufa MDGL --since 2023-01-01
 bcf profile Lilly MDGL "Viking Therapeutics" --md profiles.md
 bcf ema search --status Opinion --since 2026-09-01          # latest CHMP opinions (EU)
 bcf adcom upcoming --area drugs biologics                   # scheduled FDA advisory committee meetings
+bcf crl search --since 2026-01-01 --status Unapproved       # FDA complete response letters, newest first
 
 # watches: first run = baseline, later runs report what changed (cron it daily)
 bcf trials --db bcf.db watch --name obesity --condition obesity --phase PHASE3 --rss obesity.rss
@@ -65,7 +67,7 @@ The old commands (`trialwatch`, `fdawatch`, `grantwatch`, `paperwatch`, `secwatc
 (or point `command` at an installed `biocatalystfeed-mcp`). Listed in the official MCP Registry as
 `io.github.biocatalystfeed/biocatalystfeed`.
 Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_profile`, `search_grants`,
-`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `fda_adcom_meetings`, `snapshot_*` / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
+`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `fda_adcom_meetings`, `fda_complete_response_letters`, `snapshot_*` / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
 
 ### Configuration
 | Env var | Purpose |

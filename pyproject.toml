@@ -32,6 +32,7 @@ paperwatch = "paperwatch.cli:main"
 secwatch = "secwatch.cli:main"
 emawatch = "emawatch.cli:main"
 adcomwatch = "adcomwatch.cli:main"
+crlwatch = "crlwatch.cli:main"
 trialwatch-mcp = "trialwatch.mcp_server:main"
 [tool.setuptools]
-packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch"]
+packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch"]

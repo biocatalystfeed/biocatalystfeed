@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -274,11 +274,45 @@ def adcom_changes_since(since: str, watch: str | None = None) -> list[dict]:
 
 
 @mcp.tool()
+def fda_complete_response_letters(company: list[str] | None = None, application: str | None = None,
+                                  since: str | None = None, until: str | None = None, status: list[str] | None = None,
+                                  keyword: str | None = None, topic: list[str] | None = None, max_results: int = 25,
+                                  exclude: list[str] | None = None, include_text: bool = False) -> list[dict]:
+    """FDA complete response letters (CRLs) for NDAs/BLAs from openFDA, newest letter first: company, application
+    number, best-effort product name, letter date, application_status ('Approved' = approved since, 'Unapproved' =
+    not yet), deficiency topics (facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety,
+    human_factors) parsed from the letter's section headings, an excerpt of the first deficiency, and the PDF link.
+    since/until filter the letter date (YYYY-MM-DD). application: 'NDA 218705', 'BLA 761308' or '218705'.
+    keyword matches drug/product/company or any word in the letter. include_text adds the full OCR text (large).
+    FDA publishes CRLs with a lag and redactions. Source: FDA / openFDA (public domain)."""
+    from crlwatch.core import letters
+    return letters(_fda, since=since, until=until, company=company, application=application, status=status,
+                   keyword=keyword, topic=topic, exclude=exclude, include_text=include_text,
+                   max_records=_clamp(max_results, 200))
+
+
+@mcp.tool()
+def snapshot_crl(name: str, company: list[str] | None = None, since: str | None = None, keyword: str | None = None,
+                 status: list[str] | None = None) -> dict:
+    """Snapshot FDA complete response letters into the local DB; returns new letters and application_status flips
+    (Unapproved -> Approved) since the previous snapshot. Source: FDA / openFDA."""
+    from crlwatch.core import run_watch, store
+    return run_watch(_fda, store(_db), name, company=company, since=since, keyword=keyword, status=status)
+
+
+@mcp.tool()
+def crl_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected FDA CRL changes (new_letter, application_status_change, ...) since an ISO date."""
+    from crlwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
+@mcp.tool()
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
-    tool: trials | fda | grants | papers | sec | ema | adcom."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom")
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl")
     if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")
     from biowatch import digest
     import json as _json
@@ -286,7 +320,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     return digest.rss(title, ch) if format == "rss" else _json.dumps(digest.json_feed(title, ch), default=str)
