@@ -28,13 +28,12 @@ def search_trials(sponsor: str | None = None, condition: str | None = None, inte
                   phases: list[str] | None = None, statuses: list[str] | None = None,
                   changed_since: str | None = None, max_records: int = 50, exclude: list[str] | None = None,
                   rank: bool = False, include_global: bool = False, global_sources: list[str] | None = None) -> list[dict] | dict:
-    """Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include non-FDA/EMA registries (China's ChiCTR and NMPA platform, other WHO ICTRP registries). Global results carry `registry_class: "non-FDA/EMA registry"` and a `global_disclaimer`. Off by default.
-    Phase 1: global results are link-outs (registry ID + URL found in ClinicalTrials.gov secondary IDs, in each trial's
-    global_links); foreign registry records are not ingested. When showing global results to a user, keep the label
+    """Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: "non-FDA/EMA registry"` and a `global_disclaimer`. Off by default.
+    Links (registry ID + URL from ClinicalTrials.gov secondary IDs) are in each trial's global_links. When showing global results to a user, keep the label
     and the disclaimer. include_global: Opt-in. Adds non-FDA/EMA sources that may follow different, sometimes lighter,
     regulatory standards. Results are labelled. Not an endorsement or medical or investment advice.
     phases e.g. ["PHASE2","PHASE3"]; statuses e.g. ["RECRUITING"]; changed_since YYYY-MM-DD; global_sources subset of
-    ["chictr","nmpa","ictrp"]. exclude drops trials whose title/conditions/interventions contain any term; rank sorts
+    ["chictr","ictrp"]. exclude drops trials whose title/conditions/interventions contain any term; rank sorts
     by relevance to the query."""
     from biowatch import filters, globalcov as gc
     q = dict(sponsor=sponsor, condition=condition, intervention=intervention, phases=phases, statuses=statuses,
@@ -49,7 +48,7 @@ def search_trials(sponsor: str | None = None, condition: str | None = None, inte
     rows = filters.exclude(rows, exclude)
     if rank: rows = filters.rank(rows, condition, intervention, date_field="last_update_posted")
     if not include_global: return rows
-    out = {"trials": rows, "global_note": "Phase 1: link-outs only; foreign registry records are not ingested."}
+    out = {"trials": rows}
     if any(r["global_links"] for r in rows): out["global_disclaimer"] = gc.GLOBAL_DISCLAIMER
     return out
 

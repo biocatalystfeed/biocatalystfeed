@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.3.2 — 2026-10-26
-- Opt-in Global coverage, Phase 1 (off by default; default outputs unchanged). `--global` / `--global-sources` on `bcf trials search` and `bcf papers search`; `include_global` / `global_sources` on MCP `search_trials` and `search_papers` (stdio and hosted).
+- Opt-in Global coverage (off by default; default outputs unchanged): links to records in non-FDA/EMA registries (e.g. ChiCTR, other WHO-listed national registries) plus paper jurisdiction flags. `--global` / `--global-sources` on `bcf trials search` and `bcf papers search`; `include_global` / `global_sources` on MCP `search_trials` and `search_papers` (stdio and hosted).
   - Trials: labelled link-outs (`registry_class: "non-FDA/EMA registry"`, `registry`, `jurisdiction`, `source_url`, `also_registered_as`) for ChiCTR, CTRI, jRCT/JPRN, CRIS, ANZCTR, ReBEC, PACTR, IRCT, TCTR and ISRCTN IDs found in ClinicalTrials.gov secondary IDs. Link only: no foreign registry data is fetched, scraped or stored. WHO ICTRP data, ChiCTR pages and the NMPA/CDE platform are not ingested.
   - Papers: `jurisdiction_flag` ("non-FDA/EMA oversight" / "unknown") and `jurisdiction` from Europe PMC author-affiliation countries; never guessed.
   - Text output prefixes labels and prints the standard disclaimer once; JSON adds `global_disclaimer`; RSS/JSON Feed items with `registry_class` get the label prefix and disclaimer.

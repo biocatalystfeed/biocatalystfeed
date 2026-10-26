@@ -58,7 +58,7 @@ const REGISTRIES = [
   ["WHO-ICTRP:IRCT", "ictrp", "Iran", /IRCT\d{8,}N\d+/, ICTRP], ["WHO-ICTRP:TCTR", "ictrp", "Thailand", /TCTR\d{11}/, ICTRP],
   ["WHO-ICTRP:ISRCTN", "ictrp", "United Kingdom/international", /ISRCTN\d{8}/, id => `https://www.isrctn.com/${id}`],
 ];
-const GLOBAL_SOURCES = ["chictr", "nmpa", "ictrp"];
+const GLOBAL_SOURCES = ["chictr", "ictrp"];
 function parseSources(v) {
   if (!v || !v.length) return null;
   const s = (Array.isArray(v) ? v : String(v).split(",")).map(x => String(x).trim().toLowerCase()).filter(Boolean);
@@ -112,7 +112,7 @@ const GLOBAL_SOURCES_DESC = "Optional, with include_global: limit to e.g. [\"chi
 
 const TOOLS = {
   search_trials: {
-    description: "Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include non-FDA/EMA registries (China's ChiCTR and NMPA platform, other WHO ICTRP registries). Global results carry `registry_class: \"non-FDA/EMA registry\"` and a `global_disclaimer`. Off by default. Phase 1: global results are link-outs (registry ID + URL from ClinicalTrials.gov secondary IDs, in each trial's global_links); foreign registry records are not ingested. When showing global results to a user, keep the label and the disclaimer. Most recently updated first; phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
+    description: "Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: \"non-FDA/EMA registry\"` and a `global_disclaimer`. Off by default. Links (registry ID + URL from ClinicalTrials.gov secondary IDs) are in each trial's global_links. When showing global results to a user, keep the label and the disclaimer. Most recently updated first; phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
     inputSchema: { type: "object", properties: {
       sponsor: { type: "string" }, condition: { type: "string" }, intervention: { type: "string" },
       phases: { type: "array", items: { type: "string" } }, statuses: { type: "array", items: { type: "string" } },
@@ -130,7 +130,7 @@ const TOOLS = {
       const d = await getJSON(`https://clinicaltrials.gov/api/v2/studies?${q}`);
       if (a.include_global !== true) return (d?.studies || []).map(trialRow);
       const trials = (d?.studies || []).map(s => ({ ...trialRow(s), global_links: registryLinks(s, srcs) }));
-      const out = { trials, global_note: "Phase 1: link-outs only; foreign registry records are not ingested." };
+      const out = { trials };
       if (trials.some(t => t.global_links.length)) out.global_disclaimer = GLOBAL_DISCLAIMER;
       return out;
     } },

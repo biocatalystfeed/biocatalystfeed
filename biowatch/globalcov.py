@@ -19,11 +19,12 @@ GLOBAL_DISCLAIMER = (
     "ethics and data standards different from, and sometimes lighter than, those of the US FDA or the EU's EMA. "
     "They are included because you opted in to see everything that is out there. Inclusion is not an endorsement or "
     "recommendation and is not medical, legal or investment advice.")
-TIP = ("tip: add --global to include non-FDA/EMA registries (e.g. China's ChiCTR, NMPA); results are labelled. "
+TIP = ("tip: add --global to include links to non-FDA/EMA registries (e.g. China's ChiCTR); results are labelled. "
        "Details: bcf --global --help")
 HEADER = "Global ON · non-FDA/EMA registries included · not advice · bcf --global --help"
-HELP = """--global   Opt-in. Also search non-FDA/EMA trial registries (ChiCTR, NMPA/CDE
-           platform, other WHO ICTRP registries) and flag papers from other
+HELP = """--global   Opt-in. Also link to records in non-FDA/EMA trial registries
+           (e.g. China's ChiCTR and other WHO-listed national registries,
+           via IDs that ClinicalTrials.gov lists) and flag papers from other
            jurisdictions. Off by default.
            Records may come from research run under regulatory, ethics and data
            standards different from, and sometimes lighter than, US FDA or EU
@@ -32,17 +33,7 @@ HELP = """--global   Opt-in. Also search non-FDA/EMA trial registries (ChiCTR, N
            country, and JSON output adds registry_class and global_disclaimer.
            Inclusion is not an endorsement or recommendation and is not medical,
            legal or investment advice.
---global-sources LIST   limit to e.g. chictr,nmpa,ictrp
-
-Phase 1 status (what --global does today):
-  trials: link-outs only. Registry IDs found in ClinicalTrials.gov secondary
-          IDs (e.g. ChiCTR, CTRI, jRCT, ISRCTN) are listed with a link; the
-          foreign record itself is not fetched or stored. Direct ChiCTR,
-          NMPA/CDE and WHO ICTRP data feeds are not enabled yet (terms/licence
-          not cleared), so 'nmpa' currently matches nothing.
-  papers: each paper gets jurisdiction_flag "non-FDA/EMA oversight" when an
-          author-affiliation country is outside the US/EU/EEA, "unknown" when
-          no country is found (never guessed).
+--global-sources LIST   limit to e.g. chictr,ictrp
 """
 
 ICTRP = "https://trialsearch.who.int/Trial2.aspx?TrialID={}"
@@ -60,7 +51,7 @@ REGISTRIES = [
     ("WHO-ICTRP:TCTR", "ictrp", "Thailand", r"TCTR\d{11}", ICTRP),
     ("WHO-ICTRP:ISRCTN", "ictrp", "United Kingdom/international", r"ISRCTN\d{8}", "https://www.isrctn.com/{}"),
 ]
-SOURCES = ("chictr", "nmpa", "ictrp")
+SOURCES = ("chictr", "ictrp")
 
 
 def parse_sources(v) -> set[str] | None:
