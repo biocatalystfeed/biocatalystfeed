@@ -185,7 +185,7 @@ def test_bcf_cli_dispatch(capsys):
     assert cli.main(["nope"]) == 2
     with pytest.raises(SystemExit): cli.main(["grants", "--help"])
     assert "grantwatch" in capsys.readouterr().out
-    assert __version__ == "0.3.2"
+    assert __version__ == "0.3.3"
 
 
 def test_license_notice_docs_present():

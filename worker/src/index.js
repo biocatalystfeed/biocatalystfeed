@@ -20,7 +20,7 @@ export class IpRateLimiter extends DurableObject {
 }
 
 const PROTOCOL = "2025-06-18";
-const UA = "BioCatalystFeed-hosted/0.3.2 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const UA = "BioCatalystFeed-hosted/0.3.3 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
 async function getJSON(url) {
@@ -110,6 +110,29 @@ async function epmcAffiliations(pmids) { // Europe PMC core metadata (author aff
 const INCLUDE_GLOBAL_DESC = "Opt-in. Adds non-FDA/EMA sources that may follow different, sometimes lighter, regulatory standards. Results are labelled. Not an endorsement or medical or investment advice.";
 const GLOBAL_SOURCES_DESC = "Optional, with include_global: limit to e.g. [\"chictr\",\"ictrp\"].";
 
+// ---- FDA complete response letters (openFDA /transparency/crl.json). Source: U.S. FDA via openFDA; public domain (CC0).
+// Read-only search; personal fields in the source (company representative, signatory, address) are not returned.
+const CRL_SOURCE = "U.S. Food and Drug Administration, openFDA complete response letters (open.fda.gov); public domain";
+const CRL_TOPIC_RULES = [
+  ["human_factors", ["HUMAN FACTORS"]], ["clinical_pharmacology", ["CLINICAL PHARMACOLOGY", "BIOPHARMACEUTIC", "BIOEQUIVALENCE"]],
+  ["nonclinical", ["NONCLINICAL", "TOXICOLOGY", "PHARMACOLOGY/TOXICOLOGY"]], ["facility", ["FACILITY", "FACILITIES", "INSPECTION"]],
+  ["product_quality", ["PRODUCT QUALITY", "CHEMISTRY", "MANUFACTURING", "CMC", "MICROBIOLOGY", "DRUG PRODUCT", "DRUG SUBSTANCE", "DEVICE", "COMBINATION PRODUCT", "PROCESS"]],
+  ["clinical", ["CLINICAL", "STATISTIC", "BIOSTATISTIC", "EFFICACY"]], ["safety", ["RISK EVALUATION AND MITIGATION", "SAFETY"]],
+];
+const CRL_BOILER = ["SAFETY UPDATE", "PRESCRIBING INFORMATION", "CARTON AND CONTAINER", "PROPRIETARY NAME", "MEDICATION GUIDE", "ADDITIONAL COMMENT", "OTHER", "LABELING", "COMPLETE RESPONSE", "ADMINISTRATION", "REQUIRED PEDIATRIC", "POSTMARKETING", "SUBMISSION OF REMS", "PDUFA", "RECOMMENDATION", "RECOM MENDATION", "PATH FORWARD", "TENTATIVE APPROVAL", "REGULATORY", "CENTER FOR DEVICES"];
+function crlTopics(text) {
+  const out = [];
+  for (const m of String(text || "").matchAll(/^[ \t]*([A-Z][A-Z ,\/&()\-]{3,70})[ \t]*$/gm)) {
+    const h = m[1].replace(/\s+/g, " ").trim();
+    if (CRL_BOILER.some(b => h === b || h.startsWith(b))) continue;
+    const t = CRL_TOPIC_RULES.find(([, n]) => n.some(x => h.includes(x)))?.[0];
+    if (t && !(t === "safety" && h.includes("SAFETY UPDATE")) && !out.includes(t)) out.push(t);
+  }
+  return out;
+}
+const crlIso = d => { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(d || "").trim()); return m ? `${m[3]}-${m[1]}-${m[2]}` : (d || null); };
+const ymd = (d, dflt) => (/^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d.replace(/-/g, "") : dflt);
+
 const TOOLS = {
   search_trials: {
     description: "Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: \"non-FDA/EMA registry\"` and a `global_disclaimer`. Off by default. Links (registry ID + URL from ClinicalTrials.gov secondary IDs) are in each trial's global_links. When showing global results to a user, keep the label and the disclaimer. Most recently updated first; phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
@@ -182,6 +205,36 @@ const TOOLS = {
       if (rows.some(r => r.jurisdiction_flag === PAPER_FLAG)) out.global_disclaimer = GLOBAL_DISCLAIMER;
       return out;
     } },
+  fda_complete_response_letters: {
+    description: "FDA complete response letters (CRLs) for NDAs/BLAs from openFDA, newest letter first: company, application number(s), letter date, application_status ('Approved' = approved since, 'Unapproved' = not yet), deficiency topics (facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors) parsed from the letter's section headings, and the PDF link. since/until filter the letter date (YYYY-MM-DD); application e.g. 'NDA 218705' or '218705'; keyword matches company or any word in the letter. FDA publishes CRLs with a lag and redactions. Source: U.S. FDA / openFDA (public domain). Factual record only; not investment, legal or medical advice.",
+    inputSchema: { type: "object", properties: {
+      company: { type: "string" }, application: { type: "string" }, since: { type: "string", description: "YYYY-MM-DD" }, until: { type: "string", description: "YYYY-MM-DD" },
+      status: { type: "string", enum: ["Approved", "Unapproved"] }, keyword: { type: "string" },
+      topic: { type: "string", enum: CRL_TOPIC_RULES.map(([t]) => t) }, max_results: { type: "integer", default: 20, maximum: 100 } } },
+    async run(a) {
+      const parts = [`letter_date:[${ymd(a.since, "19000101")}+TO+${ymd(a.until, "29991231")}]`];
+      if (a.company) parts.push(`company_name:"${encodeURIComponent(String(a.company).replace(/["\\]/g, ""))}"`);
+      if (a.application) {
+        const m = /^(?:(NDA|BLA|BL)\s*)?(\d{6})$/i.exec(String(a.application).trim());
+        if (!m) throw new Error("application must look like 'NDA 218705', 'BLA 761308' or '218705'");
+        parts.push(`application_number:*${m[2]}*`);
+      }
+      if (a.status) { if (!["Approved", "Unapproved"].includes(a.status)) throw new Error("status must be Approved or Unapproved"); parts.push(`approval_status:${a.status}`); }
+      const want = clamp(a.max_results, 100, 20), local = !!(a.keyword || a.topic);
+      const d = await getJSON(`https://api.fda.gov/transparency/crl.json?search=${parts.join("+AND+")}&sort=letter_date:desc&limit=${local ? 1000 : want}`);
+      const kw = String(a.keyword || "").toLowerCase(), out = [];
+      for (const r of d?.results || []) {
+        const apps = (r.application_number || []).map(x => String(x).replace(/\s+/g, " ").trim());
+        if (kw && !`${r.company_name || ""} ${apps.join(" ")} ${r.text || ""}`.toLowerCase().includes(kw)) continue;
+        const topics = crlTopics(r.text);
+        if (a.topic && !topics.includes(a.topic)) continue;
+        out.push({ letter_date: crlIso(r.letter_date), letter_type: r.letter_type, company: (r.company_name || "").trim() || null,
+          applications: apps.join(", ") || null, application_status: r.approval_status, topics,
+          url: r.file_name ? `https://download.open.fda.gov/crl/${r.file_name}` : null, source: CRL_SOURCE });
+        if (out.length >= want) break;
+      }
+      return out;
+    } },
   fda_adcom_meetings: {
     description: "FDA advisory committee meeting notices from the Federal Register.",
     inputSchema: { type: "object", properties: { since: { type: "string", description: "YYYY-MM-DD" }, max_results: { type: "integer", default: 20, maximum: 100 } } },
@@ -203,8 +256,8 @@ async function handleRpc(msg) {
   switch (method) {
     case "initialize":
       return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.2" },
-        instructions: "Read-only public biotech data. Not investment, legal or medical advice. Sources: ClinicalTrials.gov, openFDA, PubMed, Federal Register." } };
+        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.3" },
+        instructions: "Read-only public biotech data. Not investment, legal or medical advice. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
     case "ping": return { jsonrpc: "2.0", id, result: {} };
     case "tools/list":
       return { jsonrpc: "2.0", id, result: { tools: Object.entries(TOOLS).map(([name, t]) => ({ name, description: t.description, inputSchema: t.inputSchema, annotations: { readOnlyHint: true, openWorldHint: true } })) } };

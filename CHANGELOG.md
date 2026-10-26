@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
-- New source: FDA complete response letters (CRLs) from openFDA's transparency endpoint (`bcf crl search|watch|changes` / `crlwatch`; MCP tools `fda_complete_response_letters`, `snapshot_crl`, `crl_changes_since`; `changes_feed` accepts `crl`). Filters: company, application number, letter-date window, application status (Approved since / Unapproved), keyword (drug or any word in the letter), deficiency topic. Each record has a best-effort product name, deficiency topics from the letter's section headings, an excerpt of the first deficiency and the FDA PDF link. Watches report new letters and Unapproved → Approved flips. Personal fields in the source (company representative, signatory, address) are not copied. openFDA data is public domain / CC0. Not yet on the hosted endpoint.
+## 0.3.3 — 2026-10-26
+- New source: FDA complete response letters (CRLs) from openFDA's transparency endpoint (`bcf crl search|watch|changes` / `crlwatch`; MCP tools `fda_complete_response_letters`, `snapshot_crl`, `crl_changes_since`; `changes_feed` accepts `crl`). Filters: company, application number, letter-date window, application status (Approved since / Unapproved), keyword (drug or any word in the letter), deficiency topic. Each record has a best-effort product name, deficiency topics from the letter's section headings, an excerpt of the first deficiency and the FDA PDF link. Watches report new letters and Unapproved → Approved flips. Personal fields in the source (company representative, signatory, address) are not copied. openFDA data is public domain / CC0. Also on the hosted endpoint as `fda_complete_response_letters` (read-only search; same rate limits, no logs).
+- Hosted Worker: `fda_complete_response_letters` tool (openFDA CRL data, public domain); serverInfo 0.3.3.
+- Worker dev dependency: wrangler 4.153.0 (resolves undici advisories in the miniflare chain; dev/deploy tooling only, not shipped in the Worker bundle).
 
 ## 0.3.2 — 2026-10-26
 - Opt-in Global coverage (off by default; default outputs unchanged): links to records in non-FDA/EMA registries (e.g. ChiCTR, other WHO-listed national registries) plus paper jurisdiction flags. `--global` / `--global-sources` on `bcf trials search` and `bcf papers search`; `include_global` / `global_sources` on MCP `search_trials` and `search_papers` (stdio and hosted).
