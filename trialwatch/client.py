@@ -80,8 +80,9 @@ class CTGovClient:
             p["filter.advanced"] = " AND ".join(adv)
         return p
 
-    def search(self, max_records: int = 500, **kw) -> list[dict]:
+    def search(self, max_records: int = 500, extra_fields: list[str] | None = None, **kw) -> list[dict]:
         params = self.build_params(**kw)
+        if extra_fields: params["fields"] = FIELDS + "," + ",".join(extra_fields)
         params["pageSize"] = min(1000, max_records)
         out: list[dict] = []
         while True:

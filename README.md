@@ -25,6 +25,10 @@ agents (Claude, Cursor, …), or as an [Apify actor](https://apify.com/biocataly
 | Federal Register (FDA notices) | `bcf adcom` | FDA advisory committee meetings: committee, meeting date, NDA/BLA numbers and sponsors from the agenda; postponements/cancellations; diffs |
 | All of the above | `bcf profile` | one merged company profile (name or ticker) |
 
+**Optional global coverage (`--global` / `include_global`).** Off by default. When you turn it on, BCF also searches non-FDA/EMA trial registries, such as China's ChiCTR and the NMPA drug trial registration platform, and other WHO ICTRP registries, and flags papers from other jurisdictions. These records may come from research run under regulatory, ethics and data standards different from, and sometimes lighter than, those of the US or EU. They are labelled "non-FDA/EMA registry". The option is for users who want to see everything that is out there. Inclusion is not an endorsement or recommendation and is not medical, legal or investment advice.
+
+*Phase 1 (0.3.2):* `bcf trials search --global` lists link-outs (registry ID + URL) to non-FDA/EMA registry records found in ClinicalTrials.gov secondary IDs; the foreign records are not fetched or stored. `bcf papers search --global` adds `jurisdiction_flag` from author-affiliation countries (`"unknown"` when none is found). Direct ChiCTR, NMPA/CDE and WHO ICTRP data feeds are not enabled (terms/licence not cleared). MCP: `include_global` on `search_trials` and `search_papers`. Details: `bcf --global --help` or [docs/GLOBAL.md](docs/GLOBAL.md).
+
 Across tools: `--exclude TERM …` to drop noise, `--rank` for relevance ordering, and `--rss` / `--json-feed` digest
 files on every `watch` (local files you can serve or feed into any reader; nothing is emailed).
 

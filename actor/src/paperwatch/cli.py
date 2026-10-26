@@ -1,7 +1,8 @@
 """paperwatch CLI (PubMed + Europe PMC + bioRxiv/medRxiv preprints)."""
 from __future__ import annotations
 import argparse, json
-from biowatch import digest
+from biowatch import digest, globalcov as gc
+from trialwatch.cli import add_global_args, maybe_tip
 from .core import PubMedClient, RxivClient, EuropePMCClient, search_all, run_watch, store
 
 SOURCES = ("pubmed", "europepmc", "preprints")
@@ -30,7 +31,7 @@ def main(argv=None):
     p = argparse.ArgumentParser("paperwatch", description="PubMed + Europe PMC + bioRxiv/medRxiv metadata search with new-item tracking")
     p.add_argument("--db", default="biowatch.db")
     sub = p.add_subparsers(dest="cmd", required=True)
-    s = sub.add_parser("search"); _q(s); s.add_argument("--json", action="store_true")
+    s = sub.add_parser("search"); _q(s); s.add_argument("--json", action="store_true"); add_global_args(s)
     w = sub.add_parser("watch"); w.add_argument("--name", required=True); _q(w); digest.add_args(w)
     c = sub.add_parser("changes"); c.add_argument("--name"); c.add_argument("--since"); digest.add_args(c)
     a = p.parse_args(argv)
@@ -38,14 +39,28 @@ def main(argv=None):
         pm, epmc, rx, src = _clients(a)
     if a.cmd == "search":
         res = _search(a, pm, epmc, rx, src)
+        any_global = False
+        if a.use_global:
+            gc.parse_sources(a.global_sources)  # validates; papers flagging does not depend on registry sources
+            try:
+                affs = gc.lookup_affiliations(epmc or EuropePMCClient(), res["papers"])
+            except Exception as e:
+                affs = {}; res["errors"]["global_affiliations"] = f"{type(e).__name__}: {e}"
+            gc.annotate_papers(res["papers"], affs)
+            any_global = any(gc.is_global(r) for r in res["papers"])
+            if any_global: res["global_disclaimer"] = gc.GLOBAL_DISCLAIMER
         if a.json: print(json.dumps(res, indent=1)); return
+        if a.use_global: print(gc.HEADER)
         for k in ("pubmed", "europepmc"):
             if res.get(k): print(f"{k}: {res[k]['total']} total")
         for k, e in res["errors"].items(): print(f"! {k} failed: {e}")
         for r in res["papers"]:
             rel = f"{r['relevance']:>4.0f} " if "relevance" in r else ""
-            print(f"{rel}{r['date'] or '':10} {'+'.join(x for x in r['sources'] if x):18} {(r['title'] or '')[:90]:90} {r['url']}")
+            lab = (gc.text_label(r) + " ") if a.use_global and gc.text_label(r) else ""
+            print(f"{lab}{rel}{r['date'] or '':10} {'+'.join(x for x in r['sources'] if x):18} {(r['title'] or '')[:90]:90} {r['url']}")
+        if any_global: print(gc.GLOBAL_DISCLAIMER)
         print(f"{len(res['papers'])} unique papers")
+        if not a.use_global: maybe_tip(a)
     elif a.cmd == "watch":
         info = run_watch(pm, rx, store(a.db), a.name, a.affiliation, a.drug, a.keyword, since=a.since,
                          preprint_days=a.preprint_days if "preprints" in src else 0, max_records=a.max, epmc=epmc,

@@ -7,7 +7,7 @@ from .normalize import normalize
 from .report import markdown, write_csv, sponsor_pipeline
 from .store import Store
 from .severity import at_least
-from biowatch import digest, filters
+from biowatch import digest, filters, globalcov as gc
 
 
 def _short(v, n=80):
@@ -18,6 +18,20 @@ def _short(v, n=80):
 def _q(a):
     return dict(sponsor=a.sponsor, condition=a.condition, intervention=a.intervention, term=a.term,
                 phases=a.phase, statuses=a.status, changed_since=a.changed_since)
+
+
+def add_global_args(sp):
+    sp.add_argument("--global", dest="use_global", action="store_true",
+                    help="opt-in: add non-FDA/EMA registry link-outs / jurisdiction flags (labelled). Details: bcf --global --help")
+    sp.add_argument("--global-sources", metavar="LIST", help="with --global: limit to e.g. chictr,ictrp")
+    sp.add_argument("--quiet", action="store_true", help="no tips")
+
+
+def maybe_tip(a):
+    import os
+    if getattr(a, "quiet", False) or getattr(a, "json", False) or os.environ.get("BCF_NO_TIPS") or not sys.stdout.isatty():
+        return
+    print(f"\033[2m{gc.TIP}\033[0m" if sys.stderr.isatty() else gc.TIP, file=sys.stderr)
 
 
 def main(argv=None):
@@ -31,6 +45,7 @@ def main(argv=None):
         sp.add_argument("--changed-since", help="YYYY-MM-DD (LastUpdatePostDate)")
         sp.add_argument("--max", type=int, default=200); digest.add_query_args(sp)
     s = sub.add_parser("search"); qargs(s); s.add_argument("--csv"); s.add_argument("--json", action="store_true")
+    add_global_args(s)
     w = sub.add_parser("watch", help="snapshot a query and diff vs previous run"); qargs(w)
     sev = dict(choices=["minor", "notable", "critical"], help="only show/report changes at or above this severity")
     digest.add_args(w); w.add_argument("--min-severity", **sev); w.add_argument("--name", required=True); w.add_argument("--md"); w.add_argument("--csv"); w.add_argument("--changes-csv")
@@ -41,13 +56,35 @@ def main(argv=None):
     cl = CTGovClient()
 
     if a.cmd == "search":
-        recs = filters.exclude(search(cl, max_records=a.max, **_q(a)), a.exclude)
-        if a.rank: recs = filters.rank(recs, a.term, a.condition, a.intervention, date_field="last_update_posted")
-        if a.csv: write_csv(a.csv, recs)
-        if a.json: print(json.dumps(recs, indent=1))
+        if a.use_global:
+            srcs = gc.parse_sources(a.global_sources)
+            raw = cl.search(max_records=a.max, extra_fields=["SecondaryIdInfo"], **_q(a))
+            recs = []
+            for st in raw:
+                r = normalize(st)
+                r["global_links"] = gc.registry_links(gc.secondary_ids(st), r["nct_id"], srcs)
+                recs.append(r)
         else:
-            for r in recs: print(f"{r['nct_id']}  {r['phase'] or '-':14} {r['status']:24} {r['lead_sponsor'][:30]:30} {(r['title'] or '')[:70]}")
+            recs = search(cl, max_records=a.max, **_q(a))
+        recs = filters.exclude(recs, a.exclude)
+        if a.rank: recs = filters.rank(recs, a.term, a.condition, a.intervention, date_field="last_update_posted")
+        if a.csv: write_csv(a.csv, [{k: v for k, v in r.items() if k != "global_links"} for r in recs])
+        any_global = a.use_global and any(r.get("global_links") for r in recs)
+        if a.json:
+            if a.use_global:
+                out = {"trials": recs}
+                if any_global: out["global_disclaimer"] = gc.GLOBAL_DISCLAIMER
+                print(json.dumps(out, indent=1))
+            else: print(json.dumps(recs, indent=1))
+        else:
+            if a.use_global: print(gc.HEADER)
+            for r in recs:
+                print(f"{r['nct_id']}  {r['phase'] or '-':14} {r['status']:24} {(r['lead_sponsor'] or '')[:30]:30} {(r['title'] or '')[:70]}")
+                for g in r.get("global_links") or []:
+                    print(f"    {gc.text_label(g)} {g['registry_id']}  {g['source_url']}  (also registered as {r['nct_id']}; link only)")
+            if any_global: print(gc.GLOBAL_DISCLAIMER)
             print(f"{len(recs)} trials", file=sys.stderr)
+        if not a.use_global: maybe_tip(a)
     elif a.cmd == "watch":
         st = Store(a.db)
         info = run_watch(cl, st, a.name, max_records=a.max, **_q(a))

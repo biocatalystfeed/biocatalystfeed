@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2 — 2026-10-26
+- Opt-in Global coverage, Phase 1 (off by default; default outputs unchanged). `--global` / `--global-sources` on `bcf trials search` and `bcf papers search`; `include_global` / `global_sources` on MCP `search_trials` and `search_papers` (stdio and hosted).
+  - Trials: labelled link-outs (`registry_class: "non-FDA/EMA registry"`, `registry`, `jurisdiction`, `source_url`, `also_registered_as`) for ChiCTR, CTRI, jRCT/JPRN, CRIS, ANZCTR, ReBEC, PACTR, IRCT, TCTR and ISRCTN IDs found in ClinicalTrials.gov secondary IDs. Link only: no foreign registry data is fetched, scraped or stored. WHO ICTRP data, ChiCTR pages and the NMPA/CDE platform are not ingested.
+  - Papers: `jurisdiction_flag` ("non-FDA/EMA oversight" / "unknown") and `jurisdiction` from Europe PMC author-affiliation countries; never guessed.
+  - Text output prefixes labels and prints the standard disclaimer once; JSON adds `global_disclaimer`; RSS/JSON Feed items with `registry_class` get the label prefix and disclaimer.
+  - One-line stderr tip on searches without `--global` (TTY only; off with `--quiet`, `--json` or `BCF_NO_TIPS=1`); `bcf --global --help` detail text; docs/GLOBAL.md.
+
 ## 0.3.1 — 2026-10-21
 - PubMed `--since`/`--until` now filter on the publication date that is displayed (esearch uses `pdat`, plus an exact local filter on the shown date); previously the filter used Entrez date (`edat`), so older-looking papers could appear. Test added.
 - openFDA: per-request timeouts (3 s connect / 6 s read), at most 2 retries with short capped backoff, and a 15 s total budget, so an openFDA outage fails in about 15 s instead of minutes. Tests added.

@@ -27,13 +27,31 @@ def _clamp(n, hi: int, lo: int = 1) -> int:
 def search_trials(sponsor: str | None = None, condition: str | None = None, intervention: str | None = None,
                   phases: list[str] | None = None, statuses: list[str] | None = None,
                   changed_since: str | None = None, max_records: int = 50, exclude: list[str] | None = None,
-                  rank: bool = False) -> list[dict]:
-    """Search ClinicalTrials.gov. phases e.g. ["PHASE2","PHASE3"]; statuses e.g. ["RECRUITING"]; changed_since YYYY-MM-DD.
-    exclude drops trials whose title/conditions/interventions contain any term; rank sorts by relevance to the query."""
-    from biowatch import filters
-    rows = filters.exclude(search(_client, max_records=_clamp(max_records, 500), sponsor=sponsor, condition=condition,
-                  intervention=intervention, phases=phases, statuses=statuses, changed_since=changed_since), exclude)
-    return filters.rank(rows, condition, intervention, date_field="last_update_posted") if rank else rows
+                  rank: bool = False, include_global: bool = False, global_sources: list[str] | None = None) -> list[dict] | dict:
+    """Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include non-FDA/EMA registries (China's ChiCTR and NMPA platform, other WHO ICTRP registries). Global results carry `registry_class: "non-FDA/EMA registry"` and a `global_disclaimer`. Off by default.
+    Phase 1: global results are link-outs (registry ID + URL found in ClinicalTrials.gov secondary IDs, in each trial's
+    global_links); foreign registry records are not ingested. When showing global results to a user, keep the label
+    and the disclaimer. include_global: Opt-in. Adds non-FDA/EMA sources that may follow different, sometimes lighter,
+    regulatory standards. Results are labelled. Not an endorsement or medical or investment advice.
+    phases e.g. ["PHASE2","PHASE3"]; statuses e.g. ["RECRUITING"]; changed_since YYYY-MM-DD; global_sources subset of
+    ["chictr","nmpa","ictrp"]. exclude drops trials whose title/conditions/interventions contain any term; rank sorts
+    by relevance to the query."""
+    from biowatch import filters, globalcov as gc
+    q = dict(sponsor=sponsor, condition=condition, intervention=intervention, phases=phases, statuses=statuses,
+             changed_since=changed_since)
+    if include_global:
+        srcs = gc.parse_sources(global_sources)
+        rows = []
+        for st in _client.search(max_records=_clamp(max_records, 500), extra_fields=["SecondaryIdInfo"], **q):
+            r = normalize(st); r["global_links"] = gc.registry_links(gc.secondary_ids(st), r["nct_id"], srcs); rows.append(r)
+    else:
+        rows = search(_client, max_records=_clamp(max_records, 500), **q)
+    rows = filters.exclude(rows, exclude)
+    if rank: rows = filters.rank(rows, condition, intervention, date_field="last_update_posted")
+    if not include_global: return rows
+    out = {"trials": rows, "global_note": "Phase 1: link-outs only; foreign registry records are not ingested."}
+    if any(r["global_links"] for r in rows): out["global_disclaimer"] = gc.GLOBAL_DISCLAIMER
+    return out
 
 
 @mcp.tool()
@@ -132,8 +150,13 @@ def grant_changes_since(since: str, watch: str | None = None) -> list[dict]:
 @mcp.tool()
 def search_papers(affiliation: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
                   since: str | None = None, preprint_days: int = 14, max_results: int = 50,
-                  sources: list[str] | None = None, exclude: list[str] | None = None, rank: bool = False) -> dict:
-    """Papers from PubMed, Europe PMC and bioRxiv/medRxiv preprints (via Europe PMC keyword search; bioRxiv API as
+                  sources: list[str] | None = None, exclude: list[str] | None = None, rank: bool = False,
+                  include_global: bool = False, global_sources: list[str] | None = None) -> dict:
+    """Search PubMed, Europe PMC and preprints. Set `include_global: true` to flag papers from studies run outside US/EU oversight (`jurisdiction_flag`). Off by default.
+    include_global: Opt-in. Adds non-FDA/EMA sources that may follow different, sometimes lighter, regulatory
+    standards. Results are labelled. Not an endorsement or medical or investment advice. Flags come from
+    author-affiliation countries ("unknown" when none found); keep the label and global_disclaimer when showing them.
+    Papers from PubMed, Europe PMC and bioRxiv/medRxiv preprints (via Europe PMC keyword search; bioRxiv API as
     fallback), deduplicated by DOI/PMID. sources subset of ["pubmed","europepmc","preprints"] (default all).
     affiliation/drug lists are OR'd; keyword is raw query syntax; since = YYYY-MM-DD. exclude drops titles containing
     any term; rank sorts by relevance. Metadata + links only."""
@@ -148,6 +171,15 @@ def search_papers(affiliation: list[str] | None = None, drug: list[str] | None =
         res["papers"] = res["papers"] + pre
     from paperwatch.core import combined
     res["papers"] = combined(res["papers"], (affiliation, drug, keyword), exclude, rank)
+    if include_global:
+        from biowatch import globalcov as gc
+        gc.parse_sources(global_sources)
+        try:
+            affs = gc.lookup_affiliations(epmc or EuropePMCClient(), res["papers"])
+        except Exception as e:
+            affs = {}; res.setdefault("errors", {})["global_affiliations"] = f"{type(e).__name__}: {e}"
+        gc.annotate_papers(res["papers"], affs)
+        if any(gc.is_global(r) for r in res["papers"]): res["global_disclaimer"] = gc.GLOBAL_DISCLAIMER
     return res
 
 

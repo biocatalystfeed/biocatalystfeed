@@ -22,11 +22,18 @@ tools:
   profile  merged company profile                            (= fdawatch profile)
   mcp      run the MCP server over stdio                     (= trialwatch-mcp)
 
+options:
+  --global on `trials search` / `papers search`: opt-in, off by default; adds labelled
+           non-FDA/EMA registry link-outs and paper jurisdiction flags. Details: bcf --global --help
+
 {DISCLAIMER}"""
 
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "--global":
+        from biowatch.globalcov import HELP
+        print(HELP); return 0
     if not argv or argv[0] in ("-h", "--help", "help"):
         print(USAGE); return 0
     if argv[0] in ("-V", "--version"):
