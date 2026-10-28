@@ -38,6 +38,7 @@ def normalize(study: dict) -> dict:
         "enrollment_type": enr.get("type"),
         "start_date": _d(st.get("startDateStruct")),
         "primary_completion_date": _d(st.get("primaryCompletionDateStruct")),
+        "primary_completion_type": (st.get("primaryCompletionDateStruct") or {}).get("type"),
         "completion_date": _d(st.get("completionDateStruct")),
         "first_posted": _d(st.get("studyFirstPostDateStruct")),
         "last_update_posted": _d(st.get("lastUpdatePostDateStruct")),

@@ -3,7 +3,7 @@
 import pathlib, shutil, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-PKGS = ["biocatalystfeed", "biowatch", "trialwatch", "fdawatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch", "decisionwatch"]
+PKGS = ["biocatalystfeed", "biowatch", "trialwatch", "fdawatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch", "decisionwatch", "readoutwatch"]
 DEST = ROOT / "actor" / "src"
 
 

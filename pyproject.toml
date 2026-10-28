@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "biocatalystfeed"
-version = "0.3.5"
+version = "0.3.6"
 description = "Open-source monitors for biotech catalysts: ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed/Europe PMC/bioRxiv, SEC EDGAR, EMA, FDA advisory committees (Federal Register). CLI + MCP server."
 readme = "README.md"
 license = "Apache-2.0"
@@ -34,6 +34,7 @@ emawatch = "emawatch.cli:main"
 adcomwatch = "adcomwatch.cli:main"
 crlwatch = "crlwatch.cli:main"
 decisionwatch = "decisionwatch.cli:main"
+readoutwatch = "readoutwatch.cli:main"
 trialwatch-mcp = "trialwatch.mcp_server:main"
 [tool.setuptools]
-packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch", "decisionwatch"]
+packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch", "decisionwatch", "readoutwatch"]

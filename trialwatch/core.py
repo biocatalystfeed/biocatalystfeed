@@ -44,7 +44,13 @@ def raw_search(client: CTGovClient, max_records=200, sponsor_aliases: bool = Tru
 
 
 def search(client: CTGovClient, max_records=200, sponsor_aliases: bool = True, **q) -> list[dict]:
-    return [normalize(s) for s in raw_search(client, max_records=max_records, sponsor_aliases=sponsor_aliases, **q)]
+    from biowatch import provenance as pv
+    rows = [normalize(s) for s in raw_search(client, max_records=max_records, sponsor_aliases=sponsor_aliases, **q)]
+    as_of = pv.now_utc()
+    for r in rows:
+        r.update(pv.ticker_match(r.get("lead_sponsor")))
+        pv.stamp(r, f"https://clinicaltrials.gov/api/v2/studies/{r['nct_id']}", as_of)
+    return rows
 
 
 def run_watch(client: CTGovClient, store: Store, watch: str, max_records=1000, sponsor_aliases: bool = True, **q) -> dict:

@@ -33,7 +33,7 @@ def main(argv=None):
     elif a.cmd == "watch":
         info = run_watch(ReporterClient(), store(a.db), a.name, max_records=a.max, **q())
         print(f"watch={a.name} run={info['run_id']} records={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        digest.write(info["changes_detail"], f"BioCatalystFeed grants: {a.name}", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed grants: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         for x in info["changes_detail"]: print(f"  {x['kind']:20} {x['field'] or '':16} {x['old']} -> {x['new']}  {x['title'][:60]} {x['url']}")
     else:
         for x in store(a.db).changes(watch=a.name, since=a.since): print(json.dumps(x))

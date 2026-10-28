@@ -25,6 +25,7 @@ agents (Claude, Cursor, …), or as an [Apify actor](https://apify.com/biocataly
 | Federal Register (FDA notices) | `bcf adcom` | FDA advisory committee meetings: committee, meeting date, NDA/BLA numbers and sponsors from the agenda; postponements/cancellations; diffs |
 | openFDA complete response letters (FDA) | `bcf crl` | FDA complete response letters (CRLs) for NDAs/BLAs: company, application, product, deficiency topics (facility, product quality, clinical, safety ...), first-deficiency excerpt, PDF link; diffs flag new letters and Unapproved → Approved |
 | **FDA decision calendar** (SEC EDGAR 8-Ks + Federal Register + Drugs@FDA + openFDA CRLs) | `bcf fda-decisions` | one list of upcoming **PDUFA dates** (company-disclosed in 8-Ks), **AdCom meetings**, recent **approvals** and **CRLs**; filter by drug, company/ticker, condition, kind, date window or `--upcoming DAYS`; every event has `confidence` (company-disclosed / scheduled / confirmed), `date_precision` and `provenance`; **watches notify** on new events, moved PDUFA dates, postponed AdComs and status flips |
+| **Trial readout calendar** + **Trials at Risk** (ClinicalTrials.gov) | `bcf readouts` | market-wide upcoming **primary completion dates** (ESTIMATED / ACTUAL), filter by sponsor/ticker, condition, intervention, phase, window, industry-only, ticker-only; watches report new readouts and **slipped dates**; `at-risk` flags stopped, overdue, delayed and enrollment-shortfall trials with a risk score; Markdown / HTML / RSS / JSON digests; static page `bcf readouts page` (live at [biocat.ai/calendar](https://biocat.ai/calendar/)) |
 | All of the above | `bcf profile` | one merged company profile (name or ticker) |
 
 **Optional global coverage (`--global` / `include_global`).** Off by default. When you turn it on, BCF also links to records in trial registries outside the US and EU, such as China's ChiCTR and other WHO-listed national registries, and flags papers from other jurisdictions. These records may come from research run under regulatory, ethics and data standards different from, and sometimes lighter than, those of the US or EU. They are labelled "non-FDA/EMA registry". The option is for users who want to see everything that is out there. Inclusion is not an endorsement or recommendation and is not medical, legal or investment advice.
@@ -52,10 +53,14 @@ bcf crl search --since 2026-01-01 --status Unapproved       # FDA complete respo
 bcf fda-decisions search --upcoming 90                     # PDUFA dates (8-K) + AdComs in the next 90 days, soonest first
 bcf fda-decisions search --company BBIO                     # all FDA decision events for a ticker (pdufa, adcom, approval, crl)
 bcf fda-decisions search --drug semaglutide --kinds approval crl --since 2025-01-01
+bcf readouts search --upcoming 60 --condition obesity          # industry Ph2/3 primary completions in the next 60 days
+bcf readouts search --sponsor VKTX --upcoming 720 --md vktx.md  # one company's readouts + a Markdown digest
+bcf readouts at-risk --condition NASH --html risk.html          # Trials at Risk (stopped / overdue / delayed / enrollment shortfall)
 
 # watches: first run = baseline, later runs report what changed (cron it daily)
 bcf trials --db bcf.db watch --name obesity --condition obesity --phase PHASE3 --rss obesity.rss
 bcf trials --db bcf.db changes --name obesity --min-severity critical   # terminations, endpoint rewrites
+bcf readouts --db bcf.db watch --name ph3-90d --phases PHASE3 --upcoming 90 --digest-html readouts.html --json-feed readouts.feed.json   # notify: new readouts, date slips, ESTIMATED->ACTUAL
 bcf fda-decisions --db bcf.db watch --name obesity-fda --condition obesity --json-feed fda.feed.json   # notify: new/moved PDUFA dates, AdComs, approvals, CRLs
 bcf papers --db bcf.db watch --name mdgl --affiliation "Madrigal Pharmaceuticals" --json-feed mdgl.feed.json
 ```
@@ -73,7 +78,13 @@ The old commands (`trialwatch`, `fdawatch`, `grantwatch`, `paperwatch`, `secwatc
 (or point `command` at an installed `biocatalystfeed-mcp`). Listed in the official MCP Registry as
 `io.github.biocatalystfeed/biocatalystfeed`.
 Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_profile`, `search_grants`,
-`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `fda_adcom_meetings`, `fda_complete_response_letters`, `fda_decisions` (FDA decision calendar), `snapshot_*` (incl. `snapshot_fda_decisions`) / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
+`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `fda_adcom_meetings`, `fda_complete_response_letters`, `fda_decisions` (FDA decision calendar), `readout_calendar` (trial readout calendar), `trials_at_risk`, `snapshot_*` (incl. `snapshot_fda_decisions`, `snapshot_readouts`) / `*_changes_since`, and `changes_feed` (RSS / JSON Feed / Markdown / HTML).
+
+**Provenance on every record (0.3.6).** Every record returned by every MCP tool (stdio and hosted), and by `bcf readouts`
+/ `bcf fda-decisions` / `bcf trials search`, carries `verified_as_of` (UTC), `source_url` (the official record or API URL),
+`verify_hash` (`sha256:` of the record's canonical JSON, excluding the provenance and ticker fields; re-check with
+`biowatch.provenance.check(record)`), and, where a company is named, `ticker`, `ticker_confidence` (1.0 source-given,
+0.95 alias table, 0.9 SEC exact name, 0.6 SEC name prefix, 0 none) and `ticker_method`.
 
 ### Configuration
 | Env var | Purpose |
@@ -137,8 +148,9 @@ A free, read-only, rate-limited MCP endpoint (Streamable HTTP, no account) runs 
 ```json
 {"mcpServers": {"biocatalystfeed-hosted": {"type": "http", "url": "https://bcf-mcp.lively-recipe-5a12.workers.dev/mcp"}}}
 ```
-It offers 7 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
-`fda_decisions`, `fda_adcom_meetings`) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. Limit: 30 requests/minute per IP (HTTP 429 above that).
+It offers 9 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
+`fda_decisions`, `readout_calendar`, `trials_at_risk`, `fda_adcom_meetings`), all with provenance fields, plus a cached
+public `GET /calendar.json` (90-day readout calendar, refreshed every 6 h; feeds biocat.ai/calendar) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. Limit: 30 requests/minute per IP (HTTP 429 above that).
 Watches, change history and the other sources need the local install above. No request logs are kept; see
 [`TERMS.md`](TERMS.md) and [`PRIVACY.md`](PRIVACY.md). Source: [`worker/`](worker/).
 

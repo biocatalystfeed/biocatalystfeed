@@ -96,7 +96,7 @@ def main(argv=None):
             info["trials"] = [r for r in info["trials"] if r["nct_id"] not in drop]
             info["changes_detail"] = [c for c in info["changes_detail"] if c["nct_id"] not in drop]
         ch = at_least(info["changes_detail"], a.min_severity)
-        digest.write(ch, f"BioCatalystFeed trials: {a.name}", a.rss, a.json_feed)
+        digest.write(ch, f"BioCatalystFeed trials: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         print(f"watch={a.name} run={info['run_id']} trials={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
         for x in ch:
             sd = f" ({x['shift_days']:+d} days)" if x.get("shift_days") is not None else ""

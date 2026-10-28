@@ -61,10 +61,14 @@ PARAMS: dict[str, str] = {
     "application": "NDA/BLA number, e.g. 'NDA 218705', 'BLA 761308' or '218705'.",
     "topic": "Deficiency topics to keep: facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors.",
     "include_text": "If true, include the full OCR letter text (large).",
-    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl or fda-decisions.",
+    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, fda-decisions or readouts.",
     "kinds": "FDA decision event kinds to include, any of pdufa, adcom, approval, crl (default all).",
     "upcoming_days": "Only upcoming pdufa/adcom events from today to today+N days (overrides since/until; 0-730).",
-    "format": "'json' (JSON Feed 1.1) or 'rss' (RSS 2.0).",
+    "format": "'json' (JSON Feed 1.1), 'rss' (RSS 2.0), 'markdown' or 'html' (rendered digest).",
+    "industry_only": "If true (default), only trials whose lead sponsor class is INDUSTRY; false adds academic, NIH and other sponsors.",
+    "ticker_only": "If true, keep only trials whose sponsor was matched to a stock ticker (see ticker_confidence).",
+    "lookback_days": "Days back to look for newly stopped trials and passed primary completion dates (default 180).",
+    "flags": "Keep only trials with any of these risk flags: stopped, overdue, stale_overdue, delayed, enrollment_shortfall, enrollment_cut.",
 }
 
 TOOL_PARAMS: dict[str, dict[str, str]] = {
@@ -92,12 +96,19 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
                       "condition": "Condition / disease text (e.g. 'obesity'); coarse for approvals (Drugs@FDA has no indication field).",
                       "since": f"Event date from ({_DATE}).", "until": f"Event date to ({_DATE}).",
                       "max_docs": "Maximum SEC 8-K documents to parse for PDUFA dates (capped at 40)."},
+    "readout_calendar": {"sponsor": "Lead sponsor name or ticker (alias-resolved; unknown US tickers looked up in SEC's ticker list), e.g. 'VKTX' or 'Viking Therapeutics'.",
+                         "phases": "Phases to keep (default ['PHASE2','PHASE3']); any of EARLY_PHASE1, PHASE1, PHASE2, PHASE3, PHASE4, NA, or ['any'] for all.",
+                         "since": f"Primary completion (readout) date from ({_DATE}).", "until": f"Primary completion (readout) date to ({_DATE}; default since + 365 days).",
+                         "upcoming_days": "Readouts from today to today+N days (default 90 when since/until are omitted; 0-1095)."},
+    "trials_at_risk": {"sponsor": "Lead sponsor name or ticker (alias-resolved).",
+                       "phases": "Phases to keep (default ['PHASE2','PHASE3']); ['any'] for all."},
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",
-           "adcom_changes_since", "crl_changes_since", "fda_decision_changes_since"):
+           "adcom_changes_since", "crl_changes_since", "fda_decision_changes_since", "readout_changes_since"):
     TOOL_PARAMS.setdefault(_t, {})["since"] = f"Only changes detected on or after this date ({_DATE})."
 
+TOOL_PARAMS["snapshot_readouts"] = {k: v for k, v in TOOL_PARAMS["readout_calendar"].items() if k not in ("since", "until")}
 TOOL_PARAMS["snapshot_fda_decisions"] = {k: v for k, v in TOOL_PARAMS["fda_decisions"].items() if k not in ("since", "until")}
 
 KINDS = {
@@ -125,6 +136,15 @@ def tool(server, kind: str):
     that don't support them)."""
     def deco(fn):
         describe(fn)
+        import functools
+        orig = fn
+
+        @functools.wraps(orig)
+        def fn(*a, **k):  # every record returned carries verified_as_of / verify_hash / source_url / ticker_confidence
+            from biowatch import provenance as pv
+            res = orig(*a, **k)
+            return pv.enrich(res) if not isinstance(res, str) else res
+        fn.__signature__ = orig.__signature__
         try:
             from mcp.types import ToolAnnotations
             server.tool(annotations=ToolAnnotations(**KINDS[kind]))(fn)

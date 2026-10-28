@@ -240,7 +240,16 @@ def decisions(fda=None, fr=None, sec=None, kinds=None, drug=None, company=None, 
     if until: evs = [e for e in evs if (e["date"] or "9999") <= until]
     up = sorted([e for e in evs if (e["date"] or "") >= today], key=lambda e: e["date"])
     past = sorted([e for e in evs if (e["date"] or "") < today], key=lambda e: e["date"] or "", reverse=True)
-    return (up + past)[:max_records]
+    from biowatch import provenance as pv
+    out = (up + past)[:max_records]
+    as_of = pv.now_utc()
+    for e in out:
+        if "ticker_confidence" not in e:
+            e.update({k: v for k, v in pv.ticker_match(e.get("company"), e.get("ticker")).items() if k != "ticker" or not e.get("ticker")})
+            if e.get("ticker") and e["ticker_method"] == "none":
+                e.update(ticker_confidence=0.8, ticker_method="query_company")
+        pv.stamp(e, e.get("url"), as_of)
+    return out
 
 
 def store(path: str) -> ItemStore:
@@ -251,7 +260,9 @@ def run_watch(fda, fr, sec, st: ItemStore, watch: str, **kw) -> dict:
     kw.setdefault("max_records", 500)
     errors: list = []
     rows = decisions(fda, fr, sec, errors=errors, **kw)
-    for r in rows: r["provenance"] = {k: v for k, v in r["provenance"].items() if k != "retrieved"}
+    for r in rows:
+        r["provenance"] = {k: v for k, v in r["provenance"].items() if k != "retrieved"}
+        r.pop("verified_as_of", None)
     info = st.ingest(watch, rows, query={k: v for k, v in kw.items() if k != "today"})
     info["changes_detail"] = st.changes(watch=watch, run_id=info["run_id"])
     info["errors"] = errors

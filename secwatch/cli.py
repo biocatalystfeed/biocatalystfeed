@@ -34,7 +34,7 @@ def main(argv=None):
                 print(f"   {'*' if x.get('best') else ' '} {x['date_text']:22} {x.get('date_guess') or ''}  …{x['context'][100:230]}…")
     elif a.cmd == "watch":
         info = run_watch(cl, store(a.db), a.name, _cik(cl, a.company), since=a.since)
-        digest.write(info["changes_detail"], f"BioCatalystFeed SEC: {a.name}", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed SEC: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         print(f"watch={a.name} run={info['run_id']} records={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
         for x in info["changes_detail"]: print(f"  {x['kind']:18} {x['old']} -> {x['new']} {x['url']}")
     else:

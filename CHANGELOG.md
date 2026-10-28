@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.6 — 2026-10-28
+- New: market-wide **trial readout calendar** (`bcf readouts search|watch|changes|page` / `readoutwatch`). Upcoming ClinicalTrials.gov primary completion dates (`readout_date`, `readout_date_type` ESTIMATED / ACTUAL, `date_precision`), soonest first. Defaults: active, industry-sponsored Phase 2/3, next 90 days. Filters: `--sponsor` (name or ticker; alias table, then SEC's ticker list), `--condition`, `--intervention`, `--phases` (`any`), `--since/--until`, `--upcoming DAYS`, `--all-sponsors`, `--ticker-only`. Watches (prefix `readout`) report `new_readout`, `readout_date_change` (with `direction` delayed / pulled_in), `readout_date_type_change`, `status_change`, `enrollment_change`, `phase_change`.
+- New: **Trials at Risk** (`bcf readouts at-risk`, MCP `trials_at_risk`): flags `stopped` (suspended / terminated / withdrawn, with why_stopped), `overdue`, `stale_overdue`, and from local snapshot history `delayed`, `enrollment_shortfall` and `enrollment_cut`; `risk_score` = sum of severities.
+- New: **provenance on every record**: `verified_as_of`, `verify_hash` (sha256 of canonical JSON; `biowatch.provenance.check`), `source_url`, and `ticker` / `ticker_confidence` / `ticker_method` for company → ticker matching (`biowatch/provenance.py`). Applied to all MCP tool results (stdio + hosted), readouts, FDA decisions and trial search.
+- New: **rendered digests**: `biowatch.digest.markdown` / `html` (email-ready inline styles; nothing is sent); `--digest-md` / `--digest-html` on every `watch` command; `--md/--html/--rss/--json-feed` on `bcf readouts search|at-risk`; `changes_feed(format='markdown'|'html')`; `changes_feed` accepts `readouts`.
+- New: **public calendar page** at biocat.ai/calendar/ (`bcf readouts page --out DIR`): static HTML + `calendar.json` with client-side filters (sponsor/ticker, condition, phase, ticker-only); on load it refreshes from the hosted Worker's cached `GET /calendar.json` (6 h edge cache).
+- MCP: `readout_calendar`, `snapshot_readouts`, `readout_changes_since`, `trials_at_risk` (all parameters described, annotations set); 32 stdio tools.
+- Hosted Worker: `readout_calendar` and `trials_at_risk` tools (9 total), provenance + ticker confidence on every record, `GET /calendar.json`; serverInfo 0.3.6.
+- Trial records gain `primary_completion_type` (CT.gov `PrimaryCompletionDateType`).
+- Docs: README, `docs/COMPARISON.md` and `samples/competitor_matrix.md` updated (parity status, remaining gaps, what a free email option needs).
+
 ## 0.3.5 — 2026-10-28
 - New: FDA decision calendar + watch (`bcf fda-decisions search|watch|changes` / `decisionwatch`). One list of FDA decision events, upcoming soonest first, then past newest first:
   - `pdufa`: upcoming PDUFA / target action dates **disclosed by companies in SEC 8-K filings** (EDGAR full-text search). FDA does not publish PDUFA dates, so these carry `confidence: "company-disclosed"` and the provenance method "regex extraction (UNVERIFIED)", plus the filing link, filing date and the text around the date. Day / month / quarter / half precision (`date_precision`). The newest filing wins per company + drug.

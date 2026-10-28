@@ -65,12 +65,12 @@ def main(argv=None):
         info = run_watch(pm, rx, store(a.db), a.name, a.affiliation, a.drug, a.keyword, since=a.since,
                          preprint_days=a.preprint_days if "preprints" in src else 0, max_records=a.max, epmc=epmc,
                          exclude=a.exclude, epmc_journals="europepmc" in src, preprints_via_epmc=not a.rxiv_api)
-        digest.write(info["changes_detail"], f"BioCatalystFeed papers: {a.name}", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed papers: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         print(f"watch={a.name} run={info['run_id']} records={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
         for x in info["changes_detail"]: print(f"  {x['kind']:14} {x['field'] or '':10} {x['title'][:80]} {x['url']}")
     else:
         ch = store(a.db).changes(watch=a.name, since=a.since)
-        digest.write(ch, f"BioCatalystFeed papers: {a.name or 'all'}", a.rss, a.json_feed)
+        digest.write(ch, f"BioCatalystFeed papers: {a.name or 'all'}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         for x in ch: print(json.dumps(x))
 
 

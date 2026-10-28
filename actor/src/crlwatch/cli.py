@@ -36,7 +36,7 @@ def main(argv=None):
     if a.cmd == "watch":
         info = run_watch(OpenFDAClient(), store(a.db), a.name, **q)
         print(f"watch={a.name} run={info['run_id']} letters={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        digest.write(info["changes_detail"], f"BioCatalystFeed FDA CRLs: {a.name}", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed FDA CRLs: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         for x in info["changes_detail"]: print(f"  {x['kind']:26} {x['old'] or ''} -> {x['new'] or ''}  {x['title'][:80]} {x['url']}")
         print(f"Source: {SOURCE}")
         return

@@ -44,7 +44,7 @@ def main(argv=None):
     if a.cmd == "watch":
         info = run_watch(*_clients(), store(a.db), a.name, **_kw(a))
         print(f"watch={a.name} run={info['run_id']} events={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        digest.write(info["changes_detail"], f"BioCatalystFeed FDA decisions: {a.name}", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed FDA decisions: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         for x in info["changes_detail"]: print(f"  {x['kind']:26} {x['old'] or ''} -> {x['new'] or ''}  {x['title'][:80]} {x['url']}")
         for e in info["errors"]: print(f"  source error ({e['kind']}): {e['error']}")
         return

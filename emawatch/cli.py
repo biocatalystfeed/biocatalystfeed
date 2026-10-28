@@ -41,7 +41,7 @@ def main(argv=None):
     elif a.cmd == "watch":
         info = run_watch(EMAClient(), store(a.db), a.name, max_records=max(a.max, 2000), **q())
         print(f"watch={a.name} run={info['run_id']} records={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        digest.write(info["changes_detail"], f"BioCatalystFeed EMA: {a.name} (source: {SOURCE})", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed EMA: {a.name} (source: {SOURCE})", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         for x in info["changes_detail"]: print(f"  {x['kind']:24} {x['field'] or '':16} {x['old']} -> {x['new']}  {x['title'][:50]} {x['url']}")
         print(f"Source: {SOURCE}")
     else:

@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA decision calendar tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA decision calendar, trial readout calendar and Trials at Risk tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -365,22 +365,97 @@ def fda_decision_changes_since(since: str, watch: str | None = None) -> list[dic
     return store(_db).changes(watch=watch, since=since)
 
 
+def _sec_client():
+    from secwatch.core import SECClient
+    return SECClient()
+
+
+def _phases(phases):
+    from readoutwatch.core import DEFAULT_PHASES
+    return DEFAULT_PHASES if phases is None else (None if phases == ["any"] or phases == [] else phases)
+
+
+@_tool("read")
+def readout_calendar(sponsor: str | None = None, condition: str | None = None, intervention: str | None = None,
+                     phases: list[str] | None = None, since: str | None = None, until: str | None = None,
+                     upcoming_days: int | None = None, industry_only: bool = True, ticker_only: bool = False,
+                     max_results: int = 100) -> list[dict]:
+    """Market-wide clinical trial readout calendar from ClinicalTrials.gov: trials whose PRIMARY COMPLETION DATE (last
+    participant examined for the primary outcome; top-line data usually follow weeks to months later) falls in the
+    window, soonest first. Default: industry-sponsored PHASE2/PHASE3 trials that are active (not yet recruiting,
+    recruiting, enrolling by invitation, active not recruiting), next 90 days. Each record: nct_id, title, readout_date,
+    date_precision (day/month), readout_date_type (ESTIMATED = sponsor's anticipated date, often slips; ACTUAL),
+    completion_date, status, phase, sponsor, ticker, ticker_confidence (0-1), ticker_method, conditions, interventions,
+    enrollment, primary_outcomes, overdue, url, and provenance fields verified_as_of, verify_hash, source_url. Use
+    snapshot_readouts to watch for slips; trials_at_risk for stopped/overdue/delayed trials. Not investment advice."""
+    from readoutwatch.core import readouts
+    return readouts(_client, sponsor=sponsor, condition=condition, intervention=intervention, phases=_phases(phases),
+                    since=since, until=until, upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 1095, 0),
+                    industry_only=industry_only, ticker_only=ticker_only, max_records=_clamp(max_results, 1000), sec=_sec_client())
+
+
+@_tool("snapshot")
+def snapshot_readouts(name: str, sponsor: str | None = None, condition: str | None = None, intervention: str | None = None,
+                      phases: list[str] | None = None, upcoming_days: int | None = None, industry_only: bool = True,
+                      ticker_only: bool = False) -> dict:
+    """Snapshot a readout-calendar query (same filters as readout_calendar) into the local DB and return what changed
+    since the previous snapshot of this watch name: new_readout (a trial entered the window), readout_date_change
+    (with direction 'delayed' or 'pulled_in'), readout_date_type_change (ESTIMATED -> ACTUAL: primary completion
+    reached), status_change (e.g. -> SUSPENDED/TERMINATED), enrollment_change, phase_change. The first run is a baseline
+    with no changes. Run on a schedule for notifications; history also powers trials_at_risk's delayed and enrollment
+    flags. Read later with readout_changes_since or changes_feed(tool='readouts')."""
+    from readoutwatch.core import run_watch, store
+    info = run_watch(_client, store(_db), name, sponsor=sponsor, condition=condition, intervention=intervention,
+                     phases=_phases(phases), upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 1095, 0),
+                     industry_only=industry_only, ticker_only=ticker_only, sec=_sec_client())
+    info.pop("readouts")
+    return info
+
+
+@_tool("local")
+def readout_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected readout changes (new_readout, readout_date_change, readout_date_type_change, status_change,
+    enrollment_change, phase_change) since an ISO date. Reads the local snapshot DB only (no network call); changes
+    exist only after snapshot_readouts has run at least twice for a watch."""
+    from readoutwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
+@_tool("read")
+def trials_at_risk(sponsor: str | None = None, condition: str | None = None, intervention: str | None = None,
+                   phases: list[str] | None = None, industry_only: bool = True, lookback_days: int = 180,
+                   flags: list[str] | None = None, max_results: int = 100) -> list[dict]:
+    """Trials at Risk: trials showing signs of delay or failure, highest risk_score first. Flags (severity 1-3):
+    stopped (SUSPENDED/TERMINATED/WITHDRAWN, updated within lookback_days; why_stopped in detail), overdue (active trial
+    whose ESTIMATED primary completion date passed), stale_overdue (overdue and record not updated for a year), and,
+    from local snapshot history (needs snapshot_readouts), delayed (primary completion moved later), enrollment_shortfall
+    (ACTUAL enrollment < 80% of the estimate) and enrollment_cut (target cut >= 20%). Each record has the
+    readout_calendar fields plus risk_flags [{flag, severity, detail}] and risk_score. Not investment advice."""
+    from readoutwatch.risk import trials_at_risk as _risk
+    return _risk(_client, sponsor=sponsor, condition=condition, intervention=intervention, phases=_phases(phases),
+                 industry_only=industry_only, lookback_days=_clamp(lookback_days, 1095), flags=flags,
+                 db_path=_db if os.path.exists(_db) else None, max_records=_clamp(max_results, 500), sec=_sec_client())
+
+
 @_tool("local")
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
-    """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl | fda-decisions. Reads the local snapshot DB only (no network call)."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "fda-decisions"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, fda-decisions")
-    if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")
+    """Digest of detected changes as a document: format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0, 'markdown' = rendered
+    Markdown digest, 'html' = rendered standalone HTML digest (email-ready; nothing is sent).
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "fda-decisions", "readouts"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, fda-decisions, readouts")
+    if format not in ("json", "rss", "markdown", "html"): raise ValueError("format must be 'json', 'rss', 'markdown' or 'html'")
     from biowatch import digest
     import json as _json
     if tool == "trials": ch = Store(_db).changes(watch=watch, since=since)
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "fda-decisions": "decisionwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
+    if format == "markdown": return digest.markdown(title, ch)
+    if format == "html": return digest.html(title, ch)
     return digest.rss(title, ch) if format == "rss" else _json.dumps(digest.json_feed(title, ch), default=str)
 
 

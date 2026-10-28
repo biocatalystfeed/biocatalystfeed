@@ -59,7 +59,7 @@ def main(argv=None):
         if a.json or not a.md: print(json.dumps(profs, indent=1))
     elif a.cmd == "watch":
         info = run_fda_watch(fc, FDAStore(a.db), a.name, sponsor=a.sponsor, since=a.since)
-        digest.write(info["changes_detail"], f"BioCatalystFeed FDA: {a.name}", a.rss, a.json_feed)
+        digest.write(info["changes_detail"], f"BioCatalystFeed FDA: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
         print(f"watch={a.name} run={info['run_id']} records={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
         for x in info["changes_detail"]: print(f"  {x['key']} {x['kind']:16} {x['field'] or '':22} {x['old']} -> {x['new']}  {x['brand'] or ''}")
     elif a.cmd == "changes":

@@ -20,7 +20,7 @@ export class IpRateLimiter extends DurableObject {
 }
 
 const PROTOCOL = "2025-06-18";
-const UA = "BioCatalystFeed-hosted/0.3.5 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const UA = "BioCatalystFeed-hosted/0.3.6 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
 const SEC_UA = "BioCatalystFeed contact@biocat.ai"; // SEC fair-access policy: "Company Name email" format
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
@@ -139,6 +139,93 @@ const CT_SPONSOR = { "tern": "Terns, Inc.", "terns": "Terns, Inc.", "terns pharm
   "lly": "Eli Lilly and Company", "vktx": "Viking Therapeutics", "mdgl": "Madrigal Pharmaceuticals", "nvo": "Novo Nordisk A/S",
   "gpcr": "Structure Therapeutics", "alt": "Altimmune" };
 const ctSponsor = s => CT_SPONSOR[String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()] || s;
+
+const TICKER_ALIASES = {"viking":["VKTX","Viking Therapeutics"],"eli lilly":["LLY","Eli Lilly"],"lilly":["LLY","Eli Lilly"],"madrigal":["MDGL","Madrigal Pharmaceuticals"],"terns":["TERN","Terns Pharmaceuticals"],"novo nordisk":["NVO","Novo Nordisk"],"novo":["NVO","Novo Nordisk"],"zealand pharma":["ZEAL.CO","Zealand Pharma"],"zealand":["ZEAL.CO","Zealand Pharma"],"structure":["GPCR","Structure Therapeutics"],"altimmune":["ALT","Altimmune"]}; // generated from fdawatch/aliases.py (normalized name -> [ticker, company])
+
+// ---- Provenance + ticker confidence (mirrors biowatch/provenance.py). verify_hash = sha256 of the record's canonical
+// JSON (sorted keys) without verified_as_of / verify_hash / source_url / retrieved / ticker_* fields.
+const PROV = new Set(["verified_as_of", "verify_hash", "source_url", "retrieved"]);
+const canon = v => Array.isArray(v) ? `[${v.map(canon).join(",")}]` : v && typeof v === "object"
+  ? `{${Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => `${JSON.stringify(k)}:${canon(v[k])}`).join(",")}}` : JSON.stringify(v ?? null);
+async function sha(s) { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return "sha256:" + [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function stamp(r, asOf) {
+  const body = {}; for (const [k, v] of Object.entries(r)) if (!PROV.has(k) && !k.startsWith("ticker_")) body[k] = v;
+  if (body.provenance && typeof body.provenance === "object") body.provenance = Object.fromEntries(Object.entries(body.provenance).filter(([k]) => !PROV.has(k)));
+  r.verified_as_of = asOf; r.source_url = r.source_url || r.url || null; r.verify_hash = await sha(canon(body)); return r;
+}
+const normName = s => String(s || "").toLowerCase().replace(/[^a-z0-9 ]/g, " ")
+  .replace(/\b(inc|corp|corporation|co|ltd|plc|a s|ag|sa|llc|company|and|pharmaceuticals?|therapeutics|biosciences?|biotherapeutics|biopharma(ceuticals)?|holdings|group|international|incorporated|limited|gmbh|s a|n v|k k)\b/g, " ").replace(/\s+/g, " ").trim();
+let SEC_NAMES = null;
+async function secNames() {
+  if (SEC_NAMES) return SEC_NAMES;
+  const req = new Request("https://www.sec.gov/files/company_tickers.json"), cache = caches.default;
+  let r = await cache.match(req);
+  if (!r) { const f = await fetch(req, { headers: { "user-agent": SEC_UA }, signal: AbortSignal.timeout(15000) }); if (!f.ok) return {}; r = new Response(await f.text(), { headers: { "cache-control": "max-age=86400" } }); await cache.put(req, r.clone()); }
+  const d = await r.json(); SEC_NAMES = {};
+  for (const v of Object.values(d)) { const k = normName(v.title); if (!(k in SEC_NAMES)) SEC_NAMES[k] = [v.ticker, v.title]; }
+  return SEC_NAMES;
+}
+function tickerMatch(name, names, srcTicker) {
+  if (srcTicker) return { ticker: srcTicker, ticker_confidence: 1.0, ticker_method: "source", ticker_company: name };
+  const none = { ticker: null, ticker_confidence: 0, ticker_method: "none", ticker_company: null }, n = normName(name);
+  if (!n) return none;
+  if (TICKER_ALIASES[n]) return { ticker: TICKER_ALIASES[n][0], ticker_confidence: 0.95, ticker_method: "alias_table", ticker_company: TICKER_ALIASES[n][1] };
+  if (/\b(kgaa|darmstadt)\b/.test(n) || !names) return none;
+  if (names[n]) return { ticker: names[n][0], ticker_confidence: 0.9, ticker_method: "sec_exact_name", ticker_company: names[n][1] };
+  const f = n.split(" ")[0];
+  if (n.length >= 4 && f.length >= 4) for (const [k, v] of Object.entries(names)) if (k.split(" ")[0] === f && (k.startsWith(n) || n.startsWith(k))) return { ticker: v[0], ticker_confidence: 0.6, ticker_method: "sec_prefix_name", ticker_company: v[1] };
+  return none;
+}
+async function enrich(out) {
+  const asOf = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  let names = null; try { names = await secNames(); } catch { names = null; }
+  const one = async r => {
+    if (!r || typeof r !== "object" || Array.isArray(r) || r.verify_hash || !("url" in r || "key" in r || "nct_id" in r)) return;
+    const nm = r.sponsor || r.company || r.lead_sponsor;
+    if (nm && !("ticker_confidence" in r)) { const t = tickerMatch(nm, names, r.ticker); Object.assign(r, t, r.ticker ? { ticker: r.ticker } : {}); }
+    await stamp(r, asOf);
+  };
+  if (Array.isArray(out)) for (const r of out) await one(r);
+  else if (out && typeof out === "object") { const ls = Object.values(out).filter(v => Array.isArray(v) && v.length && typeof v[0] === "object"); for (const l of ls) for (const r of l) await one(r); if (!ls.length) await one(out); }
+  return out;
+}
+
+// ---- Trial readout calendar + Trials at Risk (mirror readoutwatch/, lighter: no local history, so no delayed /
+// enrollment flags on the hosted endpoint).
+const ACTIVE = "NOT_YET_RECRUITING,RECRUITING,ENROLLING_BY_INVITATION,ACTIVE_NOT_RECRUITING";
+const isoDay = (n = 0) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+async function ctReadouts(a, statuses, field, lo, hi, n) {
+  const q = new URLSearchParams({ format: "json", sort: `${field}:asc`, pageSize: String(n) });
+  q.set("filter.overallStatus", statuses);
+  if (a.sponsor) q.set("query.spons", ctSponsor(a.sponsor));
+  if (a.condition) q.set("query.cond", a.condition);
+  if (a.intervention) q.set("query.intr", a.intervention);
+  const ph = Array.isArray(a.phases) ? (a.phases.includes("any") ? [] : a.phases) : ["PHASE2", "PHASE3"];
+  const adv = [`AREA[${field}]RANGE[${lo},${hi}]`];
+  if (ph.length) adv.push("(" + ph.map(p => `AREA[Phase]${String(p).toUpperCase()}`).join(" OR ") + ")");
+  if (a.industry_only !== false) adv.push("AREA[LeadSponsorClass]INDUSTRY");
+  q.set("filter.advanced", adv.join(" AND "));
+  const d = await getJSON(`https://clinicaltrials.gov/api/v2/studies?${q}`);
+  return (d?.studies || []).map(s => {
+    const p = s.protocolSection || {}, st = p.statusModule || {}, de = p.designModule || {}, id = p.identificationModule || {};
+    const dt = st.primaryCompletionDateStruct?.date || null, typ = st.primaryCompletionDateStruct?.type || null;
+    return { key: `readout:${id.nctId}`, kind: "readout", nct_id: id.nctId, title: id.briefTitle, readout_date: dt,
+      date_precision: dt ? (dt.length === 10 ? "day" : "month") : null, readout_date_type: typ, completion_date: st.completionDateStruct?.date || null,
+      status: st.overallStatus, phase: (de.phases || []).join("/") || null, sponsor: p.sponsorCollaboratorsModule?.leadSponsor?.name || null,
+      conditions: (p.conditionsModule?.conditions || []).join("; ") || null, enrollment: de.enrollmentInfo?.count ?? null,
+      enrollment_type: de.enrollmentInfo?.type || null, why_stopped: st.whyStopped || null, last_update_posted: st.lastUpdatePostDateStruct?.date || null,
+      url: `https://clinicaltrials.gov/study/${id.nctId}`, source_url: `https://clinicaltrials.gov/api/v2/studies/${id.nctId}`,
+      provenance: { source: "ClinicalTrials.gov API v2 (NLM; public data)", field: "statusModule.primaryCompletionDateStruct", method: "official registry record (sponsor-reported)" } };
+  });
+}
+async function readoutCalendar(a) {
+  const re = /^\d{4}-\d{2}-\d{2}$/;
+  let lo = re.test(a.since || "") ? a.since : isoDay(0), hi = re.test(a.until || "") ? a.until : null;
+  if (a.upcoming_days != null || !hi) { if (a.upcoming_days != null || !re.test(a.since || "")) lo = isoDay(0); hi = hi && a.upcoming_days == null ? hi : isoDay(Math.max(0, Math.min(+a.upcoming_days || 90, 1095))); }
+  let rows = await enrich(await ctReadouts(a, ACTIVE, "PrimaryCompletionDate", lo, hi, clamp(a.max_results, 1000, 100)));
+  if (a.ticker_only) rows = rows.filter(r => r.ticker);
+  return { window: [lo, hi], readouts: rows };
+}
 
 // ---- FDA decision calendar (mirrors decisionwatch/core.py, lighter). pdufa = company-disclosed in SEC 8-K text
 // (EDGAR full-text search; UNVERIFIED regex extraction), adcom = Federal Register notices, approval = Drugs@FDA,
@@ -375,6 +462,46 @@ const TOOLS = {
       const past = inWin.filter(e => (e.date || "") < today).sort((x, y) => (y.date || "").localeCompare(x.date || ""));
       return { events: [...up, ...past].slice(0, clamp(a.max_results, 100, 30)), errors, disclaimer: "Scheduling/reference data, not investment advice. pdufa dates are company-disclosed and unverified." };
     } },
+  readout_calendar: {
+    description: "Market-wide clinical trial readout calendar from ClinicalTrials.gov: trials whose PRIMARY COMPLETION DATE (last participant examined for the primary outcome; top-line data usually follow weeks to months later) falls in the window, soonest first. Default: active, industry-sponsored PHASE2/PHASE3 trials, next 90 days. Each record: nct_id, title, readout_date, date_precision, readout_date_type (ESTIMATED = anticipated, often slips; ACTUAL), status, phase, sponsor, ticker, ticker_confidence (0-1), ticker_method, conditions, enrollment, url, and provenance verified_as_of, verify_hash, source_url. Returns {window, readouts}. Hosted endpoint is read-only; for slip/new-readout alerts use the open-source package's snapshot_readouts. Not investment advice.",
+    inputSchema: { type: "object", properties: {
+      sponsor: { type: "string", description: "Lead sponsor name or ticker (known tickers alias-resolved, e.g. 'VKTX')." },
+      condition: { type: "string", description: "Condition or disease, free text (e.g. 'obesity')." },
+      intervention: { type: "string", description: "Drug or intervention, free text." },
+      phases: { type: "array", items: { type: "string", enum: ["EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3", "PHASE4", "NA", "any"] }, description: "Phases to keep (default PHASE2, PHASE3); [\"any\"] for all." },
+      since: { type: "string", description: "Readout (primary completion) date from (YYYY-MM-DD)." },
+      until: { type: "string", description: "Readout date to (YYYY-MM-DD)." },
+      upcoming_days: { type: "integer", maximum: 1095, description: "Readouts from today to today+N days (default 90 when since/until are omitted)." },
+      industry_only: { type: "boolean", default: true, description: "Only industry lead sponsors (default true); false adds academic/NIH/other." },
+      ticker_only: { type: "boolean", default: false, description: "Only trials whose sponsor matched a stock ticker." },
+      max_results: { type: "integer", default: 100, maximum: 1000, description: "Maximum readouts to return (1-1000)." } } },
+    run: a => readoutCalendar(a) },
+  trials_at_risk: {
+    description: "Trials at Risk from ClinicalTrials.gov, highest risk_score first. Flags (severity): stopped (3: SUSPENDED/TERMINATED/WITHDRAWN updated within lookback_days, why_stopped in detail), overdue (2: active trial whose ESTIMATED primary completion date passed), stale_overdue (+1: and the record was not updated for a year). History-based flags (delayed, enrollment_shortfall, enrollment_cut) need local snapshots and are only in the open-source package. Records carry readout_calendar fields plus risk_flags and risk_score. Not investment advice.",
+    inputSchema: { type: "object", properties: {
+      sponsor: { type: "string", description: "Lead sponsor name or ticker (alias-resolved)." },
+      condition: { type: "string", description: "Condition or disease, free text." },
+      intervention: { type: "string", description: "Drug or intervention, free text." },
+      phases: { type: "array", items: { type: "string", enum: ["EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3", "PHASE4", "NA", "any"] }, description: "Phases to keep (default PHASE2, PHASE3); [\"any\"] for all." },
+      industry_only: { type: "boolean", default: true, description: "Only industry lead sponsors (default true)." },
+      lookback_days: { type: "integer", default: 180, maximum: 1095, description: "Days back for newly stopped trials and passed primary completion dates." },
+      flags: { type: "array", items: { type: "string", enum: ["stopped", "overdue", "stale_overdue"] }, description: "Keep only trials with any of these flags." },
+      max_results: { type: "integer", default: 50, maximum: 300, description: "Maximum trials to return (1-300)." } } },
+    async run(a) {
+      const lb = Math.max(1, Math.min(+a.lookback_days || 180, 1095)), n = clamp(a.max_results, 300, 50), yr = isoDay(-365);
+      const [stopped, overdue] = await Promise.all([ctReadouts(a, "SUSPENDED,TERMINATED,WITHDRAWN", "LastUpdatePostDate", isoDay(-lb), isoDay(0), n),
+        ctReadouts(a, ACTIVE, "PrimaryCompletionDate", isoDay(-lb), isoDay(-1), n)]);
+      const out = new Map();
+      for (const r of stopped) out.set(r.nct_id, { ...r, risk_flags: [{ flag: "stopped", severity: 3, detail: r.status + (r.why_stopped ? `: ${r.why_stopped}` : "") }] });
+      for (const r of overdue) { if (r.readout_date_type === "ACTUAL") continue;
+        const f = [{ flag: "overdue", severity: 2, detail: `estimated primary completion ${r.readout_date} passed; status ${r.status}` }];
+        if (r.last_update_posted && r.last_update_posted < yr) f.push({ flag: "stale_overdue", severity: 1, detail: `record not updated since ${r.last_update_posted}` });
+        out.set(r.nct_id, { ...r, risk_flags: f }); }
+      let rows = [...out.values()].map(r => ({ ...r, kind: "trial_at_risk", risk_score: r.risk_flags.reduce((x, f) => x + f.severity, 0) }));
+      if (Array.isArray(a.flags) && a.flags.length) rows = rows.filter(r => r.risk_flags.some(f => a.flags.includes(f.flag)));
+      rows.sort((x, y) => y.risk_score - x.risk_score || (x.readout_date || "").localeCompare(y.readout_date || ""));
+      return { trials: rows.slice(0, n), disclaimer: "Registry signals only, not a prediction of trial failure. Not investment advice." };
+    } },
   fda_adcom_meetings: {
     description: "FDA advisory committee meeting notices from the Federal Register, newest first: title, publication date, document number and link. Source: Federal Register (U.S. government, public domain).",
     inputSchema: { type: "object", properties: { since: { type: "string", description: "Notice publication date from (YYYY-MM-DD)." }, max_results: { type: "integer", default: 20, maximum: 100, description: "Maximum notices to return (1-100)." } } },
@@ -396,8 +523,8 @@ async function handleRpc(msg) {
   switch (method) {
     case "initialize":
       return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.5" },
-        instructions: "Read-only public biotech data. Not investment, legal or medical advice. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
+        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.6" },
+        instructions: "Read-only public biotech data. Not investment, legal or medical advice. Every record carries verified_as_of, verify_hash, source_url and ticker_confidence. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
     case "ping": return { jsonrpc: "2.0", id, result: {} };
     case "tools/list":
       return { jsonrpc: "2.0", id, result: { tools: Object.entries(TOOLS).map(([name, t]) => ({ name, description: t.description, inputSchema: t.inputSchema, annotations: { readOnlyHint: true, openWorldHint: true } })) } };
@@ -405,7 +532,7 @@ async function handleRpc(msg) {
       const t = TOOLS[params.name];
       if (!t) return rpcErr(id, -32602, `unknown tool: ${params.name}`);
       try {
-        const out = await t.run(params.arguments || {});
+        const out = await enrich(await t.run(params.arguments || {})); // provenance + ticker confidence on every record
         return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(out) }], structuredContent: { result: out } } };
       } catch (e) {
         return { jsonrpc: "2.0", id, result: { isError: true, content: [{ type: "text", text: String(e.message || e) }] } };
@@ -415,11 +542,28 @@ async function handleRpc(msg) {
   }
 }
 
+// Public readout calendar feed for the static site page (biocatalystfeed.github.io/calendar/). Fixed query (90 days,
+// PHASE2/3, industry), cached 6 h at the edge so CT.gov sees at most a few requests a day per colo.
+async function calendarJson(url) {
+  const key = new Request(`${url.origin}/calendar.json`), cache = caches.default;
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  const c = await readoutCalendar({ upcoming_days: 90, max_results: 1000 });
+  const slim = ["nct_id", "title", "readout_date", "readout_date_type", "phase", "status", "sponsor", "ticker", "ticker_confidence", "conditions", "enrollment", "url", "source_url", "verified_as_of", "verify_hash"];
+  const body = { generated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), window: c.window, query: { upcoming_days: 90, phases: ["PHASE2", "PHASE3"], industry_only: true },
+    count: c.readouts.length, events: c.readouts.map(r => Object.fromEntries(slim.map(k => [k, r[k] ?? null]))), source: "ClinicalTrials.gov API v2",
+    note: "Readout = primary completion date (sponsor-reported; ESTIMATED dates often slip). Not investment advice." };
+  const res = new Response(JSON.stringify(body), { headers: { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "public, max-age=21600" } });
+  await cache.put(key, res.clone());
+  return res;
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, GET, DELETE, OPTIONS", "access-control-allow-headers": "content-type, accept, mcp-session-id, mcp-protocol-version" } });
     if (url.pathname === "/" || url.pathname === "/health") return json({ ok: true, service: "BioCatalystFeed hosted MCP", endpoint: "/mcp", terms: "https://github.com/biocatalystfeed/biocatalystfeed/blob/main/TERMS.md", privacy: "https://github.com/biocatalystfeed/biocatalystfeed/blob/main/PRIVACY.md" });
+    if (url.pathname === "/calendar.json" && req.method === "GET") return calendarJson(url);
     if (url.pathname !== "/mcp") return json({ error: "not found" }, 404);
 
     const ip = req.headers.get("cf-connecting-ip") || "unknown";

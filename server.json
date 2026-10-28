@@ -8,13 +8,13 @@
     "source": "github"
   },
   "websiteUrl": "https://biocat.ai",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "biocatalystfeed",
-      "version": "0.3.5",
+      "version": "0.3.6",
       "runtimeHint": "uvx",
       "transport": { "type": "stdio" },
       "packageArguments": [

@@ -15,13 +15,17 @@ BioCatalystFeed is open-source software you run yourself (CLI, MCP server, Apify
 | Trial fields diffed | Status, phase, enrollment, start / primary completion / completion dates, lead sponsor, title, why-stopped, has-results, results first posted, primary endpoints, arm count, interventions, site count | 13 fields: overall status, why stopped, phase, primary endpoints, enrollment, lead sponsor, site count, primary completion date, completion date, arm count, interventions, results posting date, start date | [3] |
 | Change severity labels | Yes: critical / notable / minor, plus date shift in days (rules in README) | Stopped / Notable / Minor | [1], [3] |
 | FDA decision calendar (PDUFA dates from 8-Ks, AdComs, approvals, CRLs) with watch/notify | Yes (v0.3.5, `bcf fda-decisions`) | Not stated (unknown) | [1], [3] |
+| Trial readout calendar (market-wide primary completions) + watch for slips | Yes (v0.3.6, `bcf readouts`, biocat.ai/calendar) | Completions calendar (paid tier) | [1] |
+| Trials at Risk (stopped / overdue / delayed / enrollment shortfall) | Yes (v0.3.6, `bcf readouts at-risk`) | Yes ("Trials at Risk", paid tier) | [1] |
+| Digests | RSS, JSON Feed, Markdown, email-ready HTML files (nothing is sent; no hosted email) | Daily email digest + dashboard | [1] |
+| Per-record provenance (verified_as_of, verify_hash, source_url) | Yes (v0.3.6) | Not stated (unknown) | [1] |
 | FDA advisory committee meetings | Yes (Federal Register notices: committee, date, NDA/BLA, sponsor) | Not stated (unknown) | [1], [3] |
 | EMA (EU) regulatory actions | Yes | Not stated (unknown) | [1], [3] |
 | openFDA (approvals, submissions, labels) | Yes | Not stated (unknown) | [1] |
 | NIH RePORTER grants | Yes | Not stated (unknown) | [1] |
 | PubMed / Europe PMC / bioRxiv / medRxiv | Yes (metadata + links; DOI/PMID dedup) | Not stated (unknown) | [1] |
 | SEC EDGAR (8-K, PDUFA-date mentions) | Yes | Not stated (unknown) | [1] |
-| Ticker → company mapping | Yes (alias table) | Unknown | [1] |
+| Ticker → company mapping | Yes (alias table + SEC ticker list, `ticker_confidence` per record) | Unknown | [1] |
 | Watch limits | None when self-hosted (subject to each source's rate limits) | Free: 1 sponsor + 1 disease watchlist + 1 saved search; Pro: 10 of each | [1] |
 | Schedule | Whenever you run it (cron / Apify schedule) | Daily; updates "typically" within 24 h | [1] |
 | Email digest | No (RSS / JSON Feed files instead) | Yes, morning digest | [1] |

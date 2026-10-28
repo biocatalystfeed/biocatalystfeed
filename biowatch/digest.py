@@ -56,7 +56,43 @@ def rss(title: str, changes: list[dict], home_url: str = HOME) -> str:
             f"<lastBuildDate>{format_datetime(datetime.now(timezone.utc))}</lastBuildDate>{items}</channel></rss>\n")
 
 
-def write(changes: list[dict], title: str, rss_path: str | None = None, json_path: str | None = None) -> None:
+def _line(c: dict) -> str:
+    """One digest line for a change record or an event record (readout / FDA decision / trial at risk)."""
+    if c.get("detected_at") or c.get("field") or c.get("kind", "").startswith("new_"):
+        return _title(c)
+    d = c.get("readout_date") or c.get("date") or ""
+    who = c.get("sponsor") or c.get("company") or ""
+    tk = f" [{c['ticker']}]" if c.get("ticker") else ""
+    risk = "; ".join(f["detail"] for f in c.get("risk_flags") or [])
+    return f"{d} {c.get('kind') or ''} {c.get('phase') or ''} {who}{tk}: {c.get('title') or c.get('key') or ''}".strip() + (f" ({risk})" if risk else "")
+
+
+def markdown(title: str, items: list[dict], intro: str | None = None) -> str:
+    """Rendered Markdown digest (changes or events). Local output only; nothing is sent."""
+    out = [f"# {title}", "", f"_Generated {datetime.now(timezone.utc).isoformat(timespec='minutes')} UTC. {len(items)} items._", ""]
+    if intro: out += [intro, ""]
+    for c in items:
+        u = _url(c)
+        out.append(f"- {_line(c).replace('[', '(').replace(']', ')')}" + (f" - [source]({u})" if u else ""))
+    if not items: out.append("- No items.")
+    out += ["", f"> {DISCLAIMER}", ""]
+    return "\n".join(out)
+
+
+def html(title: str, items: list[dict], intro: str | None = None) -> str:
+    """Rendered standalone HTML digest (changes or events), email-ready inline styles. Local output only."""
+    rows = "".join(f'<li style="margin:4px 0">{escape(_line(c))}' + (f' - <a href="{escape(_url(c))}">source</a>' if _url(c) else "") + "</li>" for c in items)
+    return (f'<!doctype html><html><head><meta charset="utf-8"><title>{escape(title)}</title></head>'
+            f'<body style="font-family:system-ui,sans-serif;max-width:860px;margin:auto;padding:16px">'
+            f"<h1 style=\"font-size:20px\">{escape(title)}</h1><p style=\"color:#555\">Generated {datetime.now(timezone.utc).isoformat(timespec='minutes')} UTC. {len(items)} items.</p>"
+            + (f"<p>{escape(intro)}</p>" if intro else "") + f"<ul>{rows or '<li>No items.</li>'}</ul>"
+            f'<p style="color:#777;font-size:12px">{escape(DISCLAIMER)}</p></body></html>\n')
+
+
+def write(changes: list[dict], title: str, rss_path: str | None = None, json_path: str | None = None,
+          md_path: str | None = None, html_path: str | None = None) -> None:
+    if md_path: open(md_path, "w").write(markdown(title, changes))
+    if html_path: open(html_path, "w").write(html(title, changes))
     if rss_path: open(rss_path, "w").write(rss(title, changes))
     if json_path: open(json_path, "w").write(json.dumps(json_feed(title, changes), indent=1, default=str))
 
@@ -64,6 +100,8 @@ def write(changes: list[dict], title: str, rss_path: str | None = None, json_pat
 def add_args(p) -> None:
     p.add_argument("--rss", metavar="FILE", help="write an RSS 2.0 digest of this run's changes (local file; nothing is sent)")
     p.add_argument("--json-feed", metavar="FILE", help="write a JSON Feed 1.1 digest of this run's changes")
+    p.add_argument("--digest-md", metavar="FILE", help="write a rendered Markdown digest of this run's changes")
+    p.add_argument("--digest-html", metavar="FILE", help="write a rendered HTML digest (email-ready inline styles; nothing is sent)")
 
 
 def add_query_args(p) -> None:

@@ -11,7 +11,7 @@ FIELDS = ",".join([
     "NCTId", "BriefTitle", "Acronym", "OverallStatus", "Phase", "StudyType",
     "LeadSponsorName", "LeadSponsorClass", "CollaboratorName", "Condition",
     "InterventionName", "InterventionType", "EnrollmentCount", "EnrollmentType",
-    "StartDate", "PrimaryCompletionDate", "CompletionDate", "StudyFirstPostDate",
+    "StartDate", "PrimaryCompletionDate", "PrimaryCompletionDateType", "CompletionDate", "StudyFirstPostDate",
     "LastUpdatePostDate", "WhyStopped", "HasResults", "ResultsFirstPostDate",
     "PrimaryOutcomeMeasure", "ArmGroupLabel", "LocationFacility",
 ])
