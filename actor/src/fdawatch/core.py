@@ -39,7 +39,7 @@ def company_trials(ct_client, sponsor: str, max_records: int = 1000, include_col
     al = resolve(sponsor)
     seen: dict[str, dict] = {}
     for q in al["ct_queries"]:
-        for r in search(ct_client, sponsor=q, max_records=max_records):
+        for r in search(ct_client, sponsor=q, max_records=max_records, sponsor_aliases=False):
             seen.setdefault(r["nct_id"], r)
     recs = list(seen.values())
     if al["ct_lead"] and not include_collaborations:

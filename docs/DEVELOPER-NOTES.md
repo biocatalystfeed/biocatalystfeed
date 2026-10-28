@@ -101,7 +101,7 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
 
 ## Known limits
 - Diff is snapshot-based: changes are detected only between our own runs (no historical backfill; CT.gov version history not used).
-- Sponsor search is free-text (`query.spons`): matches collaborators/similar names; needs a sponsor alias table.
+- Sponsor search is free-text (`query.spons`): matches collaborators/similar names. Since 0.3.4 `trialwatch.core.search` expands known companies/tickers via `fdawatch/aliases.py` `ct_queries` (merged by NCT ID; a bare ticker is not sent itself); unknown names are sent as typed.
 - Tracked fields: status, phase, enrollment, start/primary-completion/completion dates, sponsor, title, why_stopped, has_results, and (0.3.0) interventions, primary outcome measures, arm count, site count, results first posted. Site count needs `LocationFacility` in the CT.gov field list, which makes responses roughly 20x larger for big multi-site sponsors; still one page per 1,000 trials. Not tracked: secondary endpoints, eligibility, individual site names.
 - No email/alert delivery, auth, billing, or multi-tenant storage.
 - grantwatch: NIH-funded work only. Companies rarely hold NIH grants, so the useful company signal is grants mentioning their *drugs* (academic and competitor activity). Keyword matching is RePORTER's own and can return loosely related projects.
@@ -148,3 +148,7 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
 - **Privacy**: `company_rep`, `approver_name`, `approver_title`, `company_address` are never copied. Store prefix `crl`,
   key = `file_name`; tracked `application_status`, `letter_type`. PDF link = `https://download.open.fda.gov/crl/<file_name>`.
 - Hosted Cloudflare worker not updated (CLI + local MCP only).
+
+## 0.3.4 (2026-10-28 PT, weekly review)
+- **Sponsor aliases in trial search** (`trialwatch.core.sponsor_queries` / `raw_search`): fixes the daily routine's `sponsor:Terns Pharmaceuticals` watch returning 0 trials. CLI `--no-aliases`; `company_trials` passes `sponsor_aliases=False` (it already loops over `ct_queries`). Hosted worker has a small `CT_SPONSOR` map mirroring the table (Terns + tickers).
+- **MCP schema quality** (`trialwatch/tooldocs.py`): Glama's Tool Definition Quality Score (scored 2026-10-23 UTC, 22 tools) was B 3.2/5, the recurring deduction being "0% schema description coverage" and "no annotations". All params now carry descriptions via `Annotated[..., Field(description=...)]` set on `__signature__` (works on mcp 1.x FastMCP and 2.x MCPServer); tools get `ToolAnnotations` by kind (read / local / snapshot). `tests/test_v034.py` fails if a new param lacks a description.

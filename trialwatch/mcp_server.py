@@ -6,12 +6,19 @@ try:
 except ImportError:  # pragma: no cover
     from mcp.server.fastmcp import FastMCP as _Server  # mcp 1.x
 from .client import CTGovClient
-from .core import search, run_watch
+from .core import search, run_watch, raw_search
 from .normalize import normalize
 from .report import sponsor_pipeline as _pipeline
 from .store import Store
 
 mcp = _Server("biocatalystfeed")
+from .tooldocs import tool as _tooldoc
+
+
+def _tool(kind: str):
+    return _tooldoc(mcp, kind)
+
+
 _client = CTGovClient()
 from fdawatch.client import OpenFDAClient
 _fda = OpenFDAClient()
@@ -23,12 +30,12 @@ def _clamp(n, hi: int, lo: int = 1) -> int:
     return max(lo, min(int(n), hi))
 
 
-@mcp.tool()
+@_tool("read")
 def search_trials(sponsor: str | None = None, condition: str | None = None, intervention: str | None = None,
                   phases: list[str] | None = None, statuses: list[str] | None = None,
                   changed_since: str | None = None, max_records: int = 50, exclude: list[str] | None = None,
                   rank: bool = False, include_global: bool = False, global_sources: list[str] | None = None) -> list[dict] | dict:
-    """Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: "non-FDA/EMA registry"` and a `global_disclaimer`. Off by default.
+    """Search clinical trials (ClinicalTrials.gov by default). sponsor is alias-resolved for known companies/tickers. Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: "non-FDA/EMA registry"` and a `global_disclaimer`. Off by default.
     Links (registry ID + URL from ClinicalTrials.gov secondary IDs) are in each trial's global_links. When showing global results to a user, keep the label
     and the disclaimer. include_global: Opt-in. Adds non-FDA/EMA sources that may follow different, sometimes lighter,
     regulatory standards. Results are labelled. Not an endorsement or medical or investment advice.
@@ -41,7 +48,7 @@ def search_trials(sponsor: str | None = None, condition: str | None = None, inte
     if include_global:
         srcs = gc.parse_sources(global_sources)
         rows = []
-        for st in _client.search(max_records=_clamp(max_records, 500), extra_fields=["SecondaryIdInfo"], **q):
+        for st in raw_search(_client, max_records=_clamp(max_records, 500), extra_fields=["SecondaryIdInfo"], **q):
             r = normalize(st); r["global_links"] = gc.registry_links(gc.secondary_ids(st), r["nct_id"], srcs); rows.append(r)
     else:
         rows = search(_client, max_records=_clamp(max_records, 500), **q)
@@ -53,37 +60,37 @@ def search_trials(sponsor: str | None = None, condition: str | None = None, inte
     return out
 
 
-@mcp.tool()
+@_tool("read")
 def get_trial(nct_id: str) -> dict:
-    """Get one normalized trial record by NCT ID."""
+    """Get one normalized trial record by NCT ID. Same fields as search_trials results; a malformed ID returns an error."""
     return normalize(_client.get(nct_id))
 
 
-@mcp.tool()
+@_tool("snapshot")
 def snapshot_watch(name: str, sponsor: str | None = None, condition: str | None = None,
                    intervention: str | None = None, phases: list[str] | None = None) -> dict:
-    """Snapshot a saved query ('watch') into the local DB and return what changed since its previous snapshot."""
+    """Snapshot a saved query ('watch') into the local DB and return what changed since its previous snapshot. Writes a run to the local DB (BIOCATALYSTFEED_DB); the first call for a name is a baseline with no changes. Use search_trials for one-off lookups and trial_changes_since to read stored changes later. sponsor is alias-resolved like search_trials."""
     info = run_watch(_client, Store(_db), name, sponsor=sponsor, condition=condition, intervention=intervention, phases=phases)
     info.pop("trials")
     return info
 
 
-@mcp.tool()
+@_tool("local")
 def trial_changes_since(since: str, watch: str | None = None, min_severity: str | None = None) -> list[dict]:
     """List detected changes since an ISO date, optionally for one watch: new trials and status, phase, enrollment,
     date, primary-endpoint, arm, intervention, site-count and results-posted changes. Each change has a severity
     (critical = terminated/suspended/withdrawn, why-stopped added, primary endpoint rewritten; notable; minor) and date
-    changes carry shift_days. min_severity ('notable' or 'critical') drops lower levels."""
+    changes carry shift_days. min_severity ('notable' or 'critical') drops lower levels. Reads the local snapshot DB only (no network call); changes exist only after snapshot_watch has run at least twice for a watch."""
     return Store(_db).changes(watch=watch, since=since, min_severity=min_severity)
 
 
-@mcp.tool()
+@_tool("read")
 def sponsor_pipeline(sponsor: str, max_records: int = 300) -> dict:
-    """Summarize a sponsor's trial pipeline by phase and status, with active trials sorted by primary completion."""
+    """Summarize a sponsor's trial pipeline by phase and status, with active trials sorted by primary completion. sponsor is alias-resolved (company name or ticker, e.g. 'TERN')."""
     return _pipeline(search(_client, sponsor=sponsor, max_records=_clamp(max_records, 1000)))
 
 
-@mcp.tool()
+@_tool("read")
 def fda_approvals(sponsor: str | None = None, since: str | None = None, until: str | None = None,
                   application_number: str | None = None, novel_only: bool = False, max_results: int = 100) -> list[dict]:
     """Drugs@FDA submissions/approvals from openFDA (ORIG + supplements), newest first. sponsor is alias-resolved
@@ -92,7 +99,7 @@ def fda_approvals(sponsor: str | None = None, since: str | None = None, until: s
     return _fa(_fda, sponsor=sponsor, since=since, until=until, application_number=application_number, novel_only=novel_only)[:_clamp(max_results, 1000)]
 
 
-@mcp.tool()
+@_tool("read")
 def company_profile(company: str, recent_days: int = 365, include_collaborations: bool = False, basic: bool = False,
                     preprint_days: int = 7) -> dict:
     """Merged company view: ClinicalTrials.gov pipeline (lead sponsor, alias-resolved) + FDA applications, novel approvals,
@@ -109,14 +116,14 @@ def company_profile(company: str, recent_days: int = 365, include_collaborations
     return _cp(_client, _fda, company, recent_days=recent_days, include_collaborations=include_collaborations, **kw)
 
 
-@mcp.tool()
+@_tool("local")
 def fda_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """List detected FDA changes (new submissions, approvals, label revisions) since an ISO date (from fdawatch watches)."""
+    """List detected FDA changes (new submissions, approvals, label revisions) since an ISO date (from fdawatch watches). Reads the local snapshot DB only (no network call); changes exist only after the fdawatch CLI watch has run at least twice for a watch."""
     from fdawatch.store import FDAStore
     return FDAStore(_db).changes(watch=watch, since=since)
 
 
-@mcp.tool()
+@_tool("read")
 def search_grants(org: list[str] | None = None, pi: str | None = None, keyword: str | None = None,
                   since: str | None = None, until: str | None = None, fiscal_years: list[int] | None = None,
                   org_exact: bool = False, max_results: int = 100, pi_exact: bool = False, exclude: list[str] | None = None,
@@ -131,7 +138,7 @@ def search_grants(org: list[str] | None = None, pi: str | None = None, keyword: 
                include_future=include_future)
 
 
-@mcp.tool()
+@_tool("snapshot")
 def snapshot_grants(name: str, org: list[str] | None = None, pi: str | None = None, keyword: str | None = None,
                     since: str | None = None, org_exact: bool = False) -> dict:
     """Snapshot a grant query into the local DB; returns new awards / amount / end-date changes since the previous snapshot."""
@@ -139,14 +146,14 @@ def snapshot_grants(name: str, org: list[str] | None = None, pi: str | None = No
     return run_watch(ReporterClient(), store(_db), name, org=org, pi=pi, keyword=keyword, since=since, org_exact=org_exact)
 
 
-@mcp.tool()
+@_tool("local")
 def grant_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected grant changes (new_award, award_amount_change, ...) since an ISO date."""
+    """Detected grant changes (new_award, award_amount_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_grants has run at least twice for a watch."""
     from grantwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
 
-@mcp.tool()
+@_tool("read")
 def search_papers(affiliation: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
                   since: str | None = None, preprint_days: int = 14, max_results: int = 50,
                   sources: list[str] | None = None, exclude: list[str] | None = None, rank: bool = False,
@@ -182,7 +189,7 @@ def search_papers(affiliation: list[str] | None = None, drug: list[str] | None =
     return res
 
 
-@mcp.tool()
+@_tool("snapshot")
 def snapshot_papers(name: str, affiliation: list[str] | None = None, drug: list[str] | None = None,
                     keyword: str | None = None, since: str | None = None, preprint_days: int = 0) -> dict:
     """Snapshot a paper query (PubMed + optional preprints) and return papers new since the previous snapshot."""
@@ -191,14 +198,14 @@ def snapshot_papers(name: str, affiliation: list[str] | None = None, drug: list[
                      keyword, since=since, preprint_days=preprint_days, epmc=EuropePMCClient())
 
 
-@mcp.tool()
+@_tool("local")
 def paper_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """New papers/preprints detected since an ISO date."""
+    """New papers/preprints detected since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_papers has run at least twice for a watch."""
     from paperwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
 
-@mcp.tool()
+@_tool("read")
 def sec_pdufa_mentions(company: str, since: str | None = None, until: str | None = None, max_docs: int = 10) -> list[dict]:
     """SEC EDGAR 8-K documents mentioning "PDUFA" for a company (name, ticker or CIK), with candidate PDUFA dates and
     source links. Candidates are UNVERIFIED regex extractions; best=True marks the date nearest each mention."""
@@ -208,7 +215,7 @@ def sec_pdufa_mentions(company: str, since: str | None = None, until: str | None
     return pdufa_mentions(c, _cik(c, company), since=since, until=until, max_docs=_clamp(max_docs, 25))
 
 
-@mcp.tool()
+@_tool("read")
 def ema_medicines(holder: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
                   status: list[str] | None = None, since: str | None = None, until: str | None = None,
                   orphan: bool = False, prime: bool = False, max_results: int = 100, exclude: list[str] | None = None,
@@ -222,7 +229,7 @@ def ema_medicines(holder: list[str] | None = None, drug: list[str] | None = None
                             orphan=orphan, prime=prime, max_records=_clamp(max_results, 500), exclude=exclude, rank=rank)
 
 
-@mcp.tool()
+@_tool("snapshot")
 def snapshot_ema(name: str, holder: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
                  status: list[str] | None = None, since: str | None = None) -> dict:
     """Snapshot an EMA medicines query into the local DB; returns new medicines and status / opinion / EC decision /
@@ -231,14 +238,14 @@ def snapshot_ema(name: str, holder: list[str] | None = None, drug: list[str] | N
     return run_watch(EMAClient(), store(_db), name, holder=holder, drug=drug, keyword=keyword, status=status, since=since)
 
 
-@mcp.tool()
+@_tool("local")
 def ema_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected EMA changes (new_medicine, status_change, opinion_date_change, ec_decision_date_change, ...) since an ISO date."""
+    """Detected EMA changes (new_medicine, status_change, opinion_date_change, ec_decision_date_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_ema has run at least twice for a watch."""
     from emawatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
 
-@mcp.tool()
+@_tool("read")
 def fda_adcom_meetings(since: str | None = None, until: str | None = None, area: list[str] | None = None,
                        committee: str | None = None, keyword: str | None = None, upcoming: bool = False,
                        agenda: bool = True, max_results: int = 25, exclude: list[str] | None = None) -> list[dict]:
@@ -255,7 +262,7 @@ def fda_adcom_meetings(since: str | None = None, until: str | None = None, area:
                     max_records=_clamp(max_results, 100), exclude=exclude)
 
 
-@mcp.tool()
+@_tool("snapshot")
 def snapshot_adcom(name: str, since: str | None = None, area: list[str] | None = None, committee: str | None = None,
                    keyword: str | None = None) -> dict:
     """Snapshot FDA advisory committee notices into the local DB; returns new notices (new meetings, amendments,
@@ -266,14 +273,14 @@ def snapshot_adcom(name: str, since: str | None = None, area: list[str] | None =
                      area=area, committee=committee, keyword=keyword)
 
 
-@mcp.tool()
+@_tool("local")
 def adcom_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected FDA advisory committee changes (new_notice, meeting_date_change, ...) since an ISO date."""
+    """Detected FDA advisory committee changes (new_notice, meeting_date_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_adcom has run at least twice for a watch."""
     from adcomwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
 
-@mcp.tool()
+@_tool("read")
 def fda_complete_response_letters(company: list[str] | None = None, application: str | None = None,
                                   since: str | None = None, until: str | None = None, status: list[str] | None = None,
                                   keyword: str | None = None, topic: list[str] | None = None, max_results: int = 25,
@@ -291,7 +298,7 @@ def fda_complete_response_letters(company: list[str] | None = None, application:
                    max_records=_clamp(max_results, 200))
 
 
-@mcp.tool()
+@_tool("snapshot")
 def snapshot_crl(name: str, company: list[str] | None = None, since: str | None = None, keyword: str | None = None,
                  status: list[str] | None = None) -> dict:
     """Snapshot FDA complete response letters into the local DB; returns new letters and application_status flips
@@ -300,17 +307,17 @@ def snapshot_crl(name: str, company: list[str] | None = None, since: str | None 
     return run_watch(_fda, store(_db), name, company=company, since=since, keyword=keyword, status=status)
 
 
-@mcp.tool()
+@_tool("local")
 def crl_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected FDA CRL changes (new_letter, application_status_change, ...) since an ISO date."""
+    """Detected FDA CRL changes (new_letter, application_status_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_crl has run at least twice for a watch."""
     from crlwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
 
-@mcp.tool()
+@_tool("local")
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl."""
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl. Reads the local snapshot DB only (no network call)."""
     if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl"):
         raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl")
     if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")

@@ -20,7 +20,7 @@ export class IpRateLimiter extends DurableObject {
 }
 
 const PROTOCOL = "2025-06-18";
-const UA = "BioCatalystFeed-hosted/0.3.3 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const UA = "BioCatalystFeed-hosted/0.3.4 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
 async function getJSON(url) {
@@ -133,19 +133,28 @@ function crlTopics(text) {
 const crlIso = d => { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(d || "").trim()); return m ? `${m[3]}-${m[1]}-${m[2]}` : (d || null); };
 const ymd = (d, dflt) => (/^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d.replace(/-/g, "") : dflt);
 
+// Sponsor aliases (mirror of fdawatch/aliases.py ct_queries): names/tickers -> the string ClinicalTrials.gov actually uses.
+const CT_SPONSOR = { "tern": "Terns, Inc.", "terns": "Terns, Inc.", "terns pharmaceuticals": "Terns, Inc.", "terns inc": "Terns, Inc.",
+  "lly": "Eli Lilly and Company", "vktx": "Viking Therapeutics", "mdgl": "Madrigal Pharmaceuticals", "nvo": "Novo Nordisk A/S",
+  "gpcr": "Structure Therapeutics", "alt": "Altimmune" };
+const ctSponsor = s => CT_SPONSOR[String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()] || s;
+
 const TOOLS = {
   search_trials: {
     description: "Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: \"non-FDA/EMA registry\"` and a `global_disclaimer`. Off by default. Links (registry ID + URL from ClinicalTrials.gov secondary IDs) are in each trial's global_links. When showing global results to a user, keep the label and the disclaimer. Most recently updated first; phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
     inputSchema: { type: "object", properties: {
-      sponsor: { type: "string" }, condition: { type: "string" }, intervention: { type: "string" },
-      phases: { type: "array", items: { type: "string" } }, statuses: { type: "array", items: { type: "string" } },
-      max_records: { type: "integer", default: 20, maximum: 100 },
+      sponsor: { type: "string", description: "Sponsor/company name, free text (ClinicalTrials.gov query.spons). Known tickers/names are alias-resolved, e.g. 'TERN' -> 'Terns, Inc.'." },
+      condition: { type: "string", description: "Condition or disease, free text (e.g. 'obesity')." },
+      intervention: { type: "string", description: "Drug or intervention name, free text (e.g. 'semaglutide')." },
+      phases: { type: "array", items: { type: "string", enum: ["EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3", "PHASE4", "NA"] }, description: "Trial phases to keep." },
+      statuses: { type: "array", items: { type: "string" }, description: "Overall statuses to keep, e.g. RECRUITING, ACTIVE_NOT_RECRUITING, COMPLETED, TERMINATED." },
+      max_records: { type: "integer", default: 20, maximum: 100, description: "Maximum trials to return (1-100)." },
       include_global: { type: "boolean", default: false, description: INCLUDE_GLOBAL_DESC },
       global_sources: { type: "array", items: { type: "string", enum: GLOBAL_SOURCES }, description: GLOBAL_SOURCES_DESC } } },
     async run(a) {
       const srcs = a.include_global === true ? parseSources(a.global_sources) : null;
       const q = new URLSearchParams({ format: "json", sort: "LastUpdatePostDate:desc", pageSize: String(clamp(a.max_records, 100, 20)) });
-      if (a.sponsor) q.set("query.spons", a.sponsor);
+      if (a.sponsor) q.set("query.spons", ctSponsor(a.sponsor));
       if (a.condition) q.set("query.cond", a.condition);
       if (a.intervention) q.set("query.intr", a.intervention);
       if (a.statuses?.length) q.set("filter.overallStatus", a.statuses.join(","));
@@ -159,7 +168,7 @@ const TOOLS = {
     } },
   get_trial: {
     description: "Get one trial record from ClinicalTrials.gov by NCT ID.",
-    inputSchema: { type: "object", properties: { nct_id: { type: "string" } }, required: ["nct_id"] },
+    inputSchema: { type: "object", properties: { nct_id: { type: "string", description: "ClinicalTrials.gov ID: 'NCT' followed by 8 digits, e.g. NCT04184622." } }, required: ["nct_id"] },
     async run(a) {
       if (!/^NCT\d{8}$/i.test(a.nct_id || "")) throw new Error("nct_id must look like NCT01234567");
       const d = await getJSON(`https://clinicaltrials.gov/api/v2/studies/${a.nct_id.toUpperCase()}?format=json`);
@@ -168,7 +177,7 @@ const TOOLS = {
     } },
   fda_approvals: {
     description: "Drugs@FDA submissions from openFDA (Data provided by the U.S. FDA). Filter by sponsor name.",
-    inputSchema: { type: "object", properties: { sponsor: { type: "string" }, max_results: { type: "integer", default: 20, maximum: 100 } },
+    inputSchema: { type: "object", properties: { sponsor: { type: "string", description: "Drugs@FDA sponsor_name as openFDA stores it (upper-case abbreviation, e.g. 'LILLY', 'MADRIGAL')." }, max_results: { type: "integer", default: 20, maximum: 100, description: "Maximum applications to return (1-100)." } },
       required: ["sponsor"] },
     async run(a) {
       const s = String(a.sponsor).replace(/["\\]/g, "").toUpperCase();
@@ -181,7 +190,7 @@ const TOOLS = {
     } },
   search_papers: {
     description: "Search PubMed, Europe PMC and preprints. Set `include_global: true` to flag papers from studies run outside US/EU oversight (`jurisdiction_flag`). Off by default. (Hosted endpoint: PubMed via NCBI E-utilities; affiliation countries for flags from Europe PMC metadata; \"unknown\" when no country is found, never guessed.) Citation metadata and links only. When showing flagged papers to a user, keep the label and global_disclaimer.",
-    inputSchema: { type: "object", properties: { keyword: { type: "string" }, max_records: { type: "integer", default: 10, maximum: 50 },
+    inputSchema: { type: "object", properties: { keyword: { type: "string", description: "PubMed query syntax, e.g. 'tirzepatide AND obesity' or 'Viking Therapeutics[ad]'." }, max_records: { type: "integer", default: 10, maximum: 50, description: "Maximum papers to return (1-50)." },
       include_global: { type: "boolean", default: false, description: INCLUDE_GLOBAL_DESC },
       global_sources: { type: "array", items: { type: "string", enum: GLOBAL_SOURCES }, description: GLOBAL_SOURCES_DESC } }, required: ["keyword"] },
     async run(a) {
@@ -208,9 +217,13 @@ const TOOLS = {
   fda_complete_response_letters: {
     description: "FDA complete response letters (CRLs) for NDAs/BLAs from openFDA, newest letter first: company, application number(s), letter date, application_status ('Approved' = approved since, 'Unapproved' = not yet), deficiency topics (facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors) parsed from the letter's section headings, and the PDF link. since/until filter the letter date (YYYY-MM-DD); application e.g. 'NDA 218705' or '218705'; keyword matches company or any word in the letter. FDA publishes CRLs with a lag and redactions. Source: U.S. FDA / openFDA (public domain). Factual record only; not investment, legal or medical advice.",
     inputSchema: { type: "object", properties: {
-      company: { type: "string" }, application: { type: "string" }, since: { type: "string", description: "YYYY-MM-DD" }, until: { type: "string", description: "YYYY-MM-DD" },
-      status: { type: "string", enum: ["Approved", "Unapproved"] }, keyword: { type: "string" },
-      topic: { type: "string", enum: CRL_TOPIC_RULES.map(([t]) => t) }, max_results: { type: "integer", default: 20, maximum: 100 } } },
+      company: { type: "string", description: "Company name phrase as it appears on the letter." },
+      application: { type: "string", description: "NDA/BLA number, e.g. 'NDA 218705', 'BLA 761308' or '218705'." },
+      since: { type: "string", description: "Letter date from (YYYY-MM-DD)." }, until: { type: "string", description: "Letter date to (YYYY-MM-DD)." },
+      status: { type: "string", enum: ["Approved", "Unapproved"], description: "'Approved' = approved since the letter; 'Unapproved' = not yet." },
+      keyword: { type: "string", description: "Matches company, application number or any word in the letter text." },
+      topic: { type: "string", enum: CRL_TOPIC_RULES.map(([t]) => t), description: "Keep letters with this deficiency topic." },
+      max_results: { type: "integer", default: 20, maximum: 100, description: "Maximum letters to return (1-100)." } } },
     async run(a) {
       const parts = [`letter_date:[${ymd(a.since, "19000101")}+TO+${ymd(a.until, "29991231")}]`];
       if (a.company) parts.push(`company_name:"${encodeURIComponent(String(a.company).replace(/["\\]/g, ""))}"`);
@@ -236,8 +249,8 @@ const TOOLS = {
       return out;
     } },
   fda_adcom_meetings: {
-    description: "FDA advisory committee meeting notices from the Federal Register.",
-    inputSchema: { type: "object", properties: { since: { type: "string", description: "YYYY-MM-DD" }, max_results: { type: "integer", default: 20, maximum: 100 } } },
+    description: "FDA advisory committee meeting notices from the Federal Register, newest first: title, publication date, document number and link. Source: Federal Register (U.S. government, public domain).",
+    inputSchema: { type: "object", properties: { since: { type: "string", description: "Notice publication date from (YYYY-MM-DD)." }, max_results: { type: "integer", default: 20, maximum: 100, description: "Maximum notices to return (1-100)." } } },
     async run(a) {
       const q = new URLSearchParams({ "conditions[agencies][]": "food-and-drug-administration", "conditions[type][]": "NOTICE",
         "conditions[term]": "\"advisory committee\" \"notice of meeting\"", per_page: "100", order: "newest" });
@@ -256,7 +269,7 @@ async function handleRpc(msg) {
   switch (method) {
     case "initialize":
       return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.3" },
+        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.4" },
         instructions: "Read-only public biotech data. Not investment, legal or medical advice. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
     case "ping": return { jsonrpc: "2.0", id, result: {} };
     case "tools/list":

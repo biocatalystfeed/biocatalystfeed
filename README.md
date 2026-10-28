@@ -40,6 +40,7 @@ pip install biocatalystfeed
 # no venv needed:  uvx --from biocatalystfeed bcf --help    or    pipx install biocatalystfeed
 
 bcf trials search --sponsor "Viking Therapeutics" --phase PHASE3
+bcf trials search --sponsor TERN                           # known names/tickers are alias-resolved (CT.gov: "Terns, Inc."); --no-aliases to send as typed
 bcf papers search --drug resmetirom --since 2026-09-01 --exclude mice rat --rank
 bcf grants search --pi "Ioannou, George N" --since 2024-01-01 --no-future
 bcf sec pdufa MDGL --since 2023-01-01
