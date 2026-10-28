@@ -54,6 +54,6 @@ function draw(){{const q=$('q').value.toLowerCase(),c=$('c').value.toLowerCase()
 $('b').innerHTML=D.events.filter(e=>(!q||[e.sponsor,e.ticker,e.title,e.nct_id].join(' ').toLowerCase().includes(q))&&(!c||(e.conditions||'').toLowerCase().includes(c))&&(!p||(e.phase||'').includes(p))&&(!t||e.ticker))
 .map(e=>`<tr><td>${{esc(e.readout_date)}}${{e.readout_date_type==='ACTUAL'?'':' <small>est.</small>'}}</td><td>${{esc((e.phase||'').replaceAll('PHASE','P'))}}</td><td>${{esc(e.sponsor)}}${{e.ticker?' <b>'+esc(e.ticker)+'</b>':''}}</td><td><a href="${{esc(e.url)}}">${{esc(e.nct_id)}}</a> ${{esc((e.title||'').slice(0,140))}}</td><td>${{esc((e.conditions||'').slice(0,80))}}</td></tr>`).join('');}}
 ['q','c','p','t'].forEach(i=>$(i).addEventListener('input',draw));
-fetch({json.dumps(live_url)}).then(r=>r.ok?r.json():null).then(j=>{{if(j&&j.events&&j.generated_at>D.generated_at){{D=j;$('meta').innerHTML='<small>Window '+esc(j.window[0])+' to '+esc(j.window[1])+' - '+j.count+' trials - live data '+esc(j.generated_at)+'</small>';draw();}}}}).catch(()=>{{}});
+fetch({json.dumps(live_url)}).then(r=>r.ok?r.json():null).then(j=>{{if(j&&j.events&&Date.parse(j.generated_at)-Date.parse(D.generated_at)>864e5){{D=j;$('meta').innerHTML='<small>Window '+esc(j.window[0])+' to '+esc(j.window[1])+' - '+j.count+' trials - live data '+esc(j.generated_at)+'</small>';draw();}}}}).catch(()=>{{}});
 </script></body></html>
 """

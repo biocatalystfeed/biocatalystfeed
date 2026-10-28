@@ -176,9 +176,9 @@ function tickerMatch(name, names, srcTicker) {
   if (n.length >= 4 && f.length >= 4) for (const [k, v] of Object.entries(names)) if (k.split(" ")[0] === f && (k.startsWith(n) || n.startsWith(k))) return { ticker: v[0], ticker_confidence: 0.6, ticker_method: "sec_prefix_name", ticker_company: v[1] };
   return none;
 }
-async function enrich(out) {
+async function enrich(out, useSec = true) {
   const asOf = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-  let names = null; try { names = await secNames(); } catch { names = null; }
+  let names = null; if (useSec) try { names = await secNames(); } catch { names = null; }
   const one = async r => {
     if (!r || typeof r !== "object" || Array.isArray(r) || r.verify_hash || !("url" in r || "key" in r || "nct_id" in r)) return;
     const nm = r.sponsor || r.company || r.lead_sponsor;
@@ -195,7 +195,8 @@ async function enrich(out) {
 const ACTIVE = "NOT_YET_RECRUITING,RECRUITING,ENROLLING_BY_INVITATION,ACTIVE_NOT_RECRUITING";
 const isoDay = (n = 0) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
 async function ctReadouts(a, statuses, field, lo, hi, n) {
-  const q = new URLSearchParams({ format: "json", sort: `${field}:asc`, pageSize: String(n) });
+  const q = new URLSearchParams({ format: "json", sort: `${field}:asc`, pageSize: String(n),
+    fields: "NCTId,BriefTitle,OverallStatus,WhyStopped,Phase,LeadSponsorName,Condition,EnrollmentCount,EnrollmentType,PrimaryCompletionDate,PrimaryCompletionDateType,CompletionDate,LastUpdatePostDate" });
   q.set("filter.overallStatus", statuses);
   if (a.sponsor) q.set("query.spons", ctSponsor(a.sponsor));
   if (a.condition) q.set("query.cond", a.condition);
@@ -222,7 +223,7 @@ async function readoutCalendar(a) {
   const re = /^\d{4}-\d{2}-\d{2}$/;
   let lo = re.test(a.since || "") ? a.since : isoDay(0), hi = re.test(a.until || "") ? a.until : null;
   if (a.upcoming_days != null || !hi) { if (a.upcoming_days != null || !re.test(a.since || "")) lo = isoDay(0); hi = hi && a.upcoming_days == null ? hi : isoDay(Math.max(0, Math.min(+a.upcoming_days || 90, 1095))); }
-  let rows = await enrich(await ctReadouts(a, ACTIVE, "PrimaryCompletionDate", lo, hi, clamp(a.max_results, 1000, 100)));
+  let rows = await enrich(await ctReadouts(a, ACTIVE, "PrimaryCompletionDate", lo, hi, clamp(a.max_results, 1000, 100)), a._sec !== false);
   if (a.ticker_only) rows = rows.filter(r => r.ticker);
   return { window: [lo, hi], readouts: rows };
 }
@@ -548,7 +549,7 @@ async function calendarJson(url) {
   const key = new Request(`${url.origin}/calendar.json`), cache = caches.default;
   const hit = await cache.match(key);
   if (hit) return hit;
-  const c = await readoutCalendar({ upcoming_days: 90, max_results: 1000 });
+  const c = await readoutCalendar({ upcoming_days: 90, max_results: 1000, _sec: false }); // alias-table tickers only (free-plan CPU budget)
   const slim = ["nct_id", "title", "readout_date", "readout_date_type", "phase", "status", "sponsor", "ticker", "ticker_confidence", "conditions", "enrollment", "url", "source_url", "verified_as_of", "verify_hash"];
   const body = { generated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), window: c.window, query: { upcoming_days: 90, phases: ["PHASE2", "PHASE3"], industry_only: true },
     count: c.readouts.length, events: c.readouts.map(r => Object.fromEntries(slim.map(k => [k, r[k] ?? null]))), source: "ClinicalTrials.gov API v2",
