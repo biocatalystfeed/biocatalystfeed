@@ -51,7 +51,7 @@ const toolUnits = (b) => (Array.isArray(b) ? b.slice(0, 10) : [b]).filter(m => m
 const UPGRADE = "Higher limits via API keys are coming; contact contact@biocat.ai, or self-host for free: pip install biocatalystfeed";
 
 const PROTOCOL = "2025-06-18";
-const UA = "BioCatalystFeed-hosted/0.3.6 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const UA = "BioCatalystFeed-hosted/0.4.0 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
 const SEC_UA = "BioCatalystFeed contact@biocat.ai"; // SEC fair-access policy: "Company Name email" format
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
@@ -546,7 +546,7 @@ const TOOLS = {
     } },
 };
 
-const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining", "x-content-type-options": "nosniff", "cache-control": "no-store", ...extra } });
+const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining, x-daily-limit, x-daily-remaining, x-daily-reset, x-bcf-tier", "x-content-type-options": "nosniff", "cache-control": "no-store", ...extra } });
 const rpcErr = (id, code, message) => ({ jsonrpc: "2.0", id: id ?? null, error: { code, message } });
 
 async function handleRpc(msg) {
@@ -555,7 +555,7 @@ async function handleRpc(msg) {
   switch (method) {
     case "initialize":
       return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.6" },
+        serverInfo: { name: "biocatalystfeed-hosted", version: "0.4.0" },
         instructions: "Read-only public biotech data. Not investment, legal or medical advice. Every record carries verified_as_of, verify_hash, source_url and ticker_confidence. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
     case "ping": return { jsonrpc: "2.0", id, result: {} };
     case "tools/list":
@@ -593,7 +593,7 @@ async function calendarJson(url) {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, GET, DELETE, OPTIONS", "access-control-allow-headers": "content-type, accept, mcp-session-id, mcp-protocol-version, authorization, x-api-key", "access-control-expose-headers": "x-ratelimit-limit, x-ratelimit-remaining, x-daily-limit, x-daily-remaining, x-daily-reset, retry-after" } });
+    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, GET, DELETE, OPTIONS", "access-control-allow-headers": "content-type, accept, mcp-session-id, mcp-protocol-version, authorization, x-api-key", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining, x-daily-limit, x-daily-remaining, x-daily-reset, x-bcf-tier" } });
     if (url.pathname === "/" || url.pathname === "/health") return json({ ok: true, service: "BioCatalystFeed hosted MCP", endpoint: "/mcp", terms: "https://github.com/biocatalystfeed/biocatalystfeed/blob/main/TERMS.md", privacy: "https://github.com/biocatalystfeed/biocatalystfeed/blob/main/PRIVACY.md" });
     if (url.pathname === "/calendar.json" && req.method === "GET") return calendarJson(url);
     if (url.pathname !== "/mcp") return json({ error: "not found" }, 404);

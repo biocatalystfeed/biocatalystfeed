@@ -1,9 +1,15 @@
 BioCatalystFeed
 Copyright 2026 The BioCatalystFeed authors
 
-This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+Licensing:
+- Version 0.4.0 and later: Business Source License 1.1 (see LICENSE). Licensor: BioCatalystFeed. Non-competing
+  production use is permitted under the Additional Use Grant. Each version converts to the Apache License 2.0
+  twelve months after its release (the Change Date).
+- Versions 0.3.6 and earlier: Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt). Those releases remain
+  Apache-2.0 permanently; this change does not affect them.
+Commercial licensing: contact@biocat.ai
 
-BioCatalystFeed is an independent open-source project. It is not affiliated with, endorsed by, or sponsored by any of
+BioCatalystFeed is an independent source-available project. It is not affiliated with, endorsed by, or sponsored by any of
 the agencies or services below. Their names are used only to identify the source of data.
 
 Data sources and attributions
