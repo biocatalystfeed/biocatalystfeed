@@ -3,24 +3,55 @@
 // No request bodies or query arguments are logged; Cloudflare's platform may keep standard request logs.
 import { DurableObject } from "cloudflare:workers";
 const RATE_LIMIT = 30, RATE_WINDOW_MS = 60_000;
+// Daily quota (UTC day) in "tool calls". Overridable via [vars] DAILY_LIMIT_ANON; key tiers via the optional API_KEYS KV.
+const DAILY_LIMIT_ANON = 200, DAY_MS = 86_400_000;
+const utcDay = (t) => new Date(t).toISOString().slice(0, 10);
 
-// One instance per client IP (idFromName(ip)); single-threaded, so the counter is exact.
-// Stores only {window start, count}; the record is deleted by an alarm after the window ends.
+// One instance per client (idFromName("ip:"+ip) or "key:"+sha256(key)); single-threaded, so counters are exact.
+// Stores only {minute window start, count} and {UTC day, tool calls}; an alarm deletes everything after the day ends.
 export class IpRateLimiter extends DurableObject {
-  async hit() {
-    const now = Date.now();
+  async hit(units = 0, dailyLimit = DAILY_LIMIT_ANON) {
+    const now = Date.now(), day = utcDay(now);
     let w = (await this.ctx.storage.get("w")) || { start: now, n: 0 };
     if (now - w.start >= RATE_WINDOW_MS) w = { start: now, n: 0 };
+    let d = (await this.ctx.storage.get("d")) || { day, n: 0 };
+    if (d.day !== day) d = { day, n: 0 };
     w.n++;
-    await this.ctx.storage.put("w", w);
-    if (w.n === 1) await this.ctx.storage.setAlarm(w.start + RATE_WINDOW_MS + 1000);
-    return { ok: w.n <= RATE_LIMIT, remaining: Math.max(0, RATE_LIMIT - w.n), retryAfter: Math.ceil((w.start + RATE_WINDOW_MS - now) / 1000) };
+    const minuteOk = w.n <= RATE_LIMIT;
+    const dailyOk = d.n + units <= dailyLimit;
+    if (minuteOk && dailyOk) d.n += units; // rejected requests do not burn daily quota
+    await this.ctx.storage.put({ w, d });
+    const resetAt = Date.parse(day + "T00:00:00Z") + DAY_MS;
+    if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(resetAt + 1000);
+    return { ok: minuteOk && dailyOk, reason: !minuteOk ? "minute" : !dailyOk ? "daily" : null,
+      remaining: Math.max(0, RATE_LIMIT - w.n), retryAfter: Math.ceil((w.start + RATE_WINDOW_MS - now) / 1000),
+      dailyLimit, dailyUsed: d.n, dailyRemaining: Math.max(0, dailyLimit - d.n), dailyReset: Math.ceil((resetAt - now) / 1000), resetAt };
   }
-  async alarm() { await this.ctx.storage.deleteAll(); }
+  async alarm() {
+    const d = await this.ctx.storage.get("d");
+    if (d && d.day === utcDay(Date.now())) { await this.ctx.storage.setAlarm(Date.parse(d.day + "T00:00:00Z") + DAY_MS + 1000); return; }
+    await this.ctx.storage.deleteAll();
+  }
 }
 
+// Future API keys: header "x-api-key: <k>" or "Authorization: Bearer <k>". Keys are looked up by SHA-256 hash in an
+// optional KV binding API_KEYS (value JSON: {"tier":"pro","daily":5000}); raw keys are never stored. Unknown key -> 401.
+async function resolveClient(req, env) {
+  const auth = req.headers.get("authorization") || "";
+  const key = req.headers.get("x-api-key") || (/^Bearer\s+(.+)$/i.exec(auth) || [])[1];
+  const anonDaily = Number(env.DAILY_LIMIT_ANON) > 0 ? Number(env.DAILY_LIMIT_ANON) : DAILY_LIMIT_ANON;
+  if (!key) return { id: "ip:" + (req.headers.get("cf-connecting-ip") || "unknown"), tier: "free", daily: anonDaily };
+  if (!env.API_KEYS) return { error: "API keys are not enabled yet; remove the key header to use the free tier" };
+  const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key.trim())))].map(b => b.toString(16).padStart(2, "0")).join("");
+  const rec = await env.API_KEYS.get(h, "json");
+  if (!rec) return { error: "invalid API key" };
+  return { id: "key:" + h, tier: rec.tier || "pro", daily: Number(rec.daily) > 0 ? Number(rec.daily) : 5000 };
+}
+const toolUnits = (b) => (Array.isArray(b) ? b.slice(0, 10) : [b]).filter(m => m && m.method === "tools/call").length;
+const UPGRADE = "Higher limits via API keys are coming; contact contact@biocat.ai, or self-host for free: pip install biocatalystfeed";
+
 const PROTOCOL = "2025-06-18";
-const UA = "BioCatalystFeed-hosted/0.3.6 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const UA = "BioCatalystFeed-hosted/0.4.0 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
 const SEC_UA = "BioCatalystFeed contact@biocat.ai"; // SEC fair-access policy: "Company Name email" format
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
@@ -515,7 +546,7 @@ const TOOLS = {
     } },
 };
 
-const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining", "x-content-type-options": "nosniff", "cache-control": "no-store", ...extra } });
+const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "access-control-allow-origin": "*", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining, x-daily-limit, x-daily-remaining, x-daily-reset, x-bcf-tier", "x-content-type-options": "nosniff", "cache-control": "no-store", ...extra } });
 const rpcErr = (id, code, message) => ({ jsonrpc: "2.0", id: id ?? null, error: { code, message } });
 
 async function handleRpc(msg) {
@@ -524,7 +555,7 @@ async function handleRpc(msg) {
   switch (method) {
     case "initialize":
       return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.6" },
+        serverInfo: { name: "biocatalystfeed-hosted", version: "0.4.0" },
         instructions: "Read-only public biotech data. Not investment, legal or medical advice. Every record carries verified_as_of, verify_hash, source_url and ticker_confidence. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
     case "ping": return { jsonrpc: "2.0", id, result: {} };
     case "tools/list":
@@ -562,28 +593,31 @@ async function calendarJson(url) {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, GET, DELETE, OPTIONS", "access-control-allow-headers": "content-type, accept, mcp-session-id, mcp-protocol-version" } });
+    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, GET, DELETE, OPTIONS", "access-control-allow-headers": "content-type, accept, mcp-session-id, mcp-protocol-version, authorization, x-api-key", "access-control-expose-headers": "retry-after, x-ratelimit-limit, x-ratelimit-remaining, x-daily-limit, x-daily-remaining, x-daily-reset, x-bcf-tier" } });
     if (url.pathname === "/" || url.pathname === "/health") return json({ ok: true, service: "BioCatalystFeed hosted MCP", endpoint: "/mcp", terms: "https://github.com/biocatalystfeed/biocatalystfeed/blob/main/TERMS.md", privacy: "https://github.com/biocatalystfeed/biocatalystfeed/blob/main/PRIVACY.md" });
     if (url.pathname === "/calendar.json" && req.method === "GET") return calendarJson(url);
     if (url.pathname !== "/mcp") return json({ error: "not found" }, 404);
 
-    const ip = req.headers.get("cf-connecting-ip") || "unknown";
-    let rl = {};
-    if (env.LIMITER) {
-      const r = await env.LIMITER.get(env.LIMITER.idFromName(ip)).hit();
-      if (!r.ok) return json(rpcErr(null, -32000, `rate limit exceeded (${RATE_LIMIT} requests/minute per IP); retry later`), 429, { "retry-after": String(Math.max(1, r.retryAfter)), "x-ratelimit-limit": String(RATE_LIMIT), "x-ratelimit-remaining": "0" });
-      rl = { "x-ratelimit-limit": String(RATE_LIMIT), "x-ratelimit-remaining": String(r.remaining) };
-    }
     if (req.method === "GET") return json(rpcErr(null, -32000, "SSE stream not supported; use POST"), 405, { allow: "POST" });
     if (req.method === "DELETE") return new Response(null, { status: 204 });
     if (req.method !== "POST") return json(rpcErr(null, -32000, "method not allowed"), 405);
 
+    const client = await resolveClient(req, env);
+    if (client.error) return json(rpcErr(null, -32001, client.error), 401);
+    let body = null;
+    if (!env.UPSTREAM_MCP_URL) { try { body = await req.clone().json(); } catch { return json(rpcErr(null, -32700, "parse error"), 400); } }
+    let rl = {};
+    if (env.LIMITER) {
+      const r = await env.LIMITER.get(env.LIMITER.idFromName(client.id)).hit(body ? toolUnits(body) : 1, client.daily);
+      rl = { "x-ratelimit-limit": String(RATE_LIMIT), "x-ratelimit-remaining": String(r.remaining),
+        "x-daily-limit": String(r.dailyLimit), "x-daily-remaining": String(r.dailyRemaining), "x-daily-reset": new Date(r.resetAt).toISOString(), "x-bcf-tier": client.tier };
+      if (r.reason === "minute") return json(rpcErr(null, -32000, `rate limit exceeded (${RATE_LIMIT} requests/minute); retry in ${Math.max(1, r.retryAfter)} s`), 429, { ...rl, "x-ratelimit-remaining": "0", "retry-after": String(Math.max(1, r.retryAfter)) });
+      if (r.reason === "daily") return json(rpcErr(null, -32002, `daily limit reached: ${r.dailyLimit} tool calls per day on the ${client.tier} tier (used ${r.dailyUsed}). Resets at ${new Date(r.resetAt).toISOString()} (00:00 UTC). ${UPGRADE}`), 429, { ...rl, "retry-after": String(Math.max(1, r.dailyReset)) });
+    }
     if (env.UPSTREAM_MCP_URL) { // thin-proxy mode to a full Python BCF server
       const h = new Headers(req.headers); h.delete("cookie");
       return fetch(env.UPSTREAM_MCP_URL, { method: "POST", headers: h, body: req.body });
     }
-    let body;
-    try { body = await req.json(); } catch { return json(rpcErr(null, -32700, "parse error"), 400); }
     if (Array.isArray(body)) {
       const out = (await Promise.all(body.slice(0, 10).map(handleRpc))).filter(Boolean);
       return out.length ? json(out, 200, rl) : new Response(null, { status: 202 });

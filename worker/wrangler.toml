@@ -9,6 +9,13 @@ workers_dev = true
 [vars]
 # Optional: if set, /mcp requests are proxied to a full Python BCF server (streamable HTTP) instead of the built-in tools.
 UPSTREAM_MCP_URL = ""
+# Free-tier daily quota per IP, counted in tools/call messages per UTC day (initialize/tools/list are free).
+DAILY_LIMIT_ANON = "200"
+
+# Future API keys (NOT enabled): create a KV namespace and uncomment. Keys stored as sha256(key) -> {"tier","daily"}.
+# [[kv_namespaces]]
+# binding = "API_KEYS"
+# id = "<kv-namespace-id>"
 
 # Per-IP rate limit: one SQLite-backed Durable Object per client IP (free plan), fixed 60 s window.
 # Limits: RATE_LIMIT / RATE_WINDOW_MS in src/index.js.

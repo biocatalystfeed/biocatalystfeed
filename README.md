@@ -103,7 +103,7 @@ their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.
 
 | | BioCatalystFeed (open source) | DataLookout |
 |---|---|---|
-| Price | Free (Apache-2.0); free rate-limited hosted MCP endpoint | Free tier; Pro $49/month |
+| Price | Free to self-host (BSL 1.1 from 0.4.0; 0.3.6 and earlier Apache-2.0); free hosted MCP endpoint (200 tool calls/day) | Free tier; Pro $49/month |
 | Sources | ClinicalTrials.gov, openFDA (approvals, labels, CRLs), NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR (PDUFA dates), EMA, Federal Register (FDA AdComs) | ClinicalTrials.gov |
 | Change tracking | Diffs between your own runs (trials: status, phase, enrollment, dates, sponsor, title, why stopped, primary endpoints, arms, interventions, site counts, results posting; severity critical/notable/minor; plus FDA, EMA, AdCom, grant, paper and SEC changes) | Daily scan; 13 fields incl. status, enrollment, primary endpoints, interventions, results, site counts, completion dates; changes marked Stopped/Notable/Minor |
 | Delivery | CLI, MCP server for AI agents (local, or hosted read-only subset), RSS/JSON Feed files, Apify actor | Morning email digest + dashboard inbox |
@@ -150,7 +150,7 @@ A free, read-only, rate-limited MCP endpoint (Streamable HTTP, no account) runs 
 ```
 It offers 9 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
 `fda_decisions`, `readout_calendar`, `trials_at_risk`, `fda_adcom_meetings`), all with provenance fields, plus a cached
-public `GET /calendar.json` (90-day readout calendar, refreshed every 6 h; feeds biocat.ai/calendar) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. Limit: 30 requests/minute per IP (HTTP 429 above that).
+public `GET /calendar.json` (90-day readout calendar, refreshed every 6 h; feeds biocat.ai/calendar) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. **Free tier:** 200 tool calls per IP per UTC day (resets at 00:00 UTC) and 30 requests/minute. `initialize` and `tools/list` don't count. Over the limit you get HTTP 429 with JSON-RPC error `-32002`, `Retry-After` and `x-daily-*` headers. `/calendar.json` is unmetered. API keys for higher limits are planned but not yet available. **Self-hosting is free and unlimited:** `pip install biocatalystfeed`.
 Watches, change history and the other sources need the local install above. No request logs are kept; see
 [`TERMS.md`](TERMS.md) and [`PRIVACY.md`](PRIVACY.md). Source: [`worker/`](worker/).
 
@@ -164,5 +164,5 @@ TRIALWATCH_LIVE=1 pytest    # also run tests that call the real public APIs (nee
 ```
 
 ## Contributing & licence
-See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) and [`SECURITY.md`](SECURITY.md) (report vulnerabilities privately). Licensed under the [Apache License 2.0](LICENSE). BioCatalystFeed is
+See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) and [`SECURITY.md`](SECURITY.md) (report vulnerabilities privately). **Licence:** version 0.4.0 and later is under the [Business Source License 1.1](LICENSE). You can use, modify and self-host it for any purpose, including commercial internal use, but you cannot offer it to others as a competing catalyst, trial, FDA data, alert, API or MCP service. Each version becomes Apache-2.0 twelve months after its release. **Versions 0.3.6 and earlier stay [Apache-2.0](LICENSES/Apache-2.0.txt).** See [NOTICE](NOTICE). For commercial licensing, contact contact@biocat.ai. BioCatalystFeed is
 independent and not endorsed by NLM, NIH, FDA, SEC, EMA, the Office of the Federal Register, EMBL-EBI/Europe PMC, or bioRxiv/medRxiv.

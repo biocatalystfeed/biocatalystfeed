@@ -3,11 +3,11 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "biocatalystfeed"
-version = "0.3.6"
+version = "0.4.0"
 description = "Open-source monitors for biotech catalysts: ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed/Europe PMC/bioRxiv, SEC EDGAR, EMA, FDA advisory committees (Federal Register). CLI + MCP server."
 readme = "README.md"
-license = "Apache-2.0"
-license-files = ["LICENSE", "NOTICE"]
+license = "BUSL-1.1"
+license-files = ["LICENSE", "NOTICE", "LICENSES/Apache-2.0.txt"]
 keywords = ["biotech", "clinical-trials", "fda", "pubmed", "mcp", "sec-edgar", "ema", "fda-advisory-committee", "monitoring"]
 classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent", "Topic :: Scientific/Engineering :: Bio-Informatics"]
 requires-python = ">=3.10"

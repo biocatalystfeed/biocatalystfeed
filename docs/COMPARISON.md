@@ -10,7 +10,7 @@ BioCatalystFeed is open-source software you run yourself (CLI, MCP server, Apify
 | | BioCatalystFeed | DataLookout | DataLookout source |
 |---|---|---|---|
 | Delivery model | Self-hosted Python package (PyPI), MCP server, Apify actor | Hosted web app + email | [1] |
-| Price | Free, Apache-2.0 (Apify runs use your own Apify plan/credits) | Free tier; Pro $49/month or $490/year, cancel anytime | [1] |
+| Price | Free to self-host (BSL 1.1 from 0.4.0; earlier Apache-2.0); hosted free tier 200 tool calls/day (Apify runs use your own Apify plan/credits) | Free tier; Pro $49/month or $490/year, cancel anytime | [1] |
 | ClinicalTrials.gov | Yes (API v2): search, sponsor pipeline, diffs between your runs | Yes: daily snapshot + diff | [1] |
 | Trial fields diffed | Status, phase, enrollment, start / primary completion / completion dates, lead sponsor, title, why-stopped, has-results, results first posted, primary endpoints, arm count, interventions, site count | 13 fields: overall status, why stopped, phase, primary endpoints, enrollment, lead sponsor, site count, primary completion date, completion date, arm count, interventions, results posting date, start date | [3] |
 | Change severity labels | Yes: critical / notable / minor, plus date shift in days (rules in README) | Stopped / Notable / Minor | [1], [3] |

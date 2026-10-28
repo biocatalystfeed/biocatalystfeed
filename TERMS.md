@@ -4,8 +4,8 @@ _Effective: 2026-10-21_
 
 These terms cover the hosted BioCatalystFeed services operated by the BioCatalystFeed project ("BioCatalystFeed",
 "we", "us"): the public hosted MCP endpoint (Cloudflare Workers, `/mcp`) and BioCatalystFeed listings on third-party
-marketplaces such as Apify (together, "the Service"). The open-source software is licensed separately under
-Apache-2.0; these terms do not restrict your rights under that licence. If you run the software yourself, only the
+marketplaces such as Apify (together, "the Service"). The software is licensed separately (Business Source License 1.1 for
+0.4.0 and later; Apache-2.0 for 0.3.6 and earlier); these terms do not restrict your rights under those licences. If you run the software yourself, only the
 licence and the data sources' own terms apply.
 
 By using the Service you agree to these terms. If you do not agree, do not use the Service.
@@ -26,8 +26,8 @@ The hosted MCP endpoint needs no account. Marketplace use requires an account wi
 You must be at least 18, or the age of majority where you live, to use the Service.
 
 ## 4. Fair use and rate limits
-The hosted endpoint is free and rate-limited per IP address (currently 30 requests per minute; requests over the
-limit get HTTP 429). We may change limits at any time. Don't: break the law; try to get around rate limits (for example
+The hosted endpoint is free and rate-limited per IP address (currently 200 tool calls per UTC day and 30 requests per minute;
+requests over the limit get HTTP 429). We may change limits at any time. Don't: break the law; try to get around rate limits (for example
 by rotating IP addresses); overload, scan, or attack the Service; resell or redistribute raw Service output as a
 competing data feed; or use the Service to break any data source's terms or infringe third-party rights in records
 (for example preprint licences). We may block traffic that does any of these.

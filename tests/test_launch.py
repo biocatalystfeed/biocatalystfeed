@@ -185,18 +185,20 @@ def test_bcf_cli_dispatch(capsys):
     assert cli.main(["nope"]) == 2
     with pytest.raises(SystemExit): cli.main(["grants", "--help"])
     assert "grantwatch" in capsys.readouterr().out
-    assert __version__ == "0.3.6"
+    assert __version__ == "0.4.0"
 
 
 def test_license_notice_docs_present():
-    assert "Apache License" in (ROOT / "LICENSE").read_text() and "Version 2.0" in (ROOT / "LICENSE").read_text()
+    lic = (ROOT / "LICENSE").read_text(); assert "Business Source License 1.1" in lic and "Licensor:             BioCatalystFeed" in lic and "Apache License, Version 2.0" in lic
+    assert "Apache License" in (ROOT / "LICENSES" / "Apache-2.0.txt").read_text()
+    assert "0.3.6 and earlier" in (ROOT / "NOTICE").read_text()
     n = (ROOT / "NOTICE").read_text()
     for s in ("National Library of Medicine", "open.fda.gov", "NIH RePORTER", "PubMed", "Europe PMC", "bioRxiv"): assert s in n
     for f in ("TERMS.md", "PRIVACY.md"):
         t = (ROOT / f).read_text()
         assert "DRAFT" not in t and "[EFFECTIVE DATE" not in t and "contact@biocat.ai" in t
     assert "Not investment, legal or medical advice" in (ROOT / "README.md").read_text()
-    assert 'license = "Apache-2.0"' in (ROOT / "pyproject.toml").read_text()
+    assert 'license = "BUSL-1.1"' in (ROOT / "pyproject.toml").read_text()
 
 
 def test_no_personal_contact_in_code():
