@@ -20,12 +20,13 @@ export class IpRateLimiter extends DurableObject {
 }
 
 const PROTOCOL = "2025-06-18";
-const UA = "BioCatalystFeed-hosted/0.3.4 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const UA = "BioCatalystFeed-hosted/0.3.5 (+https://github.com/biocatalystfeed/biocatalystfeed; contact@biocat.ai)";
+const SEC_UA = "BioCatalystFeed contact@biocat.ai"; // SEC fair-access policy: "Company Name email" format
 const clamp = (n, hi, d) => Math.max(1, Math.min(Number.isFinite(+n) ? Math.floor(+n) : d, hi));
 
 async function getJSON(url) {
   let r;
-  try { r = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" }, signal: AbortSignal.timeout(15000) }); }
+  try { r = await fetch(url, { headers: { "user-agent": /sec\.gov\//.test(url) ? SEC_UA : UA, accept: "application/json" }, signal: AbortSignal.timeout(15000) }); }
   catch (e) { throw new Error(`upstream ${new URL(url).host} unavailable (${e.name === "TimeoutError" ? "timed out after 15 s" : "network error"}); try again later`); }
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(`upstream ${new URL(url).host} HTTP ${r.status}`);
@@ -139,6 +140,103 @@ const CT_SPONSOR = { "tern": "Terns, Inc.", "terns": "Terns, Inc.", "terns pharm
   "gpcr": "Structure Therapeutics", "alt": "Altimmune" };
 const ctSponsor = s => CT_SPONSOR[String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()] || s;
 
+// ---- FDA decision calendar (mirrors decisionwatch/core.py, lighter). pdufa = company-disclosed in SEC 8-K text
+// (EDGAR full-text search; UNVERIFIED regex extraction), adcom = Federal Register notices, approval = Drugs@FDA,
+// crl = openFDA. Every event carries confidence + provenance. Not investment advice.
+const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+const DEC_CONF = { pdufa: "company-disclosed", adcom: "scheduled", approval: "confirmed", crl: "confirmed" };
+const pad = n => String(n).padStart(2, "0");
+function parseWhen(t, fileDate) {
+  t = String(t || "").toLowerCase().replace(/\./g, "").trim();
+  let m = /^([a-z]{3})[a-z]*\s+(\d{1,2}),?\s+(20\d\d)$/.exec(t); if (m && MON[m[1]]) return [`${m[3]}-${pad(MON[m[1]])}-${pad(m[2])}`, "day"];
+  m = /^([a-z]{3})[a-z]*\s+(\d{1,2})$/.exec(t);
+  if (m && MON[m[1]] && fileDate) { let y = +fileDate.slice(0, 4); let d = `${y}-${pad(MON[m[1]])}-${pad(m[2])}`; if (d < fileDate) d = `${y + 1}${d.slice(4)}`; return [d, "day"]; }
+  m = /^([a-z]{3})[a-z]*\s+(20\d\d)$/.exec(t); if (m && MON[m[1]]) return [`${m[2]}-${pad(MON[m[1]])}-01`, "month"];
+  const Q = { first: 1, second: 2, third: 3, fourth: 4 };
+  m = /(first|second|third|fourth)\s+quarter\s+(?:of\s+)?(20\d\d)/.exec(t) || /q([1-4])\s*(20\d\d)/.exec(t);
+  if (m) return [`${m[2]}-${pad(((Q[m[1]] || +m[1]) - 1) * 3 + 1)}-01`, "quarter"];
+  return [null, null];
+}
+const DATE_SRC = "((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s+20\\d\\d)?|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\s+20\\d\\d|(?:first|second|third|fourth)\\s+quarter\\s+(?:of\\s+)?20\\d\\d|q[1-4]\\s*20\\d\\d)";
+function pdufaDates(text) {
+  const out = [], re = /PDUFA|target action date|goal date/gi; let m;
+  while ((m = re.exec(text))) {
+    const seg = text.slice(m.index, m.index + 200), d = new RegExp(DATE_SRC, "i").exec(seg);
+    if (d && d.index < 140) out.push({ date_text: d[1].replace(/\s+/g, " "), context: text.slice(Math.max(0, m.index - 150), m.index + 220) });
+  }
+  return out;
+}
+const drugIn = ctx => (/\b([a-z]{4,}(?:mab|nib|tide|stat|parin|cel|gene|vec|lisib|tinib|ciclib|vir|sartan|gliflozin|glutide|siran|rsen|cept|xaban|sentan|platin))\b/.exec(ctx || "") || [])[1] || null;
+const hit = (hay, term) => !term || String(hay || "").toLowerCase().includes(String(term).toLowerCase());
+async function secText(url) {
+  const r = await fetch(url, { headers: { "user-agent": SEC_UA }, signal: AbortSignal.timeout(15000) });
+  if (!r.ok) throw new Error(`sec.gov HTTP ${r.status}`);
+  return (await r.text()).replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+}
+async function decPdufa(a, today) {
+  const q = `"PDUFA"${a.drug ? ` "${String(a.drug).replace(/"/g, "")}"` : ""}${a.condition ? ` "${String(a.condition).replace(/"/g, "")}"` : ""}`;
+  const since = new Date(Date.parse(today) - 365 * 864e5).toISOString().slice(0, 10);
+  const p = new URLSearchParams({ q, forms: "8-K", dateRange: "custom", startdt: since, enddt: today });
+  const d = await getJSON(`https://efts.sec.gov/LATEST/search-index?${p}`);
+  let hits = (d?.hits?.hits || []).sort((x, y) => (y._source.file_date || "").localeCompare(x._source.file_date || ""));
+  if (a.company) hits = hits.filter(h => hit((h._source.display_names || []).join(" "), a.company));
+  const out = new Map();
+  for (const h of hits.slice(0, clamp(a.max_docs, 10, 6))) {
+    const s = h._source, [adsh, fn] = h._id.split(":"), cik = String(+s.ciks[0]);
+    const url = `https://www.sec.gov/Archives/edgar/data/${cik}/${adsh.replace(/-/g, "")}/${fn}`;
+    const dn = (s.display_names || [""])[0], tk = /\(([A-Z.\-]{1,6})(?:,\s*[A-Z.\-]{1,6})*\)\s*\(CIK/.exec(dn);
+    let text; try { text = await secText(url); } catch { continue; }
+    for (const c of pdufaDates(text).slice(0, 3)) {
+      const [date, prec] = parseWhen(c.date_text, s.file_date); if (!date) continue;
+      const drug = drugIn(c.context) || a.drug || null, company = dn.replace(/\s*\(.*$/, "").trim();
+      const key = `pdufa:${cik}:${(drug || "unknown").toLowerCase()}`;
+      if (out.has(key)) continue;
+      out.set(key, { key, kind: "pdufa", date, date_precision: prec, confidence: DEC_CONF.pdufa, status: date >= today ? "pending" : "date_passed",
+        company, ticker: tk ? tk[1] : null, drug, title: `PDUFA ${c.date_text} - ${company}${drug ? ` (${drug})` : ""}`, url,
+        date_text: c.date_text, context: c.context.slice(0, 400),
+        provenance: { source: "SEC EDGAR full-text search (company 8-K filings)", field: "8-K text near 'PDUFA' / 'target action date'", method: "regex extraction (UNVERIFIED) - read the filing", filed: s.file_date } });
+    }
+  }
+  return [...out.values()];
+}
+async function decAdcom(a, today) {
+  const q = new URLSearchParams({ "conditions[agencies][]": "food-and-drug-administration", "conditions[type][]": "NOTICE",
+    "conditions[term]": "\"advisory committee\"", per_page: "100", order: "newest", "conditions[publication_date][gte]": new Date(Date.parse(today) - 365 * 864e5).toISOString().slice(0, 10) });
+  for (const f of ["title", "abstract", "dates", "publication_date", "html_url", "document_number"]) q.append("fields[]", f);
+  const d = await getJSON(`https://www.federalregister.gov/api/v1/documents.json?${q}`);
+  const out = [];
+  for (const r of d?.results || []) {
+    if (!/advisory committee|panel/i.test(r.title) || !/notice of (public )?meeting|postpone|cancel/i.test(`${r.title} ${r.abstract || ""}`)) continue;
+    const hay = `${r.title} ${r.abstract || ""}`;
+    if (!hit(hay, a.drug) || !hit(hay, a.company) || !hit(hay, a.condition)) continue;
+    const m = new RegExp("(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2}),\\s+(20\\d\\d)").exec(r.dates || "");
+    const date = m ? `${m[3]}-${pad(MON[m[1].slice(0, 3).toLowerCase()])}-${pad(m[2])}` : null;
+    const status = /cancel/i.test(r.title) ? "cancelled" : /postpone/i.test(r.title) ? "postponed" : (date && date < today ? "held" : "scheduled");
+    out.push({ key: `adcom:${r.document_number}`, kind: "adcom", date, date_precision: date ? "day" : null, confidence: DEC_CONF.adcom, status,
+      company: null, ticker: null, drug: a.drug || null, title: `AdCom ${date || "?"}: ${r.title.split(";")[0]}`, url: r.html_url,
+      provenance: { source: "Federal Register (FDA notices)", field: "dates", method: "parsed from the official notice", published: r.publication_date } });
+  }
+  return out;
+}
+async function decApprovals(a, today, since) {
+  const t = encodeURIComponent(String(a.drug || a.company || "").replace(/["\\]/g, "")).replace(/%20/g, "+");
+  if (!t) return [];
+  const search = a.drug ? `(openfda.generic_name:"${t}"+OR+openfda.brand_name:"${t}"+OR+products.brand_name:"${t}")` : `sponsor_name:"${t.toUpperCase()}"`;
+  const d = await getJSON(`https://api.fda.gov/drug/drugsfda.json?search=${search}&limit=100`);
+  const out = [];
+  for (const r of d?.results || []) for (const x of r.submissions || []) {
+    const dt = /^\d{8}$/.test(x.submission_status_date || "") ? `${x.submission_status_date.slice(0, 4)}-${x.submission_status_date.slice(4, 6)}-${x.submission_status_date.slice(6)}` : null;
+    if (x.submission_status !== "AP" || !dt || dt < since) continue;
+    if (!(x.submission_type === "ORIG" || /EFFIC/i.test(x.submission_class_code_description || ""))) continue;
+    const brands = [...new Set((r.products || []).map(p => p.brand_name))].join("; ");
+    out.push({ key: `approval:${r.application_number}:${x.submission_type}${x.submission_number}`, kind: "approval", date: dt, date_precision: "day", confidence: DEC_CONF.approval, status: "approved",
+      company: r.sponsor_name, ticker: null, drug: brands, title: `Approved ${dt}: ${brands} (${r.application_number} ${x.submission_type}${x.submission_number})`,
+      url: `https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=${r.application_number.replace(/\D/g, "")}`,
+      provenance: { source: "Drugs@FDA via openFDA (public domain)", field: "submissions.submission_status_date", method: "official record" } });
+  }
+  return out;
+}
+
 const TOOLS = {
   search_trials: {
     description: "Search clinical trials (ClinicalTrials.gov by default). Set `include_global: true` to also include links to records in non-FDA/EMA registries (China's ChiCTR, other WHO-listed national registries). Global results carry `registry_class: \"non-FDA/EMA registry\"` and a `global_disclaimer`. Off by default. Links (registry ID + URL from ClinicalTrials.gov secondary IDs) are in each trial's global_links. When showing global results to a user, keep the label and the disclaimer. Most recently updated first; phases e.g. [\"PHASE2\",\"PHASE3\"]; statuses e.g. [\"RECRUITING\"].",
@@ -248,6 +346,35 @@ const TOOLS = {
       }
       return out;
     } },
+  fda_decisions: {
+    description: "FDA decision calendar: upcoming and recent FDA decision events, upcoming soonest first, then past newest first. kinds: 'pdufa' = PDUFA / target action dates disclosed by companies in SEC 8-K filings (FDA does not publish them; confidence 'company-disclosed', UNVERIFIED regex extraction - read the linked filing), 'adcom' = FDA advisory committee meetings from Federal Register notices (confidence 'scheduled'; status scheduled/postponed/cancelled/held), 'approval' = original approvals and efficacy supplements from Drugs@FDA (needs drug or company), 'crl' = complete response letters from openFDA. Each event has date, date_precision, confidence, status, company, ticker, drug, title, url (official record) and provenance {source, field, method}. Returns {events, errors}. Hosted endpoint is read-only (no watches); for change notifications use the open-source package's snapshot_fda_decisions. Scheduling/reference data, not investment advice.",
+    inputSchema: { type: "object", properties: {
+      drug: { type: "string", description: "Drug name or code (e.g. 'tirzepatide'); matched against 8-K text, AdCom notices, Drugs@FDA names and CRL text." },
+      company: { type: "string", description: "Company name or ticker (matched against the SEC filer name/ticker, Drugs@FDA sponsor and CRL company)." },
+      condition: { type: "string", description: "Condition / disease text (e.g. 'obesity'); matched against 8-K text, AdCom notices and CRL text." },
+      kinds: { type: "array", items: { type: "string", enum: ["pdufa", "adcom", "approval", "crl"] }, description: "Event kinds to include (default all)." },
+      upcoming_days: { type: "integer", maximum: 730, description: "Only upcoming pdufa/adcom events from today to today+N days." },
+      since: { type: "string", description: "Event date from (YYYY-MM-DD); default 365 days ago for past events." },
+      max_docs: { type: "integer", default: 6, maximum: 10, description: "Maximum SEC 8-K documents to parse for PDUFA dates (1-10)." },
+      max_results: { type: "integer", default: 30, maximum: 100, description: "Maximum events to return (1-100)." } } },
+    async run(a) {
+      const today = new Date().toISOString().slice(0, 10);
+      let kinds = Array.isArray(a.kinds) && a.kinds.length ? a.kinds : ["pdufa", "adcom", "approval", "crl"];
+      if (kinds.some(k => !DEC_CONF[k])) throw new Error("kinds must be among pdufa, adcom, approval, crl");
+      let since = /^\d{4}-\d{2}-\d{2}$/.test(a.since || "") ? a.since : new Date(Date.parse(today) - 365 * 864e5).toISOString().slice(0, 10), until = "9999";
+      if (a.upcoming_days != null) { since = today; until = new Date(Date.parse(today) + Math.max(0, Math.min(+a.upcoming_days || 0, 730)) * 864e5).toISOString().slice(0, 10); kinds = kinds.filter(k => k === "pdufa" || k === "adcom"); }
+      const jobs = { pdufa: () => decPdufa(a, today), adcom: () => decAdcom(a, today), approval: () => decApprovals(a, today, since),
+        crl: async () => (await TOOLS.fda_complete_response_letters.run({ company: a.company, keyword: a.drug || a.condition, since, max_results: 50 })).map(r => ({
+          key: `crl:${r.url}`, kind: "crl", date: r.letter_date, date_precision: "day", confidence: DEC_CONF.crl, status: r.application_status === "Approved" ? "approved_since" : "complete_response",
+          company: r.company, ticker: null, drug: a.drug || null, title: `CRL ${r.letter_date}: ${r.company} ${r.applications || ""}`, url: r.url, topics: r.topics,
+          provenance: { source: CRL_SOURCE, field: "letter_date", method: "official record (published with a lag)" } })) };
+      const errors = [], evs = [];
+      await Promise.all(kinds.map(async k => { try { evs.push(...await jobs[k]()); } catch (e) { errors.push({ kind: k, error: String(e.message || e).slice(0, 300) }); } }));
+      const inWin = evs.filter(e => (e.date || "") >= since && (e.date || "9999") <= until);
+      const up = inWin.filter(e => (e.date || "") >= today).sort((x, y) => x.date.localeCompare(y.date));
+      const past = inWin.filter(e => (e.date || "") < today).sort((x, y) => (y.date || "").localeCompare(x.date || ""));
+      return { events: [...up, ...past].slice(0, clamp(a.max_results, 100, 30)), errors, disclaimer: "Scheduling/reference data, not investment advice. pdufa dates are company-disclosed and unverified." };
+    } },
   fda_adcom_meetings: {
     description: "FDA advisory committee meeting notices from the Federal Register, newest first: title, publication date, document number and link. Source: Federal Register (U.S. government, public domain).",
     inputSchema: { type: "object", properties: { since: { type: "string", description: "Notice publication date from (YYYY-MM-DD)." }, max_results: { type: "integer", default: 20, maximum: 100, description: "Maximum notices to return (1-100)." } } },
@@ -269,7 +396,7 @@ async function handleRpc(msg) {
   switch (method) {
     case "initialize":
       return { jsonrpc: "2.0", id, result: { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.4" },
+        serverInfo: { name: "biocatalystfeed-hosted", version: "0.3.5" },
         instructions: "Read-only public biotech data. Not investment, legal or medical advice. Sources: ClinicalTrials.gov, openFDA (incl. FDA complete response letters; public domain), PubMed, Europe PMC, Federal Register." } };
     case "ping": return { jsonrpc: "2.0", id, result: {} };
     case "tools/list":

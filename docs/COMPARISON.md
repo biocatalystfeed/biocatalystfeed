@@ -1,6 +1,6 @@
 # BioCatalystFeed vs DataLookout: coverage comparison
 
-Checked 2026-10-14 (PT), updated 2026-10-21 (PT). DataLookout facts come only from its public pages [1] and [3].
+Checked 2026-10-14 (PT), updated 2026-10-21 and 2026-10-28 (PT). A three-way matrix including DropwatchHQ Bio Catalyst is in [`samples/competitor_matrix.md`](../samples/competitor_matrix.md). DataLookout facts come only from its public pages [1] and [3].
 BioCatalystFeed facts come from this repository (v0.3.0). We have **not** used DataLookout's product; anything its public page doesn't state is
 marked **unknown**. Corrections welcome via a GitHub issue.
 
@@ -10,10 +10,11 @@ BioCatalystFeed is open-source software you run yourself (CLI, MCP server, Apify
 | | BioCatalystFeed | DataLookout | DataLookout source |
 |---|---|---|---|
 | Delivery model | Self-hosted Python package (PyPI), MCP server, Apify actor | Hosted web app + email | [1] |
-| Price | Free, Apache-2.0 (Apify runs use your own Apify plan/credits) | Free tier; Pro $49/month, monthly or yearly, cancel anytime | [1] |
+| Price | Free, Apache-2.0 (Apify runs use your own Apify plan/credits) | Free tier; Pro $49/month or $490/year, cancel anytime | [1] |
 | ClinicalTrials.gov | Yes (API v2): search, sponsor pipeline, diffs between your runs | Yes: daily snapshot + diff | [1] |
 | Trial fields diffed | Status, phase, enrollment, start / primary completion / completion dates, lead sponsor, title, why-stopped, has-results, results first posted, primary endpoints, arm count, interventions, site count | 13 fields: overall status, why stopped, phase, primary endpoints, enrollment, lead sponsor, site count, primary completion date, completion date, arm count, interventions, results posting date, start date | [3] |
 | Change severity labels | Yes: critical / notable / minor, plus date shift in days (rules in README) | Stopped / Notable / Minor | [1], [3] |
+| FDA decision calendar (PDUFA dates from 8-Ks, AdComs, approvals, CRLs) with watch/notify | Yes (v0.3.5, `bcf fda-decisions`) | Not stated (unknown) | [1], [3] |
 | FDA advisory committee meetings | Yes (Federal Register notices: committee, date, NDA/BLA, sponsor) | Not stated (unknown) | [1], [3] |
 | EMA (EU) regulatory actions | Yes | Not stated (unknown) | [1], [3] |
 | openFDA (approvals, submissions, labels) | Yes | Not stated (unknown) | [1] |

@@ -24,6 +24,7 @@ agents (Claude, Cursor, …), or as an [Apify actor](https://apify.com/biocataly
 | European Medicines Agency (EMA) | `bcf ema` | EU centrally authorised medicines: CHMP opinions, EC authorisations, refusals, withdrawals, suspensions; orphan/PRIME flags; diffs |
 | Federal Register (FDA notices) | `bcf adcom` | FDA advisory committee meetings: committee, meeting date, NDA/BLA numbers and sponsors from the agenda; postponements/cancellations; diffs |
 | openFDA complete response letters (FDA) | `bcf crl` | FDA complete response letters (CRLs) for NDAs/BLAs: company, application, product, deficiency topics (facility, product quality, clinical, safety ...), first-deficiency excerpt, PDF link; diffs flag new letters and Unapproved → Approved |
+| **FDA decision calendar** (SEC EDGAR 8-Ks + Federal Register + Drugs@FDA + openFDA CRLs) | `bcf fda-decisions` | one list of upcoming **PDUFA dates** (company-disclosed in 8-Ks), **AdCom meetings**, recent **approvals** and **CRLs**; filter by drug, company/ticker, condition, kind, date window or `--upcoming DAYS`; every event has `confidence` (company-disclosed / scheduled / confirmed), `date_precision` and `provenance`; **watches notify** on new events, moved PDUFA dates, postponed AdComs and status flips |
 | All of the above | `bcf profile` | one merged company profile (name or ticker) |
 
 **Optional global coverage (`--global` / `include_global`).** Off by default. When you turn it on, BCF also links to records in trial registries outside the US and EU, such as China's ChiCTR and other WHO-listed national registries, and flags papers from other jurisdictions. These records may come from research run under regulatory, ethics and data standards different from, and sometimes lighter than, those of the US or EU. They are labelled "non-FDA/EMA registry". The option is for users who want to see everything that is out there. Inclusion is not an endorsement or recommendation and is not medical, legal or investment advice.
@@ -48,10 +49,14 @@ bcf profile Lilly MDGL "Viking Therapeutics" --md profiles.md
 bcf ema search --status Opinion --since 2026-09-01          # latest CHMP opinions (EU)
 bcf adcom upcoming --area drugs biologics                   # scheduled FDA advisory committee meetings
 bcf crl search --since 2026-01-01 --status Unapproved       # FDA complete response letters, newest first
+bcf fda-decisions search --upcoming 90                     # PDUFA dates (8-K) + AdComs in the next 90 days, soonest first
+bcf fda-decisions search --company BBIO                     # all FDA decision events for a ticker (pdufa, adcom, approval, crl)
+bcf fda-decisions search --drug semaglutide --kinds approval crl --since 2025-01-01
 
 # watches: first run = baseline, later runs report what changed (cron it daily)
 bcf trials --db bcf.db watch --name obesity --condition obesity --phase PHASE3 --rss obesity.rss
 bcf trials --db bcf.db changes --name obesity --min-severity critical   # terminations, endpoint rewrites
+bcf fda-decisions --db bcf.db watch --name obesity-fda --condition obesity --json-feed fda.feed.json   # notify: new/moved PDUFA dates, AdComs, approvals, CRLs
 bcf papers --db bcf.db watch --name mdgl --affiliation "Madrigal Pharmaceuticals" --json-feed mdgl.feed.json
 ```
 Global flags such as `--db` go **after the tool name and before the subcommand**: `bcf trials --db bcf.db changes`, not `bcf --db bcf.db trials changes` or `bcf trials changes --db bcf.db`.
@@ -68,7 +73,7 @@ The old commands (`trialwatch`, `fdawatch`, `grantwatch`, `paperwatch`, `secwatc
 (or point `command` at an installed `biocatalystfeed-mcp`). Listed in the official MCP Registry as
 `io.github.biocatalystfeed/biocatalystfeed`.
 Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_profile`, `search_grants`,
-`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `fda_adcom_meetings`, `fda_complete_response_letters`, `snapshot_*` / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
+`search_papers`, `sec_pdufa_mentions`, `ema_medicines`, `fda_adcom_meetings`, `fda_complete_response_letters`, `fda_decisions` (FDA decision calendar), `snapshot_*` (incl. `snapshot_fda_decisions`) / `*_changes_since`, and `changes_feed` (RSS / JSON Feed).
 
 ### Configuration
 | Env var | Purpose |
@@ -83,12 +88,12 @@ Tools include `search_trials`, `sponsor_pipeline`, `fda_approvals`, `company_pro
 
 ## How it compares
 Facts about DataLookout are from datalookout.com, its /citeline-alternative and /clinical-trial-monitoring pages (checked 2026-10-21 PT). We have not tested
-their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.md).
+their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.md); three-way matrix incl. DropwatchHQ Bio Catalyst: [`samples/competitor_matrix.md`](samples/competitor_matrix.md).
 
 | | BioCatalystFeed (open source) | DataLookout |
 |---|---|---|
 | Price | Free (Apache-2.0); free rate-limited hosted MCP endpoint | Free tier; Pro $49/month |
-| Sources | ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR, EMA, Federal Register (FDA AdComs) | ClinicalTrials.gov |
+| Sources | ClinicalTrials.gov, openFDA (approvals, labels, CRLs), NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR (PDUFA dates), EMA, Federal Register (FDA AdComs) | ClinicalTrials.gov |
 | Change tracking | Diffs between your own runs (trials: status, phase, enrollment, dates, sponsor, title, why stopped, primary endpoints, arms, interventions, site counts, results posting; severity critical/notable/minor; plus FDA, EMA, AdCom, grant, paper and SEC changes) | Daily scan; 13 fields incl. status, enrollment, primary endpoints, interventions, results, site counts, completion dates; changes marked Stopped/Notable/Minor |
 | Delivery | CLI, MCP server for AI agents (local, or hosted read-only subset), RSS/JSON Feed files, Apify actor | Morning email digest + dashboard inbox |
 | Watch limits | None when self-hosted | Free: 1 sponsor + 1 disease watchlist + 1 saved search; Pro: 10 of each |
@@ -120,7 +125,7 @@ doesn't produce a burst of false changes.
 Built-in throttles follow each source's published policy (e.g. NIH RePORTER 1 req/s, NCBI ≤3 req/s without key, SEC
 ≤10 req/s with a declared User-Agent, openFDA 1,000 req/day per IP without key). We store **metadata and links only**
 for papers/preprints, never abstracts. Change detection only covers your own runs; there's no historical backfill.
-PDUFA dates are regex extractions from 8-K text, not a calendar. Data provided by the U.S. Food and Drug Administration (https://open.fda.gov). Source: European Medicines Agency
+PDUFA dates are regex extractions from company 8-K text (FDA does not publish PDUFA dates); `bcf fda-decisions` labels them `confidence: company-disclosed` with the filing link, and always read the filing. Data provided by the U.S. Food and Drug Administration (https://open.fda.gov). Source: European Medicines Agency
 (EMA), https://www.ema.europa.eu. Full attributions are in [`NOTICE`](NOTICE). Design notes
 and per-source terms are in [`docs/DEVELOPER-NOTES.md`](docs/DEVELOPER-NOTES.md).
 
@@ -132,8 +137,8 @@ A free, read-only, rate-limited MCP endpoint (Streamable HTTP, no account) runs 
 ```json
 {"mcpServers": {"biocatalystfeed-hosted": {"type": "http", "url": "https://bcf-mcp.lively-recipe-5a12.workers.dev/mcp"}}}
 ```
-It offers 5 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_adcom_meetings`) over
-ClinicalTrials.gov, openFDA, PubMed and the Federal Register. Limit: 30 requests/minute per IP (HTTP 429 above that).
+It offers 7 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
+`fda_decisions`, `fda_adcom_meetings`) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. Limit: 30 requests/minute per IP (HTTP 429 above that).
 Watches, change history and the other sources need the local install above. No request logs are kept; see
 [`TERMS.md`](TERMS.md) and [`PRIVACY.md`](PRIVACY.md). Source: [`worker/`](worker/).
 

@@ -61,7 +61,9 @@ PARAMS: dict[str, str] = {
     "application": "NDA/BLA number, e.g. 'NDA 218705', 'BLA 761308' or '218705'.",
     "topic": "Deficiency topics to keep: facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors.",
     "include_text": "If true, include the full OCR letter text (large).",
-    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom or crl.",
+    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl or fda-decisions.",
+    "kinds": "FDA decision event kinds to include, any of pdufa, adcom, approval, crl (default all).",
+    "upcoming_days": "Only upcoming pdufa/adcom events from today to today+N days (overrides since/until; 0-730).",
     "format": "'json' (JSON Feed 1.1) or 'rss' (RSS 2.0).",
 }
 
@@ -85,11 +87,18 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "fda_complete_response_letters": {"company": "Company names, OR'd.", "status": "Application status: 'Approved' (approved since the letter) or 'Unapproved'.",
                                       "since": f"Letter date from ({_DATE}).", "until": f"Letter date to ({_DATE})."},
     "snapshot_crl": {"company": "Company names, OR'd.", "status": "'Approved' or 'Unapproved'.", "since": f"Letter date from ({_DATE})."},
+    "fda_decisions": {"drug": "Drug name or code (e.g. 'tirzepatide', 'VK2735'); matched against filings, agendas, Drugs@FDA names and CRL text.",
+                      "company": "Company name or ticker (alias-resolved; unknown US tickers are looked up in SEC's ticker list).",
+                      "condition": "Condition / disease text (e.g. 'obesity'); coarse for approvals (Drugs@FDA has no indication field).",
+                      "since": f"Event date from ({_DATE}).", "until": f"Event date to ({_DATE}).",
+                      "max_docs": "Maximum SEC 8-K documents to parse for PDUFA dates (capped at 40)."},
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",
-           "adcom_changes_since", "crl_changes_since"):
+           "adcom_changes_since", "crl_changes_since", "fda_decision_changes_since"):
     TOOL_PARAMS.setdefault(_t, {})["since"] = f"Only changes detected on or after this date ({_DATE})."
+
+TOOL_PARAMS["snapshot_fda_decisions"] = {k: v for k, v in TOOL_PARAMS["fda_decisions"].items() if k not in ("since", "until")}
 
 KINDS = {
     "read": dict(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True),

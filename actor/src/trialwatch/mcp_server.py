@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA decision calendar tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -314,12 +314,63 @@ def crl_changes_since(since: str, watch: str | None = None) -> list[dict]:
     return store(_db).changes(watch=watch, since=since)
 
 
+def _dec_clients():
+    from adcomwatch.core import FRClient
+    from secwatch.core import SECClient
+    return _fda, FRClient(), SECClient()
+
+
+@_tool("read")
+def fda_decisions(drug: str | None = None, company: str | None = None, condition: str | None = None,
+                  kinds: list[str] | None = None, since: str | None = None, until: str | None = None,
+                  upcoming_days: int | None = None, max_results: int = 50, max_docs: int = 20) -> dict:
+    """FDA decision calendar: upcoming and recent FDA decision events in one list, upcoming soonest first, then past
+    newest first. Kinds: 'pdufa' = PDUFA / target action dates disclosed by companies in SEC 8-K filings (FDA does not
+    publish them; confidence 'company-disclosed', UNVERIFIED regex extraction - read the linked filing), 'adcom' = FDA
+    advisory committee meetings from Federal Register notices (confidence 'scheduled'; status scheduled / postponed /
+    cancelled / held), 'approval' = original approvals and efficacy supplements from Drugs@FDA (confidence 'confirmed'),
+    'crl' = complete response letters from openFDA (confirmed, published with a lag). Each event has date,
+    date_precision (day/month/quarter/half), confidence, status, company, ticker, drug, title, url (official record) and
+    provenance {source, field, method}. Use this for "what FDA decisions are coming for X"; use snapshot_fda_decisions to
+    watch for new events and moved dates. Returns {events, errors}; a failing source is listed in errors and the
+    others still return. Scheduling/reference data, not investment advice."""
+    from decisionwatch.core import decisions
+    errors: list = []
+    ev = decisions(*_dec_clients(), kinds=kinds, drug=drug, company=company, condition=condition, since=since, until=until,
+                   upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 730, 0),
+                   max_records=_clamp(max_results, 300), max_docs=_clamp(max_docs, 40), errors=errors)
+    return {"events": ev, "errors": errors}
+
+
+@_tool("snapshot")
+def snapshot_fda_decisions(name: str, drug: str | None = None, company: str | None = None, condition: str | None = None,
+                           kinds: list[str] | None = None, upcoming_days: int | None = None, max_docs: int = 20) -> dict:
+    """Snapshot FDA decision events (same filters as fda_decisions) into the local DB and return what changed since
+    the previous snapshot of this watch name: new_decision_event (a new PDUFA date disclosed, AdCom scheduled, approval
+    or CRL published), date_change (e.g. a PDUFA date moved by a later 8-K, an AdCom rescheduled), status_change
+    (pending -> date_passed, scheduled -> postponed/cancelled, CRL complete_response -> approved_since) and
+    confidence_change. The first run is a baseline with no changes. Run it on a schedule (cron) for notifications;
+    read results later with fda_decision_changes_since or changes_feed(tool='fda-decisions')."""
+    from decisionwatch.core import run_watch, store
+    return run_watch(*_dec_clients(), store(_db), name, kinds=kinds, drug=drug, company=company, condition=condition,
+                     upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 730, 0), max_docs=_clamp(max_docs, 40))
+
+
+@_tool("local")
+def fda_decision_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected FDA decision changes (new_decision_event, date_change, status_change, confidence_change) since an ISO
+    date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_fda_decisions has run
+    at least twice for a watch."""
+    from decisionwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
 @_tool("local")
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a feed document (format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl. Reads the local snapshot DB only (no network call)."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl")
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl | fda-decisions. Reads the local snapshot DB only (no network call)."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "fda-decisions"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, fda-decisions")
     if format not in ("json", "rss"): raise ValueError("format must be 'json' or 'rss'")
     from biowatch import digest
     import json as _json
@@ -327,7 +378,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "fda-decisions": "decisionwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     return digest.rss(title, ch) if format == "rss" else _json.dumps(digest.json_feed(title, ch), default=str)

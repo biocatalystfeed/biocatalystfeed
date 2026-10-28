@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.5 — 2026-10-28
+- New: FDA decision calendar + watch (`bcf fda-decisions search|watch|changes` / `decisionwatch`). One list of FDA decision events, upcoming soonest first, then past newest first:
+  - `pdufa`: upcoming PDUFA / target action dates **disclosed by companies in SEC 8-K filings** (EDGAR full-text search). FDA does not publish PDUFA dates, so these carry `confidence: "company-disclosed"` and the provenance method "regex extraction (UNVERIFIED)", plus the filing link, filing date and the text around the date. Day / month / quarter / half precision (`date_precision`). The newest filing wins per company + drug.
+  - `adcom`: FDA advisory committee meetings from Federal Register notices (`confidence: "scheduled"`; status scheduled / postponed / cancelled / held).
+  - `approval`: original approvals and efficacy supplements from Drugs@FDA (`confirmed`); searched by drug name when `--drug` is given.
+  - `crl`: complete response letters from openFDA (`confirmed`, published with a lag).
+  - Filters: `--drug`, `--company` (name or ticker; alias table, then SEC's ticker list), `--condition`, `--kinds`, `--since/--until`, `--upcoming DAYS`. One failing source is reported in `errors` and does not hide the others.
+  - Watches (same snapshot store as the other tools, prefix `fdadec`) report `new_decision_event`, `date_change` (e.g. a PDUFA date moved by a later 8-K, an AdCom rescheduled), `status_change` (pending -> date_passed, scheduled -> postponed/cancelled, CRL -> approved_since) and `confidence_change`; `--rss` / `--json-feed` digests for notifications.
+  - MCP: `fda_decisions`, `snapshot_fda_decisions`, `fda_decision_changes_since` (all parameters described, annotations set); `changes_feed` accepts `fda-decisions`.
+- Hosted Worker: `fda_decisions` tool (read-only; pdufa / adcom / approval / crl with confidence + provenance); README now lists all 7 hosted tools; SEC requests use SEC's "Company email" User-Agent format; serverInfo 0.3.5.
+- Docs: `samples/competitor_matrix.md` (BCF vs DropwatchHQ Bio Catalyst vs DataLookout, with remaining gaps); `docs/COMPARISON.md` updated.
+
 ## 0.3.4 — 2026-10-28
 - Fix: trial searches by sponsor now resolve known company names and tickers to the names ClinicalTrials.gov uses. `bcf trials search|watch|pipeline --sponsor "Terns Pharmaceuticals"` (or `TERN`) previously returned 0 trials because CT.gov lists the sponsor as "Terns, Inc., a subsidiary of Merck & Co., Inc."; it now finds them. Queries for each alias are merged by NCT ID; a bare ticker is not sent as free text (it matched unrelated companies). Unknown names are sent as typed. `--no-aliases` restores exact behaviour. Applies to MCP `search_trials`, `snapshot_watch` and `sponsor_pipeline`, and the hosted `search_trials`.
 - MCP tool metadata: every parameter of all 25 stdio tools now has a JSON-schema description (was 0%), and every tool carries MCP annotations: search/get tools `readOnlyHint` + `openWorldHint`; `*_changes_since` / `changes_feed` read the local DB only (`openWorldHint: false`); `snapshot_*` append to the local DB (not read-only, not destructive). Descriptions of the change/snapshot tools now say when to use which. Hosted endpoint: parameter descriptions for all 6 tools; serverInfo 0.3.4.

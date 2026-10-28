@@ -4,8 +4,8 @@ import importlib, os, sys
 from . import __version__, DISCLAIMER
 
 TOOLS = {"trials": "trialwatch.cli", "fda": "fdawatch.cli", "grants": "grantwatch.cli", "papers": "paperwatch.cli",
-         "sec": "secwatch.cli", "ema": "emawatch.cli", "adcom": "adcomwatch.cli", "crl": "crlwatch.cli", "mcp": "trialwatch.mcp_server"}
-ALIASES = {"trialwatch": "trials", "fdawatch": "fda", "grantwatch": "grants", "paperwatch": "papers", "secwatch": "sec", "emawatch": "ema", "adcomwatch": "adcom", "crlwatch": "crl",
+         "sec": "secwatch.cli", "ema": "emawatch.cli", "adcom": "adcomwatch.cli", "crl": "crlwatch.cli", "fda-decisions": "decisionwatch.cli", "mcp": "trialwatch.mcp_server"}
+ALIASES = {"trialwatch": "trials", "fdawatch": "fda", "grantwatch": "grants", "paperwatch": "papers", "secwatch": "sec", "emawatch": "ema", "adcomwatch": "adcom", "crlwatch": "crl", "decisions": "fda-decisions", "pdufa": "fda-decisions",
            "profile": "fda"}
 
 USAGE = f"""BioCatalystFeed {__version__}
@@ -20,6 +20,7 @@ tools:
   ema      EMA (EU) opinions, authorisations, withdrawals     (= emawatch)
   adcom    FDA advisory committee meetings (Federal Register) (= adcomwatch)
   crl      FDA complete response letters (openFDA)           (= crlwatch)
+  fda-decisions  FDA decision calendar + watch: PDUFA dates (8-K), AdComs, approvals, CRLs
   profile  merged company profile                            (= fdawatch profile)
   mcp      run the MCP server over stdio                     (= trialwatch-mcp)
 
