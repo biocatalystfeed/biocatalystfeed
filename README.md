@@ -148,9 +148,10 @@ A free, read-only, rate-limited MCP endpoint (Streamable HTTP, no account) runs 
 ```json
 {"mcpServers": {"biocatalystfeed-hosted": {"type": "http", "url": "https://bcf-mcp.lively-recipe-5a12.workers.dev/mcp"}}}
 ```
-It offers 9 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
-`fda_decisions`, `readout_calendar`, `trials_at_risk`, `fda_adcom_meetings`), all with provenance fields, plus a cached
+It offers 10 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
+`fda_decisions`, `readout_calendar`, `trials_at_risk`, `fda_adcom_meetings`, and the hosted-only **`paper_retraction_check`**), all with provenance fields, plus a cached
 public `GET /calendar.json` (90-day readout calendar, refreshed every 6 h; feeds biocat.ai/calendar) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. **Free tier:** 200 tool calls per IP per UTC day (resets at 00:00 UTC) and 30 requests/minute. `initialize` and `tools/list` don't count. Over the limit you get HTTP 429 with JSON-RPC error `-32002`, `Retry-After` and `x-daily-*` headers. `/calendar.json` is unmetered. API keys for higher limits are planned but not yet available. **Self-hosting is free and unlimited:** `pip install biocatalystfeed`.
+**Retraction warning (hosted only, free):** `paper_retraction_check` takes up to 50 PMIDs or DOIs and reports, per paper, whether it is retracted, partially retracted, under an expression of concern or corrected, with links to each notice, the first notice date and how many sources agree (PubMed, Crossref including Retraction Watch records, OpenAlex). An OpenAlex-only signal is shown as `possible_retraction` with no warning. `none_found` means no notice was found, not that a paper is sound. One call counts as one tool call toward the free daily limit. Informational only; not medical or investment advice. Data: PubMed/MEDLINE (U.S. National Library of Medicine), Crossref metadata including the Retraction Watch Database (The Center for Scientific Integrity, openly available via Crossref), OpenAlex (CC0). This tool is not part of the source-available package.
 Watches, change history and the other sources need the local install above. No request logs are kept; see
 [`TERMS.md`](TERMS.md) and [`PRIVACY.md`](PRIVACY.md). Source: [`worker/`](worker/).
 

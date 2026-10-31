@@ -1,5 +1,8 @@
 # Changelog
 
+## Hosted endpoint — 2026-10-30
+- Hosted Worker only (no package release): new free tool **`paper_retraction_check`**: retraction / partial retraction / expression of concern / correction status for up to 50 PMIDs or DOIs, with notice links, dates and source agreement across PubMed, Crossref (including Retraction Watch data) and OpenAlex. Counts as one tool call toward the 200/day free limit. Informational only; not medical or investment advice. Not included in the source-available package.
+
 ## 0.4.0 — 2026-10-28
 - **Licence change:** 0.4.0 and later is under the **Business Source License 1.1**. Licensor: BioCatalystFeed. The Additional Use Grant allows any production use except a Competing Offering. The Change Date is 12 months after each release, and the Change License is Apache-2.0. **0.3.6 and earlier remain Apache-2.0** (text in `LICENSES/Apache-2.0.txt`). See `NOTICE`.
 - Hosted Worker: **free daily limit of 200 tool calls per IP per UTC day**, on top of the existing 30 requests/minute. `initialize`, `tools/list` and rejected calls are not counted, and the limit resets at 00:00 UTC. Over the limit, the Worker returns HTTP 429 with JSON-RPC error `-32002`, `Retry-After`, and `x-daily-limit` / `x-daily-remaining` / `x-daily-reset` headers, which CORS exposes. `GET /calendar.json` is not metered. Placeholder for future API keys (`x-api-key` / `Authorization: Bearer`): the key store is off, so any key gets a 401 "not enabled yet". Self-hosting has no limits: `pip install biocatalystfeed`.
