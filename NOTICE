@@ -32,6 +32,9 @@ Data sources and attributions
 - FDA complete response letters, U.S. Food and Drug Administration, via the openFDA transparency endpoint
   (https://open.fda.gov). U.S. government works, public domain / CC0; published by FDA with redactions. Product names and
   deficiency topics are parsed by this software from the OCR letter text and may be wrong.
+- FDA Orange Book (Approved Drug Products with Therapeutic Equivalence Evaluations) data files, U.S. Food and
+  Drug Administration (https://www.fda.gov/media/76860/download). U.S. government work, public domain. Patents are as
+  listed by the applicant; FDA does not verify them.
 - SEC EDGAR, U.S. Securities and Exchange Commission. Public filing data accessed under the SEC fair-access policy.
 
 Disclaimer

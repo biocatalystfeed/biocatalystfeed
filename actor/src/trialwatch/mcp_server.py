@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA decision calendar, trial readout calendar and Trials at Risk tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA Orange Book, FDA decision calendar, trial readout calendar and Trials at Risk tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -314,6 +314,67 @@ def crl_changes_since(since: str, watch: str | None = None) -> list[dict]:
     return store(_db).changes(watch=watch, since=since)
 
 
+_ob = None
+
+
+def _orange_book():
+    global _ob
+    if _ob is None:
+        from obwatch.core import OrangeBookClient
+        _ob = OrangeBookClient()
+    return _ob
+
+
+@_tool("read")
+def orange_book_protections(company: list[str] | None = None, ingredient: list[str] | None = None,
+                            trade_name: list[str] | None = None, application: str | None = None,
+                            kind: list[str] | None = None, since: str | None = None, until: str | None = None,
+                            upcoming_days: int | None = None, include_expired: bool = False, keyword: str | None = None,
+                            exclude: list[str] | None = None, max_results: int = 50) -> list[dict]:
+    """FDA Orange Book patent and exclusivity listings for NDAs/ANDAs, soonest expiry first: application, brand,
+    ingredient, applicant, kind (patent / exclusivity), code (patent number, '*PED' = pediatric extension; or
+    exclusivity code such as NCE, ODE, PED, NP, M-xx, I-xxx, D-xxx, PC, CGT), expiry date, drug substance / drug
+    product flags, patent use codes, delist flag, product numbers and the Orange Book page. Patents are as listed by
+    the applicant; FDA does not verify them, and actual generic entry can differ (litigation, settlements, 30-month
+    stays). Data refreshes monthly. Source: FDA Orange Book data files (public domain)."""
+    from obwatch.core import protections
+    return protections(_orange_book(), company=company, ingredient=ingredient, trade_name=trade_name,
+                       application=application, kind=kind, since=since, until=until,
+                       upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 3650, 0),
+                       include_expired=include_expired, keyword=keyword, exclude=exclude, max_records=_clamp(max_results, 500))
+
+
+@_tool("read")
+def orange_book_loe(company: list[str] | None = None, ingredient: list[str] | None = None,
+                    trade_name: list[str] | None = None, application: str | None = None, since: str | None = None,
+                    until: str | None = None, upcoming_days: int | None = None, keyword: str | None = None,
+                    exclude: list[str] | None = None, max_results: int = 50) -> list[dict]:
+    """Loss-of-exclusivity view from the FDA Orange Book: one row per application with its last listed protection
+    (latest unexpired patent or exclusivity expiry and which one), counts of listed patents and exclusivities, soonest
+    first. since/until/upcoming_days filter the individual listings first. This is when no *listed* protection blocks
+    generics any more, not a prediction of generic launch. Source: FDA Orange Book data files (public domain)."""
+    from obwatch.core import loe
+    return loe(_orange_book(), company=company, ingredient=ingredient, trade_name=trade_name, application=application,
+               since=since, until=until, upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 3650, 0),
+               keyword=keyword, exclude=exclude, max_records=_clamp(max_results, 500))
+
+
+@_tool("snapshot")
+def snapshot_orange_book(name: str, company: list[str] | None = None, ingredient: list[str] | None = None,
+                         trade_name: list[str] | None = None, until: str | None = None) -> dict:
+    """Snapshot FDA Orange Book patent/exclusivity listings into the local DB; returns new listings and changed expiry
+    dates, delist flags, drug substance/product flags and use codes since the previous snapshot. Source: FDA Orange Book."""
+    from obwatch.core import run_watch, store
+    return run_watch(_orange_book(), store(_db), name, company=company, ingredient=ingredient, trade_name=trade_name, until=until)
+
+
+@_tool("local")
+def orange_book_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected Orange Book changes (new_listing, expires_change, delisted_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_orange_book has run at least twice for a watch."""
+    from obwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
 def _dec_clients():
     from adcomwatch.core import FRClient
     from secwatch.core import SECClient
@@ -441,9 +502,9 @@ def trials_at_risk(sponsor: str | None = None, condition: str | None = None, int
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a document: format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0, 'markdown' = rendered
     Markdown digest, 'html' = rendered standalone HTML digest (email-ready; nothing is sent).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "fda-decisions", "readouts"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, fda-decisions, readouts")
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "fda-decisions", "readouts"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, fda-decisions, readouts")
     if format not in ("json", "rss", "markdown", "html"): raise ValueError("format must be 'json', 'rss', 'markdown' or 'html'")
     from biowatch import digest
     import json as _json
@@ -451,7 +512,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     if format == "markdown": return digest.markdown(title, ch)

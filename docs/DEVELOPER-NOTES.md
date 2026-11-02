@@ -149,6 +149,19 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
   key = `file_name`; tracked `application_status`, `letter_type`. PDF link = `https://download.open.fda.gov/crl/<file_name>`.
 - Hosted Cloudflare worker not updated (CLI + local MCP only).
 
+## obwatch (2026-11-02 PT, source scout)
+- **Source**: FDA Orange Book data files, `https://www.fda.gov/media/76860/download` (ZIP of `products.txt`, `patent.txt`,
+  `exclusivity.txt`, `~`-delimited, latin-1, CRLF). ~1.1 MB; refreshed monthly (files inside dated 2026-10-09 on 2026-11-02).
+  Public domain U.S. government work. 10,022 merged listings on 2026-11-02.
+- **Client**: `OrangeBookClient` caches the ZIP in `~/.cache/biocatalystfeed/orangebook.zip` for 24 h, checks the `PK`
+  magic (fda.gov can serve an HTML block page), descriptive User-Agent.
+- **Records**: key `ob:<N|A><appl_no>:<patent|exclusivity>:<code>`, merged across product numbers (latest expiry, OR of
+  flags, union of use codes). `*PED` patent rows are separate listings with `pediatric: true`. Tracked: `expires`,
+  `delisted`, `drug_substance`, `drug_product`, `use_codes`. Watches include expired listings so an expiry moving is a
+  change rather than a disappearance; removed listings are not reported (ItemStore has no removal diff).
+- **LOE**: `loe()` = max unexpired expiry per application. It ignores litigation, settlements, unlisted patents and
+  30-month stays; the CLI and MCP descriptions say so.
+
 ## 0.3.4 (2026-10-28 PT, weekly review)
 - **Sponsor aliases in trial search** (`trialwatch.core.sponsor_queries` / `raw_search`): fixes the daily routine's `sponsor:Terns Pharmaceuticals` watch returning 0 trials. CLI `--no-aliases`; `company_trials` passes `sponsor_aliases=False` (it already loops over `ct_queries`). Hosted worker has a small `CT_SPONSOR` map mirroring the table (Terns + tickers).
 - **MCP schema quality** (`trialwatch/tooldocs.py`): Glama's Tool Definition Quality Score (scored 2026-10-23 UTC, 22 tools) was B 3.2/5, the recurring deduction being "0% schema description coverage" and "no annotations". All params now carry descriptions via `Annotated[..., Field(description=...)]` set on `__signature__` (works on mcp 1.x FastMCP and 2.x MCPServer); tools get `ToolAnnotations` by kind (read / local / snapshot). `tests/test_v034.py` fails if a new param lacks a description.

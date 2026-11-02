@@ -61,7 +61,11 @@ PARAMS: dict[str, str] = {
     "application": "NDA/BLA number, e.g. 'NDA 218705', 'BLA 761308' or '218705'.",
     "topic": "Deficiency topics to keep: facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors.",
     "include_text": "If true, include the full OCR letter text (large).",
-    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, fda-decisions or readouts.",
+    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, fda-decisions or readouts.",
+    "ingredient": "Active ingredient names, OR'd (e.g. 'semaglutide').",
+    "trade_name": "Brand / trade names, OR'd (e.g. 'Ozempic').",
+    "kind": "Listing kinds to keep: 'patent', 'exclusivity' (default both).",
+    "include_expired": "If true, also return listings that have already expired.",
     "kinds": "FDA decision event kinds to include, any of pdufa, adcom, approval, crl (default all).",
     "upcoming_days": "Only upcoming pdufa/adcom events from today to today+N days (overrides since/until; 0-730).",
     "format": "'json' (JSON Feed 1.1), 'rss' (RSS 2.0), 'markdown' or 'html' (rendered digest).",
@@ -91,6 +95,15 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "fda_complete_response_letters": {"company": "Company names, OR'd.", "status": "Application status: 'Approved' (approved since the letter) or 'Unapproved'.",
                                       "since": f"Letter date from ({_DATE}).", "until": f"Letter date to ({_DATE})."},
     "snapshot_crl": {"company": "Company names, OR'd.", "status": "'Approved' or 'Unapproved'.", "since": f"Letter date from ({_DATE})."},
+    "orange_book_protections": {"company": "Applicant names, OR'd (e.g. 'Novo Nordisk').", "application": "'NDA 209637', 'ANDA 215328' or '209637'.",
+                                "since": f"Expiry date from ({_DATE}; default today).", "until": f"Expiry date to ({_DATE}).",
+                                "upcoming_days": "Only listings expiring from today to today+N days (0-3650).",
+                                "keyword": "Any word in brand, ingredient, applicant or patent/exclusivity code."},
+    "orange_book_loe": {"company": "Applicant names, OR'd (e.g. 'Novo Nordisk').", "application": "'NDA 209637', 'ANDA 215328' or '209637'.",
+                        "since": f"Listing expiry date from ({_DATE}; default today).", "until": f"Listing expiry date to ({_DATE}).",
+                        "upcoming_days": "Only listings expiring from today to today+N days (0-3650).",
+                        "keyword": "Any word in brand, ingredient, applicant or patent/exclusivity code."},
+    "snapshot_orange_book": {"company": "Applicant names, OR'd.", "until": f"Expiry date to ({_DATE})."},
     "fda_decisions": {"drug": "Drug name or code (e.g. 'tirzepatide', 'VK2735'); matched against filings, agendas, Drugs@FDA names and CRL text.",
                       "company": "Company name or ticker (alias-resolved; unknown US tickers are looked up in SEC's ticker list).",
                       "condition": "Condition / disease text (e.g. 'obesity'); coarse for approvals (Drugs@FDA has no indication field).",
@@ -105,7 +118,7 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",
-           "adcom_changes_since", "crl_changes_since", "fda_decision_changes_since", "readout_changes_since"):
+           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "fda_decision_changes_since", "readout_changes_since"):
     TOOL_PARAMS.setdefault(_t, {})["since"] = f"Only changes detected on or after this date ({_DATE})."
 
 TOOL_PARAMS["snapshot_readouts"] = {k: v for k, v in TOOL_PARAMS["readout_calendar"].items() if k not in ("since", "until")}

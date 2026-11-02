@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- New source: **FDA Orange Book** patents and exclusivities (`bcf orange-book search|loe|watch|changes` / `obwatch`; alias `bcf ob`). Parses FDA's monthly Orange Book ZIP (products, patent, exclusivity), cached locally for 24 h, polite User-Agent. One record per application + patent number or exclusivity code, merged over product numbers: brand, ingredient, applicant, expiry, drug substance / drug product flags, use codes, delist flag, `pediatric` (`*PED` patents and PED exclusivity). Filters: company, ingredient, brand, application (NDA/ANDA), kind, expiry window, `--upcoming-days`, `--include-expired`, keyword, exclude. `loe` gives each application's last listed protection (loss-of-exclusivity date). Watches (prefix `ob`) report `new_listing`, `expires_change`, `delisted_change`, flag and use-code changes. MCP: `orange_book_protections`, `orange_book_loe`, `snapshot_orange_book`, `orange_book_changes_since`; `changes_feed` accepts `orange-book`; 36 stdio tools. U.S. government data, public domain. Listed patents are not verified by FDA, and real generic entry can differ. Not on the hosted endpoint yet.
+
 ## Hosted endpoint — 2026-10-30
 - Hosted Worker only (no package release): new free tool **`paper_retraction_check`**: retraction / partial retraction / expression of concern / correction status for up to 50 PMIDs or DOIs, with notice links, dates and source agreement across PubMed, Crossref (including Retraction Watch data) and OpenAlex. Counts as one tool call toward the 200/day free limit. Informational only; not medical or investment advice. Not included in the source-available package.
 

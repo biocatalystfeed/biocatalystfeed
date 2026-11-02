@@ -4,8 +4,8 @@ import importlib, os, sys
 from . import __version__, DISCLAIMER
 
 TOOLS = {"trials": "trialwatch.cli", "fda": "fdawatch.cli", "grants": "grantwatch.cli", "papers": "paperwatch.cli",
-         "sec": "secwatch.cli", "ema": "emawatch.cli", "adcom": "adcomwatch.cli", "crl": "crlwatch.cli", "fda-decisions": "decisionwatch.cli", "readouts": "readoutwatch.cli", "mcp": "trialwatch.mcp_server"}
-ALIASES = {"trialwatch": "trials", "fdawatch": "fda", "grantwatch": "grants", "paperwatch": "papers", "secwatch": "sec", "emawatch": "ema", "adcomwatch": "adcom", "crlwatch": "crl", "decisions": "fda-decisions", "pdufa": "fda-decisions", "readoutwatch": "readouts",
+         "sec": "secwatch.cli", "ema": "emawatch.cli", "adcom": "adcomwatch.cli", "crl": "crlwatch.cli", "orange-book": "obwatch.cli", "fda-decisions": "decisionwatch.cli", "readouts": "readoutwatch.cli", "mcp": "trialwatch.mcp_server"}
+ALIASES = {"trialwatch": "trials", "fdawatch": "fda", "grantwatch": "grants", "paperwatch": "papers", "secwatch": "sec", "emawatch": "ema", "adcomwatch": "adcom", "crlwatch": "crl", "obwatch": "orange-book", "ob": "orange-book", "decisions": "fda-decisions", "pdufa": "fda-decisions", "readoutwatch": "readouts",
            "profile": "fda"}
 
 USAGE = f"""BioCatalystFeed {__version__}
@@ -20,6 +20,7 @@ tools:
   ema      EMA (EU) opinions, authorisations, withdrawals     (= emawatch)
   adcom    FDA advisory committee meetings (Federal Register) (= adcomwatch)
   crl      FDA complete response letters (openFDA)           (= crlwatch)
+  orange-book  FDA Orange Book patent/exclusivity expiries, LOE dates  (= obwatch, ob)
   fda-decisions  FDA decision calendar + watch: PDUFA dates (8-K), AdComs, approvals, CRLs
   readouts       Trial readout calendar (primary completion dates) + watch, Trials at Risk, digests, static page
   profile  merged company profile                            (= fdawatch profile)
