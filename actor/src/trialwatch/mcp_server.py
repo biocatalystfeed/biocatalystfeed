@@ -11,7 +11,25 @@ from .normalize import normalize
 from .report import sponsor_pipeline as _pipeline
 from .store import Store
 
-mcp = _Server("biocatalystfeed")
+INSTRUCTIONS = (
+    "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book, Federal Register "
+    "AdComs, EMA, NIH RePORTER, PubMed/Europe PMC/preprints, SEC EDGAR). Not investment, legal or medical advice; "
+    "always cite the record's source_url. How to choose a tool: "
+    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / sec_pdufa_mentions "
+    "(network, change nothing); "
+    "(2) 'what is coming up' uses fda_decisions (PDUFA dates, AdComs, approvals, CRLs) and readout_calendar (trial "
+    "primary completions); trials_at_risk flags stopped, overdue and slipping trials; company_profile merges everything "
+    "for one company or ticker; "
+    "(3) monitoring is two steps: a snapshot_* tool stores a named query in the local DB and returns what changed since "
+    "its previous run (the first run is a baseline), and the matching *_changes_since tool or changes_feed reads stored "
+    "changes later without any network call. "
+    "Company names and tickers are alias-resolved; every record carries verified_as_of, verify_hash, source_url and "
+    "ticker_confidence. PDUFA dates are company-disclosed (SEC 8-K) and may move; trial dates labelled ESTIMATED can slip."
+)
+try:
+    mcp = _Server("biocatalystfeed", instructions=INSTRUCTIONS)
+except TypeError:  # pragma: no cover - very old SDKs without instructions
+    mcp = _Server("biocatalystfeed")
 from .tooldocs import tool as _tooldoc
 
 
@@ -118,7 +136,7 @@ def company_profile(company: str, recent_days: int = 365, include_collaborations
 
 @_tool("local")
 def fda_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """List detected FDA changes (new submissions, approvals, label revisions) since an ISO date (from fdawatch watches). Reads the local snapshot DB only (no network call); changes exist only after the fdawatch CLI watch has run at least twice for a watch."""
+    """List detected FDA changes (new submissions, approvals, label revisions) since an ISO date (from fdawatch watches). Reads the local snapshot DB only (no network call); changes exist only after the fdawatch CLI watch has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with the fdawatch CLI (`bcf fda watch`)."""
     from fdawatch.store import FDAStore
     return FDAStore(_db).changes(watch=watch, since=since)
 
@@ -141,14 +159,14 @@ def search_grants(org: list[str] | None = None, pi: str | None = None, keyword: 
 @_tool("snapshot")
 def snapshot_grants(name: str, org: list[str] | None = None, pi: str | None = None, keyword: str | None = None,
                     since: str | None = None, org_exact: bool = False) -> dict:
-    """Snapshot a grant query into the local DB; returns new awards / amount / end-date changes since the previous snapshot."""
+    """Snapshot a grant query into the local DB; returns new awards / amount / end-date changes since the previous snapshot. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use search_grants for one-off lookups (no write) and grant_changes_since to re-read stored changes later."""
     from grantwatch.core import ReporterClient, run_watch, store
     return run_watch(ReporterClient(), store(_db), name, org=org, pi=pi, keyword=keyword, since=since, org_exact=org_exact)
 
 
 @_tool("local")
 def grant_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected grant changes (new_award, award_amount_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_grants has run at least twice for a watch."""
+    """Detected grant changes (new_award, award_amount_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_grants has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_grants."""
     from grantwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -192,7 +210,7 @@ def search_papers(affiliation: list[str] | None = None, drug: list[str] | None =
 @_tool("snapshot")
 def snapshot_papers(name: str, affiliation: list[str] | None = None, drug: list[str] | None = None,
                     keyword: str | None = None, since: str | None = None, preprint_days: int = 0) -> dict:
-    """Snapshot a paper query (PubMed + optional preprints) and return papers new since the previous snapshot."""
+    """Snapshot a paper query (PubMed + optional preprints) and return papers new since the previous snapshot. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use search_papers for one-off lookups (no write) and paper_changes_since to re-read stored changes later."""
     from paperwatch.core import PubMedClient, RxivClient, EuropePMCClient, run_watch, store
     return run_watch(PubMedClient(), RxivClient() if preprint_days > 0 else None, store(_db), name, affiliation, drug,
                      keyword, since=since, preprint_days=preprint_days, epmc=EuropePMCClient())
@@ -200,7 +218,7 @@ def snapshot_papers(name: str, affiliation: list[str] | None = None, drug: list[
 
 @_tool("local")
 def paper_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """New papers/preprints detected since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_papers has run at least twice for a watch."""
+    """New papers/preprints detected since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_papers has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_papers."""
     from paperwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -233,14 +251,14 @@ def ema_medicines(holder: list[str] | None = None, drug: list[str] | None = None
 def snapshot_ema(name: str, holder: list[str] | None = None, drug: list[str] | None = None, keyword: str | None = None,
                  status: list[str] | None = None, since: str | None = None) -> dict:
     """Snapshot an EMA medicines query into the local DB; returns new medicines and status / opinion / EC decision /
-    withdrawal changes since the previous snapshot. Data: European Medicines Agency (EMA)."""
+    withdrawal changes since the previous snapshot. Data: European Medicines Agency (EMA). Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use ema_medicines for one-off lookups (no write) and ema_changes_since to re-read stored changes later."""
     from emawatch.core import EMAClient, run_watch, store
     return run_watch(EMAClient(), store(_db), name, holder=holder, drug=drug, keyword=keyword, status=status, since=since)
 
 
 @_tool("local")
 def ema_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected EMA changes (new_medicine, status_change, opinion_date_change, ec_decision_date_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_ema has run at least twice for a watch."""
+    """Detected EMA changes (new_medicine, status_change, opinion_date_change, ec_decision_date_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_ema has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_ema."""
     from emawatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -266,7 +284,7 @@ def fda_adcom_meetings(since: str | None = None, until: str | None = None, area:
 def snapshot_adcom(name: str, since: str | None = None, area: list[str] | None = None, committee: str | None = None,
                    keyword: str | None = None) -> dict:
     """Snapshot FDA advisory committee notices into the local DB; returns new notices (new meetings, amendments,
-    postponements, cancellations) and meeting-date changes since the previous snapshot. Source: Federal Register."""
+    postponements, cancellations) and meeting-date changes since the previous snapshot. Source: Federal Register. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use fda_adcom_meetings for one-off lookups (no write) and adcom_changes_since to re-read stored changes later."""
     from datetime import date, timedelta
     from adcomwatch.core import FRClient, run_watch, store
     return run_watch(FRClient(), store(_db), name, since=since or (date.today() - timedelta(days=365)).isoformat(),
@@ -275,7 +293,7 @@ def snapshot_adcom(name: str, since: str | None = None, area: list[str] | None =
 
 @_tool("local")
 def adcom_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected FDA advisory committee changes (new_notice, meeting_date_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_adcom has run at least twice for a watch."""
+    """Detected FDA advisory committee changes (new_notice, meeting_date_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_adcom has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_adcom."""
     from adcomwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -302,14 +320,14 @@ def fda_complete_response_letters(company: list[str] | None = None, application:
 def snapshot_crl(name: str, company: list[str] | None = None, since: str | None = None, keyword: str | None = None,
                  status: list[str] | None = None) -> dict:
     """Snapshot FDA complete response letters into the local DB; returns new letters and application_status flips
-    (Unapproved -> Approved) since the previous snapshot. Source: FDA / openFDA."""
+    (Unapproved -> Approved) since the previous snapshot. Source: FDA / openFDA. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use fda_complete_response_letters for one-off lookups (no write) and crl_changes_since to re-read stored changes later."""
     from crlwatch.core import run_watch, store
     return run_watch(_fda, store(_db), name, company=company, since=since, keyword=keyword, status=status)
 
 
 @_tool("local")
 def crl_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected FDA CRL changes (new_letter, application_status_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_crl has run at least twice for a watch."""
+    """Detected FDA CRL changes (new_letter, application_status_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_crl has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_crl."""
     from crlwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -363,14 +381,14 @@ def orange_book_loe(company: list[str] | None = None, ingredient: list[str] | No
 def snapshot_orange_book(name: str, company: list[str] | None = None, ingredient: list[str] | None = None,
                          trade_name: list[str] | None = None, until: str | None = None) -> dict:
     """Snapshot FDA Orange Book patent/exclusivity listings into the local DB; returns new listings and changed expiry
-    dates, delist flags, drug substance/product flags and use codes since the previous snapshot. Source: FDA Orange Book."""
+    dates, delist flags, drug substance/product flags and use codes since the previous snapshot. Source: FDA Orange Book. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use orange_book_protections for one-off lookups (no write) and orange_book_changes_since to re-read stored changes later."""
     from obwatch.core import run_watch, store
     return run_watch(_orange_book(), store(_db), name, company=company, ingredient=ingredient, trade_name=trade_name, until=until)
 
 
 @_tool("local")
 def orange_book_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """Detected Orange Book changes (new_listing, expires_change, delisted_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_orange_book has run at least twice for a watch."""
+    """Detected Orange Book changes (new_listing, expires_change, delisted_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_orange_book has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_orange_book."""
     from obwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -421,7 +439,7 @@ def snapshot_fda_decisions(name: str, drug: str | None = None, company: str | No
 def fda_decision_changes_since(since: str, watch: str | None = None) -> list[dict]:
     """Detected FDA decision changes (new_decision_event, date_change, status_change, confidence_change) since an ISO
     date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_fda_decisions has run
-    at least twice for a watch."""
+    at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_fda_decisions."""
     from decisionwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
@@ -477,7 +495,7 @@ def snapshot_readouts(name: str, sponsor: str | None = None, condition: str | No
 def readout_changes_since(since: str, watch: str | None = None) -> list[dict]:
     """Detected readout changes (new_readout, readout_date_change, readout_date_type_change, status_change,
     enrollment_change, phase_change) since an ISO date. Reads the local snapshot DB only (no network call); changes
-    exist only after snapshot_readouts has run at least twice for a watch."""
+    exist only after snapshot_readouts has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_readouts."""
     from readoutwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 

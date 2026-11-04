@@ -63,7 +63,7 @@ def main(argv=None):
     if a.cmd == "watch":
         info = run_watch(_client(), store(a.db), a.name, sec=_sec(a), **_kw(a), **_win(a))
         print(f"watch={a.name} run={info['run_id']} readouts={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        digest.write(info["changes_detail"], f"BioCatalystFeed readouts: {a.name}", a.rss, a.json_feed, a.digest_md, a.digest_html)
+        digest.emit(a, info["changes_detail"], f"BioCatalystFeed readouts: {a.name}")
         for x in info["changes_detail"]: print(f"  {x['kind']:26} {x['old'] or ''} -> {x['new'] or ''} {x.get('direction') or ''} {x['title'][:70]} {x['url']}")
         return
     if a.cmd == "at-risk":

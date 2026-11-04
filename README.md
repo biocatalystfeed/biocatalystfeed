@@ -34,7 +34,10 @@ agents (Claude, Cursor, …), or as an [Apify actor](https://apify.com/biocataly
 Records are links (registry ID + URL, from ClinicalTrials.gov secondary IDs); papers get `jurisdiction_flag` from author-affiliation countries (`"unknown"` when none is found). Details: `bcf --global --help` or [docs/GLOBAL.md](docs/GLOBAL.md).
 
 Across tools: `--exclude TERM …` to drop noise, `--rank` for relevance ordering, and `--rss` / `--json-feed` digest
-files on every `watch` (local files you can serve or feed into any reader; nothing is emailed).
+files on every `watch` (local files you can serve or feed into any reader; nothing is emailed). **Webhook alerts (0.4.1):**
+`--webhook URL` (repeatable) on every `watch` POSTs the changes when something changed: `--webhook-format json` (default;
+signed with `x-bcf-signature: sha256=<HMAC>` when `BCF_WEBHOOK_SECRET` is set), `slack` or `discord` (incoming-webhook
+text); `--webhook-always` also posts empty runs. Failures are reported on stderr and never stop the watch.
 
 ## Quickstart
 ```bash
@@ -66,6 +69,7 @@ bcf trials --db bcf.db changes --name obesity --min-severity critical   # termin
 bcf readouts --db bcf.db watch --name ph3-90d --phases PHASE3 --upcoming 90 --digest-html readouts.html --json-feed readouts.feed.json   # notify: new readouts, date slips, ESTIMATED->ACTUAL
 bcf fda-decisions --db bcf.db watch --name obesity-fda --condition obesity --json-feed fda.feed.json   # notify: new/moved PDUFA dates, AdComs, approvals, CRLs
 bcf papers --db bcf.db watch --name mdgl --affiliation "Madrigal Pharmaceuticals" --json-feed mdgl.feed.json
+bcf readouts --db bcf.db watch --name ph3-90d --webhook "$SLACK_WEBHOOK_URL" --webhook-format slack   # push alerts to Slack/Discord/any URL
 ```
 Global flags such as `--db` go **after the tool name and before the subcommand**: `bcf trials --db bcf.db changes`, not `bcf --db bcf.db trials changes` or `bcf trials changes --db bcf.db`.
 `bcf trials changes` prints a readable one-line-per-change summary; add `--json` for one JSON object per line.
@@ -107,9 +111,9 @@ their product. Fuller, cited comparison: [`docs/COMPARISON.md`](docs/COMPARISON.
 | | BioCatalystFeed (open source) | DataLookout |
 |---|---|---|
 | Price | Free to self-host (BSL 1.1 from 0.4.0; 0.3.6 and earlier Apache-2.0); free hosted MCP endpoint (200 tool calls/day) | Free tier; Pro $49/month |
-| Sources | ClinicalTrials.gov, openFDA (approvals, labels, CRLs), NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR (PDUFA dates), EMA, Federal Register (FDA AdComs) | ClinicalTrials.gov |
+| Sources | ClinicalTrials.gov, openFDA (approvals, labels, CRLs), NIH RePORTER, PubMed, Europe PMC, bioRxiv/medRxiv, SEC EDGAR (PDUFA dates), EMA, Federal Register (FDA AdComs), FDA Orange Book (patents, exclusivities) | ClinicalTrials.gov |
 | Change tracking | Diffs between your own runs (trials: status, phase, enrollment, dates, sponsor, title, why stopped, primary endpoints, arms, interventions, site counts, results posting; severity critical/notable/minor; plus FDA, EMA, AdCom, grant, paper and SEC changes) | Daily scan; 13 fields incl. status, enrollment, primary endpoints, interventions, results, site counts, completion dates; changes marked Stopped/Notable/Minor |
-| Delivery | CLI, MCP server for AI agents (local, or hosted read-only subset), RSS/JSON Feed files, Apify actor | Morning email digest + dashboard inbox |
+| Delivery | CLI, MCP server for AI agents (local, or hosted read-only subset), RSS/JSON Feed files, webhooks (JSON/Slack/Discord), Apify actor | Morning email digest + dashboard inbox |
 | Watch limits | None when self-hosted | Free: 1 sponsor + 1 disease watchlist + 1 saved search; Pro: 10 of each |
 | Scheduling | You run it (cron, Apify schedule) | Hosted, daily |
 | Setup | Python install | "2 minutes" (their claim) |
@@ -151,10 +155,12 @@ A free, read-only, rate-limited MCP endpoint (Streamable HTTP, no account) runs 
 ```json
 {"mcpServers": {"biocatalystfeed-hosted": {"type": "http", "url": "https://bcf-mcp.lively-recipe-5a12.workers.dev/mcp"}}}
 ```
-It offers 10 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
-`fda_decisions`, `readout_calendar`, `trials_at_risk`, `fda_adcom_meetings`, and the hosted-only **`paper_retraction_check`**), all with provenance fields, plus a cached
+It offers 12 tools (`search_trials`, `get_trial`, `fda_approvals`, `search_papers`, `fda_complete_response_letters`,
+`fda_decisions`, `readout_calendar`, `trials_at_risk`, `fda_adcom_meetings`, and the hosted-only **`paper_retraction_check`**,
+**`condition_landscape`** and **`condition_momentum`**), all with provenance fields, plus a cached
 public `GET /calendar.json` (90-day readout calendar, refreshed every 6 h; feeds biocat.ai/calendar) over ClinicalTrials.gov, openFDA, PubMed, SEC EDGAR and the Federal Register. **Free tier:** 200 tool calls per IP per UTC day (resets at 00:00 UTC) and 30 requests/minute. `initialize` and `tools/list` don't count. Over the limit you get HTTP 429 with JSON-RPC error `-32002`, `Retry-After` and `x-daily-*` headers. `/calendar.json` is unmetered. API keys for higher limits are planned but not yet available. **Self-hosting is free and unlimited:** `pip install biocatalystfeed`.
 **Retraction warning (hosted only, free):** `paper_retraction_check` takes up to 50 PMIDs or DOIs and reports, per paper, whether it is retracted, partially retracted, under an expression of concern or corrected, with links to each notice, the first notice date and how many sources agree (PubMed, Crossref including Retraction Watch records, OpenAlex). An OpenAlex-only signal is shown as `possible_retraction` with no warning. `none_found` means no notice was found, not that a paper is sound. One call counts as one tool call toward the free daily limit. Informational only; not medical or investment advice. Data: PubMed/MEDLINE (U.S. National Library of Medicine), Crossref metadata including the Retraction Watch Database (The Center for Scientific Integrity, openly available via Crossref), OpenAlex (CC0). This tool is not part of the source-available package.
+**Landscape reports (hosted only, free):** `condition_landscape` lists every sponsor with active trials in a condition, by phase (with ticker matching), the phase distribution, new-entrant sponsors, newly posted trials, upcoming primary completions and recently stopped trials; `condition_momentum` compares up to 8 disease areas by new trials, active Phase 3 and stops (documented formula). ClinicalTrials.gov registry counts only; not a forecast and not investment advice. Not part of the source-available package.
 Watches, change history and the other sources need the local install above. No request logs are kept; see
 [`TERMS.md`](TERMS.md) and [`PRIVACY.md`](PRIVACY.md). Source: [`worker/`](worker/).
 

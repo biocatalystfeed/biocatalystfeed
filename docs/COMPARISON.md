@@ -1,6 +1,6 @@
 # BioCatalystFeed vs DataLookout: coverage comparison
 
-Checked 2026-10-14 (PT), updated 2026-10-21 and 2026-10-28 (PT). A three-way matrix including DropwatchHQ Bio Catalyst is in [`samples/competitor_matrix.md`](../samples/competitor_matrix.md). DataLookout facts come only from its public pages [1] and [3].
+Checked 2026-10-14 (PT), updated 2026-10-21, 2026-10-28 and 2026-11-04 (PT). A three-way matrix including DropwatchHQ Bio Catalyst is in [`samples/competitor_matrix.md`](../samples/competitor_matrix.md). DataLookout facts come only from its public pages [1] and [3].
 BioCatalystFeed facts come from this repository (v0.3.0). We have **not** used DataLookout's product; anything its public page doesn't state is
 marked **unknown**. Corrections welcome via a GitHub issue.
 
@@ -18,6 +18,8 @@ BioCatalystFeed is open-source software you run yourself (CLI, MCP server, Apify
 | Trial readout calendar (market-wide primary completions) + watch for slips | Yes (v0.3.6, `bcf readouts`, biocat.ai/calendar) | Completions calendar (paid tier) | [1] |
 | Trials at Risk (stopped / overdue / delayed / enrollment shortfall) | Yes (v0.3.6, `bcf readouts at-risk`) | Yes ("Trials at Risk", paid tier) | [1] |
 | Digests | RSS, JSON Feed, Markdown, email-ready HTML files (nothing is sent; no hosted email) | Daily email digest + dashboard | [1] |
+| Push alerts | Webhooks on every watch: signed JSON, Slack, Discord (v0.4.1) | Email digest | [1] |
+| Landscape reports / disease-area momentum | Hosted MCP `condition_landscape` (sponsors by phase, new entrants, new trials, readouts, stops) and `condition_momentum` (up to 8 areas per call); JSON, no web page | Landscape reports and "Pipeline Pulse" (88 disease areas) in the web app | [1] |
 | Per-record provenance (verified_as_of, verify_hash, source_url) | Yes (v0.3.6) | Not stated (unknown) | [1] |
 | FDA advisory committee meetings | Yes (Federal Register notices: committee, date, NDA/BLA, sponsor) | Not stated (unknown) | [1], [3] |
 | EMA (EU) regulatory actions | Yes | Not stated (unknown) | [1], [3] |

@@ -102,6 +102,16 @@ def add_args(p) -> None:
     p.add_argument("--json-feed", metavar="FILE", help="write a JSON Feed 1.1 digest of this run's changes")
     p.add_argument("--digest-md", metavar="FILE", help="write a rendered Markdown digest of this run's changes")
     p.add_argument("--digest-html", metavar="FILE", help="write a rendered HTML digest (email-ready inline styles; nothing is sent)")
+    from .webhook import add_args as _wh_args
+    _wh_args(p)
+
+
+def emit(a, changes: list[dict], title: str) -> list[dict]:
+    """Write the requested digest files and POST webhooks (if any) for one watch run. Returns webhook results."""
+    write(changes, title, getattr(a, "rss", None), getattr(a, "json_feed", None), getattr(a, "digest_md", None),
+          getattr(a, "digest_html", None))
+    from .webhook import from_args
+    return from_args(a, title, changes)
 
 
 def add_query_args(p) -> None:

@@ -44,7 +44,7 @@ def main(argv=None):
         kw = _kw(a); kw.pop("include_expired")
         info = run_watch(ob, store(a.db), a.name, **kw)
         print(f"watch={a.name} run={info['run_id']} listings={info['records']} changes={info['changes']}{' (baseline)' if info['baseline'] else ''}")
-        digest.write(info["changes_detail"], f"BioCatalystFeed Orange Book: {a.name}", a.rss, a.json_feed, getattr(a, "digest_md", None), getattr(a, "digest_html", None))
+        digest.emit(a, info["changes_detail"], f"BioCatalystFeed Orange Book: {a.name}")
         for x in info["changes_detail"]: print(f"  {x['kind']:24} {x['old'] or ''} -> {x['new'] or ''}  {x['title'][:90]}")
         print(f"Source: {SOURCE}")
         return
