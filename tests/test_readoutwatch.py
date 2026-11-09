@@ -115,7 +115,7 @@ def test_mcp_tools_registered_with_descriptions():
     for name in ("readout_calendar", "snapshot_readouts", "readout_changes_since", "trials_at_risk"):
         sch = getattr(tools[name], "input_schema", None) or tools[name].inputSchema
         assert all(v.get("description") for v in sch["properties"].values()), name
-    assert len(tools) == 36
+    assert len(tools) == 39
 
 
 def test_enrich_stamps_any_tool_result():

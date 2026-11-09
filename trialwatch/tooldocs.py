@@ -61,7 +61,7 @@ PARAMS: dict[str, str] = {
     "application": "NDA/BLA number, e.g. 'NDA 218705', 'BLA 761308' or '218705'.",
     "topic": "Deficiency topics to keep: facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors.",
     "include_text": "If true, include the full OCR letter text (large).",
-    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, fda-decisions or readouts.",
+    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions or readouts.",
     "ingredient": "Active ingredient names, OR'd (e.g. 'semaglutide').",
     "trade_name": "Brand / trade names, OR'd (e.g. 'Ozempic').",
     "kind": "Listing kinds to keep: 'patent', 'exclusivity' (default both).",
@@ -104,6 +104,15 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
                         "upcoming_days": "Only listings expiring from today to today+N days (0-3650).",
                         "keyword": "Any word in brand, ingredient, applicant or patent/exclusivity code."},
     "snapshot_orange_book": {"company": "Applicant names, OR'd.", "until": f"Expiry date to ({_DATE})."},
+    "health_canada_notices": {"company": "Manufacturer names, OR'd (e.g. 'Novo Nordisk').", "ingredient": "Medicinal ingredient names, OR'd (e.g. 'semaglutide').",
+                              "brand": "Brand names, OR'd (e.g. 'Wegovy').", "submission": "Submission types to keep: NDS (new drug), SNDS (supplement), ANDS (generic), SANDS (generic supplement).",
+                              "new_active_substance": "If true, only new active substances (submission class New Active Substance or Priority-NAS).",
+                              "with_conditions": "If true, only NOC/c (authorised with conditions; confirmatory studies required).",
+                              "priority": "If true, only priority-review submissions.", "since": f"NOC date from ({_DATE}).", "until": f"NOC date to ({_DATE}).",
+                              "recent_days": "Only NOCs issued in the last N days (0-11000).", "keyword": "Any word in brand, ingredient, manufacturer, reason or therapeutic class.",
+                              "include_admin": "If true, keep administrative NOCs (manufacturer name or ownership changes).", "include_veterinary": "If true, keep veterinary drugs."},
+    "snapshot_health_canada": {"company": "Manufacturer names, OR'd.", "ingredient": "Medicinal ingredient names, OR'd.",
+                               "submission": "Submission types: NDS, SNDS, ANDS, SANDS.", "new_active_substance": "If true, only new active substances."},
     "fda_decisions": {"drug": "Drug name or code (e.g. 'tirzepatide', 'VK2735'); matched against filings, agendas, Drugs@FDA names and CRL text.",
                       "company": "Company name or ticker (alias-resolved; unknown US tickers are looked up in SEC's ticker list).",
                       "condition": "Condition / disease text (e.g. 'obesity'); coarse for approvals (Drugs@FDA has no indication field).",
@@ -118,7 +127,7 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",
-           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "fda_decision_changes_since", "readout_changes_since"):
+           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "health_canada_changes_since", "fda_decision_changes_since", "readout_changes_since"):
     TOOL_PARAMS.setdefault(_t, {})["since"] = f"Only changes detected on or after this date ({_DATE})."
 
 TOOL_PARAMS["snapshot_readouts"] = {k: v for k, v in TOOL_PARAMS["readout_calendar"].items() if k not in ("since", "until")}

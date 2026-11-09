@@ -162,6 +162,21 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
 - **LOE**: `loe()` = max unexpired expiry per application. It ignores litigation, settlements, unlisted patents and
   30-month stays; the CLI and MCP descriptions say so.
 
+## hcwatch (2026-11-09 PT, source scout)
+- **Source**: Health Canada NOC Database API, `https://health-products.canada.ca/api/notice-of-compliance/<table>/?lang=en&type=json`
+  (documented at `/api/documentation/noc-documentation-en.html`; OGL-Canada per open.canada.ca dataset a661b339). Whole-table
+  responses only, no date filter: `noticeofcompliancemain` ~22 MB / 38,272 rows, `drugproduct` ~10 MB, `medicinalingredient`
+  ~16 MB (each 5-9 s from the box on 2026-11-09). Updated nightly.
+- **Client**: `NOCClient` caches each table as `~/.cache/biocatalystfeed/hc_noc_<table>.json` for 24 h; rejects non-JSON
+  (block pages). Descriptive User-Agent.
+- **Quirks**: `noc_on_submission_type` is truncated to 20 chars ("Supplement to a New", "Supplement to an Abb", "Abbreviated
+  New Drug") and mapped to NDS/SNDS/ANDS/SANDS. NAS = submission class "New Active Substance" or "Priority-NAS". Admin
+  NOCs (class "Admin", ~12k rows) are ownership / name changes and are hidden by default. `noc_last_update_date` is always
+  `1111-11-11`, so it is not used. Record page: `https://health-products.canada.ca/noc-ac/nocInfo?lang=eng&no=<n>`.
+- **Records**: key `hcnoc:<noc_number>`; tracked `date`, `active`, `with_conditions`, `brand_names`, `ingredients`.
+  Watches default to the last 365 days (`recent_days=365`) to keep ingest small.
+- Hosted Cloudflare worker not updated (CLI + local MCP only).
+
 ## 0.3.4 (2026-10-28 PT, weekly review)
 - **Sponsor aliases in trial search** (`trialwatch.core.sponsor_queries` / `raw_search`): fixes the daily routine's `sponsor:Terns Pharmaceuticals` watch returning 0 trials. CLI `--no-aliases`; `company_trials` passes `sponsor_aliases=False` (it already loops over `ct_queries`). Hosted worker has a small `CT_SPONSOR` map mirroring the table (Terns + tickers).
 - **MCP schema quality** (`trialwatch/tooldocs.py`): Glama's Tool Definition Quality Score (scored 2026-10-23 UTC, 22 tools) was B 3.2/5, the recurring deduction being "0% schema description coverage" and "no annotations". All params now carry descriptions via `Annotated[..., Field(description=...)]` set on `__signature__` (works on mcp 1.x FastMCP and 2.x MCPServer); tools get `ToolAnnotations` by kind (read / local / snapshot). `tests/test_v034.py` fails if a new param lacks a description.

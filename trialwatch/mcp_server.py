@@ -15,7 +15,7 @@ INSTRUCTIONS = (
     "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book, Federal Register "
     "AdComs, EMA, NIH RePORTER, PubMed/Europe PMC/preprints, SEC EDGAR). Not investment, legal or medical advice; "
     "always cite the record's source_url. How to choose a tool: "
-    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / sec_pdufa_mentions "
+    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / health_canada_notices / sec_pdufa_mentions "
     "(network, change nothing); "
     "(2) 'what is coming up' uses fda_decisions (PDUFA dates, AdComs, approvals, CRLs) and readout_calendar (trial "
     "primary completions); trials_at_risk flags stopped, overdue and slipping trials; company_profile merges everything "
@@ -392,6 +392,56 @@ def orange_book_changes_since(since: str, watch: str | None = None) -> list[dict
     from obwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
+_hc = None
+
+
+def _health_canada():
+    global _hc
+    if _hc is None:
+        from hcwatch.core import NOCClient
+        _hc = NOCClient()
+    return _hc
+
+
+@_tool("read")
+def health_canada_notices(company: list[str] | None = None, ingredient: list[str] | None = None,
+                          brand: list[str] | None = None, submission: list[str] | None = None,
+                          new_active_substance: bool = False, with_conditions: bool = False, priority: bool = False,
+                          since: str | None = None, until: str | None = None, recent_days: int | None = None,
+                          keyword: str | None = None, include_admin: bool = False, include_veterinary: bool = False,
+                          exclude: list[str] | None = None, max_results: int = 50) -> list[dict]:
+    """Health Canada Notices of Compliance (NOCs): Canadian drug and biologic approvals, newest first: NOC number and
+    date, manufacturer, brand names, DINs, medicinal ingredients, submission (NDS new drug, SNDS supplement, ANDS
+    generic, SANDS generic supplement), submission class, new_active_substance, priority, with_conditions (NOC/c,
+    confirmatory studies required), reason (e.g. new indication), Canadian reference product for generics, and the NOC
+    database page. Administrative NOCs and veterinary drugs are excluded unless asked for. Updated nightly by Health
+    Canada; the tables are cached locally for 24 h. Source: Health Canada Notice of Compliance Database (Open
+    Government Licence - Canada)."""
+    from hcwatch.core import notices
+    return notices(_health_canada(), company=company, ingredient=ingredient, brand=brand, submission=submission,
+                   new_active_substance=new_active_substance, with_conditions=with_conditions, priority=priority,
+                   since=since, until=until, recent_days=None if recent_days is None else _clamp(recent_days, 11000, 0),
+                   keyword=keyword, include_admin=include_admin, include_veterinary=include_veterinary,
+                   exclude=exclude, max_records=_clamp(max_results, 500))
+
+
+@_tool("snapshot")
+def snapshot_health_canada(name: str, company: list[str] | None = None, ingredient: list[str] | None = None,
+                           submission: list[str] | None = None, new_active_substance: bool = False) -> dict:
+    """Snapshot Health Canada Notices of Compliance (last 365 days) into the local DB; returns new NOCs and changes to
+    date, active status (suspensions), NOC/c status, brand names and ingredients since the previous snapshot. Source:
+    Health Canada NOC Database. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use health_canada_notices for one-off lookups (no write) and health_canada_changes_since to re-read stored changes later."""
+    from hcwatch.core import run_watch, store
+    return run_watch(_health_canada(), store(_db), name, company=company, ingredient=ingredient, submission=submission,
+                     new_active_substance=new_active_substance)
+
+
+@_tool("local")
+def health_canada_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected Health Canada NOC changes (new_noc, active_change, with_conditions_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_health_canada has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_health_canada."""
+    from hcwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
 
 def _dec_clients():
     from adcomwatch.core import FRClient
@@ -520,9 +570,9 @@ def trials_at_risk(sponsor: str | None = None, condition: str | None = None, int
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a document: format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0, 'markdown' = rendered
     Markdown digest, 'html' = rendered standalone HTML digest (email-ready; nothing is sent).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "fda-decisions", "readouts"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, fda-decisions, readouts")
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | health-canada | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "health-canada", "fda-decisions", "readouts"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions, readouts")
     if format not in ("json", "rss", "markdown", "html"): raise ValueError("format must be 'json', 'rss', 'markdown' or 'html'")
     from biowatch import digest
     import json as _json
@@ -530,7 +580,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "health-canada": "hcwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     if format == "markdown": return digest.markdown(title, ch)
