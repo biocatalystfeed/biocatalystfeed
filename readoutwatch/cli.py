@@ -46,6 +46,7 @@ def main(argv=None):
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("search", help="upcoming readouts, soonest first"); _q(s); s.add_argument("--json", action="store_true")
     for x in ("md", "html", "rss", "json-feed"): s.add_argument(f"--{x}", metavar="FILE", help=f"also write a {x} digest of the results")
+    s.add_argument("--ics", metavar="FILE", help="also write an iCalendar (.ics) file: one all-day event per readout (import or subscribe)")
     w = sub.add_parser("watch", help="snapshot and diff (new readouts, date slips, ESTIMATED->ACTUAL, status/enrollment)")
     w.add_argument("--name", required=True); _q(w); digest.add_args(w)
     c = sub.add_parser("changes", help="stored changes"); c.add_argument("--name"); c.add_argument("--since")
@@ -54,7 +55,8 @@ def main(argv=None):
     r.add_argument("--flags", nargs="+", help="keep only these flags (stopped overdue stale_overdue delayed enrollment_shortfall enrollment_cut)")
     r.add_argument("--json", action="store_true")
     for x in ("md", "html", "rss", "json-feed"): r.add_argument(f"--{x}", metavar="FILE", help=f"also write a {x} digest")
-    g = sub.add_parser("page", help="write the static calendar page (index.html + calendar.json) for the site"); _q(g)
+    r.add_argument("--ics", metavar="FILE", help="also write an iCalendar (.ics) file of the at-risk trials' readout dates")
+    g = sub.add_parser("page", help="write the static calendar site: index.html, calendar.json, calendar.ics, per-company and per-month pages, sitemap.xml"); _q(g)
     g.add_argument("--out", required=True, help="output directory, e.g. ../bcf-site/calendar")
     a = p.parse_args(argv)
     if a.cmd == "changes":
@@ -88,9 +90,9 @@ def main(argv=None):
             from .core import _window
             win = list(_window(a.since, a.until, a.upcoming, today_iso()))
         data = page.payload(rows, now_utc(), win, {k: v for k, v in _kw(a).items()})
-        open(os.path.join(a.out, "calendar.json"), "w").write(json.dumps(data, separators=(",", ":")))
-        open(os.path.join(a.out, "index.html"), "w").write(page.render(data))
-        print(f"wrote {a.out}/index.html and calendar.json ({len(rows)} trials)")
+        n = page.write_site(data, a.out)
+        print(f"wrote {a.out}: index.html, calendar.json, calendar.ics, {n['companies']} company pages, {n['months']} month pages, "
+              f"sitemap.xml ({n['urls']} URLs; {len(rows)} trials)")
         return
     _digests(a, "BioCatalystFeed readout calendar", rows)
     if a.json: print(json.dumps(rows, indent=1)); return
@@ -105,6 +107,9 @@ def _digests(a, title, rows):
     if a.html: open(a.html, "w").write(digest.html(title, rows))
     if a.rss: open(a.rss, "w").write(digest.rss(title, rows))
     if a.json_feed: open(a.json_feed, "w").write(json.dumps(digest.json_feed(title, rows), indent=1, default=str))
+    if getattr(a, "ics", None):
+        from biowatch import ics
+        ics.write(a.ics, title, rows)
 
 
 if __name__ == "__main__":

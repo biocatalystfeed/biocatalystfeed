@@ -71,7 +71,7 @@ def test_mcp_params_described_and_annotated():
         assert a is not None, n
         if n.startswith("snapshot_"):
             assert a.read_only_hint is False and a.destructive_hint is False
-        elif n.endswith("_changes_since") or n == "changes_feed":
+        elif n.endswith("_changes_since") or n in ("changes_feed", "list_watches"):
             assert a.read_only_hint is True and a.open_world_hint is False
         else:
             assert a.read_only_hint is True and a.open_world_hint is True

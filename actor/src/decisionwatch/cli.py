@@ -34,6 +34,7 @@ def main(argv=None):
     p.add_argument("--db", default="biowatch.db")
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("search", help="merged events: upcoming soonest first, then past newest first"); _q(s); s.add_argument("--json", action="store_true")
+    s.add_argument("--ics", metavar="FILE", help="also write an iCalendar (.ics) file: one all-day event per dated FDA decision event")
     w = sub.add_parser("watch", help="snapshot and diff vs the previous run (new events, date/status/confidence changes)")
     w.add_argument("--name", required=True); _q(w); digest.add_args(w)
     c = sub.add_parser("changes", help="stored changes"); c.add_argument("--name"); c.add_argument("--since")
@@ -50,6 +51,9 @@ def main(argv=None):
         return
     errors: list = []
     rows = decisions(*_clients(), max_records=a.max, errors=errors, **_kw(a))
+    if a.ics:
+        from biowatch import ics
+        ics.write(a.ics, "BioCatalystFeed FDA decisions", rows)
     if a.json: print(json.dumps({"events": rows, "errors": errors}, indent=1)); return
     for r in rows:
         print(f"{r['date'] or '?':10} {r['kind']:8} {r['confidence']:17} {(r['ticker'] or '')[:6]:6} {(r['title'] or '')[:90]:90} {r['url']}")

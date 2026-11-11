@@ -20,7 +20,7 @@ INSTRUCTIONS = (
     "(2) 'what is coming up' uses fda_decisions (PDUFA dates, AdComs, approvals, CRLs) and readout_calendar (trial "
     "primary completions); trials_at_risk flags stopped, overdue and slipping trials; company_profile merges everything "
     "for one company or ticker; "
-    "(3) monitoring is two steps: a snapshot_* tool stores a named query in the local DB and returns what changed since "
+    "(3) monitoring is two steps (list_watches shows existing watches): a snapshot_* tool stores a named query in the local DB and returns what changed since "
     "its previous run (the first run is a baseline), and the matching *_changes_since tool or changes_feed reads stored "
     "changes later without any network call. "
     "Company names and tickers are alias-resolved; every record carries verified_as_of, verify_hash, source_url and "
@@ -87,7 +87,7 @@ def get_trial(nct_id: str) -> dict:
 @_tool("snapshot")
 def snapshot_watch(name: str, sponsor: str | None = None, condition: str | None = None,
                    intervention: str | None = None, phases: list[str] | None = None) -> dict:
-    """Snapshot a saved query ('watch') into the local DB and return what changed since its previous snapshot. Writes a run to the local DB (BIOCATALYSTFEED_DB); the first call for a name is a baseline with no changes. Use search_trials for one-off lookups and trial_changes_since to read stored changes later. sponsor is alias-resolved like search_trials."""
+    """Trials only (ClinicalTrials.gov): snapshot a saved trial query ('watch') into the local DB and return what changed since its previous snapshot. For other sources use the matching snapshot_* tool (snapshot_readouts, snapshot_fda_decisions, snapshot_papers ...). Writes a run to the local DB (BIOCATALYSTFEED_DB); the first call for a name is a baseline with no changes. Use search_trials for one-off lookups and trial_changes_since to read stored changes later. sponsor is alias-resolved like search_trials."""
     info = run_watch(_client, Store(_db), name, sponsor=sponsor, condition=condition, intervention=intervention, phases=phases)
     info.pop("trials")
     return info
@@ -136,7 +136,7 @@ def company_profile(company: str, recent_days: int = 365, include_collaborations
 
 @_tool("local")
 def fda_changes_since(since: str, watch: str | None = None) -> list[dict]:
-    """List detected FDA changes (new submissions, approvals, label revisions) since an ISO date (from fdawatch watches). Reads the local snapshot DB only (no network call); changes exist only after the fdawatch CLI watch has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with the fdawatch CLI (`bcf fda watch`)."""
+    """Drugs@FDA submission and label changes only (new submissions, approvals, label revisions) since an ISO date, from `bcf fda watch` (fdawatch) CLI watches. Not the FDA decision calendar: for PDUFA / AdCom / CRL / approval event changes recorded by snapshot_fda_decisions use fda_decision_changes_since. Reads the local snapshot DB only (no network call); changes exist only after the fdawatch CLI watch has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with the fdawatch CLI (`bcf fda watch`)."""
     from fdawatch.store import FDAStore
     return FDAStore(_db).changes(watch=watch, since=since)
 
@@ -564,6 +564,19 @@ def trials_at_risk(sponsor: str | None = None, condition: str | None = None, int
     return _risk(_client, sponsor=sponsor, condition=condition, intervention=intervention, phases=_phases(phases),
                  industry_only=industry_only, lookback_days=_clamp(lookback_days, 1095), flags=flags,
                  db_path=_db if os.path.exists(_db) else None, max_records=_clamp(max_results, 500), sec=_sec_client())
+
+
+@_tool("local")
+def list_watches(tool: str | None = None) -> list[dict]:
+    """List the watches (named saved queries) already stored in the local snapshot DB, newest run first: tool, watch name,
+    number of runs, first/last run time, records in the last run, changes stored, the saved query, and which snapshot_* and
+    *_changes_since tool to use for it. Call this before creating a watch (to reuse an existing name) or before reading
+    changes (to find watch names). Reads the local DB only (no network call); an empty list means nothing has been watched yet.
+    tool: optional filter, one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions, readouts."""
+    from biowatch.watches import list_watches as _lw, TOOLS
+    if tool is not None and tool not in {v[0] for v in TOOLS.values()}:
+        raise ValueError("tool must be one of " + ", ".join(v[0] for v in TOOLS.values()))
+    return _lw(_db, tool)
 
 
 @_tool("local")

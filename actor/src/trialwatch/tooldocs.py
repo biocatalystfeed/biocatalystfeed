@@ -76,6 +76,7 @@ PARAMS: dict[str, str] = {
 }
 
 TOOL_PARAMS: dict[str, dict[str, str]] = {
+    "list_watches": {"tool": "Optional: only watches of this tool (trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions, readouts). Omit for all."},
     "sponsor_pipeline": {"sponsor": PARAMS["sponsor"]},
     "fda_approvals": {"sponsor": "Drugs@FDA sponsor; alias-resolved for known companies and tickers (e.g. 'Lilly', 'MDGL').",
                       "since": f"Submission status date from ({_DATE}).", "until": f"Submission status date to ({_DATE})."},
