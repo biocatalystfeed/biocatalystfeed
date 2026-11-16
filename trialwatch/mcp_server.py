@@ -1,4 +1,4 @@
-"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA Orange Book, FDA decision calendar, trial readout calendar and Trials at Risk tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
+"""BioCatalystFeed MCP server (stdio): trials, FDA, grants, papers, SEC, EMA, FDA AdCom, FDA CRL, FDA Orange Book, Health Canada NOC, FDA Purple Book, FDA decision calendar, trial readout calendar and Trials at Risk tools. Works with mcp SDK 1.x (FastMCP) and 2.x (MCPServer)."""
 from __future__ import annotations
 import os
 try:
@@ -12,10 +12,10 @@ from .report import sponsor_pipeline as _pipeline
 from .store import Store
 
 INSTRUCTIONS = (
-    "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book, Federal Register "
+    "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book and Purple Book, Federal Register "
     "AdComs, EMA, NIH RePORTER, PubMed/Europe PMC/preprints, SEC EDGAR). Not investment, legal or medical advice; "
     "always cite the record's source_url. How to choose a tool: "
-    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / health_canada_notices / sec_pdufa_mentions "
+    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / health_canada_notices / purple_book_* / sec_pdufa_mentions "
     "(network, change nothing); "
     "(2) 'what is coming up' uses fda_decisions (PDUFA dates, AdComs, approvals, CRLs) and readout_calendar (trial "
     "primary completions); trials_at_risk flags stopped, overdue and slipping trials; company_profile merges everything "
@@ -442,6 +442,85 @@ def health_canada_changes_since(since: str, watch: str | None = None) -> list[di
     from hcwatch.core import store
     return store(_db).changes(watch=watch, since=since)
 
+_pb = None
+
+
+def _purple_book():
+    global _pb
+    if _pb is None:
+        from pbwatch.core import PurpleBookClient
+        _pb = PurpleBookClient()
+    return _pb
+
+
+@_tool("read")
+def purple_book_products(company: list[str] | None = None, product: list[str] | None = None, reference: list[str] | None = None,
+                         license_type: list[str] | None = None, application: str | None = None, center: str | None = None,
+                         since: str | None = None, until: str | None = None, recent_days: int | None = None,
+                         monthly_changes: bool = False, include_revoked: bool = False, keyword: str | None = None,
+                         exclude: list[str] | None = None, max_results: int = 50) -> list[dict]:
+    """FDA Purple Book licensed biological products, one row per BLA, newest original approval first: applicant,
+    proprietary and proper name, license types (351(a) originator, 351(k) biosimilar, 351(k) interchangeable),
+    reference product for biosimilars, original / interchangeable approval dates, licensure (Licensed, Revoked,
+    Voluntarily Revoked), licensed product numbers, marketing status, center (CDER/CBER), FDA-listed reference-product,
+    first-interchangeable and orphan exclusivity expiry dates, patent-list flag, this month's FDA change flags (N/R/U) and
+    the Purple Book page. FDA lists exclusivity only where it has made a determination (blank is not 'none'). Updated
+    monthly by FDA; cached locally for 24 h. Source: FDA Purple Book (public domain)."""
+    from pbwatch.core import products
+    return products(_purple_book(), company=company, name=product, reference=reference, license_type=license_type,
+                    application=application, center=center, since=since, until=until,
+                    recent_days=None if recent_days is None else _clamp(recent_days, 36500, 0),
+                    monthly_changes=monthly_changes, include_revoked=include_revoked, keyword=keyword, exclude=exclude,
+                    max_records=_clamp(max_results, 500))
+
+
+@_tool("read")
+def purple_book_exclusivity(company: list[str] | None = None, product: list[str] | None = None, kind: list[str] | None = None,
+                            since: str | None = None, until: str | None = None, upcoming_days: int | None = None,
+                            include_expired: bool = False, keyword: str | None = None, exclude: list[str] | None = None,
+                            max_results: int = 50) -> list[dict]:
+    """Biologic exclusivity expiries listed in the FDA Purple Book, soonest first: kind ('reference' = 12-year
+    reference product exclusivity under BPCIA, 'first_interchangeable', 'orphan'), expiry date, BLA, names, applicant
+    and licensure. Only determinations FDA has published are listed; biosimilar entry also depends on patents and
+    settlements. Source: FDA Purple Book (public domain)."""
+    from pbwatch.core import exclusivities
+    return exclusivities(_purple_book(), company=company, name=product, kind=kind, since=since, until=until,
+                         upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 3650, 0),
+                         include_expired=include_expired, keyword=keyword, exclude=exclude, max_records=_clamp(max_results, 500))
+
+
+@_tool("read")
+def purple_book_biosimilar_landscape(reference: list[str] | None = None, company: list[str] | None = None,
+                                     keyword: str | None = None, include_unchallenged: bool = False,
+                                     max_results: int = 50) -> list[dict]:
+    """Biologic loss-of-exclusivity view from the FDA Purple Book (the biologics counterpart of orange_book_loe): one
+    row per reference product with its 351(a) BLA(s) and applicant, FDA-listed reference exclusivity expiry (and
+    whether it has passed), number of licensed biosimilars and interchangeables, first / latest biosimilar approval,
+    and each biosimilar (BLA, name, applicant, approval, interchangeable date, first-interchangeable exclusivity). Most
+    biosimilars first. Not a launch prediction (patents, settlements). Source: FDA Purple Book (public domain)."""
+    from pbwatch.core import landscape
+    return landscape(_purple_book(), reference=reference, company=company, keyword=keyword,
+                     include_unchallenged=include_unchallenged, max_records=_clamp(max_results, 500))
+
+
+@_tool("snapshot")
+def snapshot_purple_book(name: str, company: list[str] | None = None, product: list[str] | None = None,
+                         reference: list[str] | None = None, license_type: list[str] | None = None) -> dict:
+    """Snapshot FDA Purple Book licensed biologics (one record per BLA, revoked ones included) into the local DB;
+    returns new BLAs and changes to licensure (revocations), license types (biosimilar -> interchangeable),
+    interchangeable approval date, exclusivity dates, licensed products, marketing status, applicant and reference
+    product since the previous snapshot. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use purple_book_products for one-off lookups (no write) and purple_book_changes_since to re-read stored changes later."""
+    from pbwatch.core import run_watch, store
+    return run_watch(_purple_book(), store(_db), name, company=company, name=product, reference=reference, license_type=license_type)
+
+
+@_tool("local")
+def purple_book_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected Purple Book changes (new_bla, licensure_change, license_types_change, interchangeable_approved_change, ref_exclusivity_expires_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_purple_book has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_purple_book."""
+    from pbwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
 
 def _dec_clients():
     from adcomwatch.core import FRClient
@@ -572,7 +651,7 @@ def list_watches(tool: str | None = None) -> list[dict]:
     number of runs, first/last run time, records in the last run, changes stored, the saved query, and which snapshot_* and
     *_changes_since tool to use for it. Call this before creating a watch (to reuse an existing name) or before reading
     changes (to find watch names). Reads the local DB only (no network call); an empty list means nothing has been watched yet.
-    tool: optional filter, one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions, readouts."""
+    tool: optional filter, one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, fda-decisions, readouts."""
     from biowatch.watches import list_watches as _lw, TOOLS
     if tool is not None and tool not in {v[0] for v in TOOLS.values()}:
         raise ValueError("tool must be one of " + ", ".join(v[0] for v in TOOLS.values()))
@@ -583,9 +662,9 @@ def list_watches(tool: str | None = None) -> list[dict]:
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a document: format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0, 'markdown' = rendered
     Markdown digest, 'html' = rendered standalone HTML digest (email-ready; nothing is sent).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | health-canada | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "health-canada", "fda-decisions", "readouts"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions, readouts")
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | health-canada | purple-book | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "health-canada", "purple-book", "fda-decisions", "readouts"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, fda-decisions, readouts")
     if format not in ("json", "rss", "markdown", "html"): raise ValueError("format must be 'json', 'rss', 'markdown' or 'html'")
     from biowatch import digest
     import json as _json
@@ -593,7 +672,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "health-canada": "hcwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "health-canada": "hcwatch", "purple-book": "pbwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     if format == "markdown": return digest.markdown(title, ch)

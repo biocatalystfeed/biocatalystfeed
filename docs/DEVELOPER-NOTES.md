@@ -177,6 +177,31 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
   Watches default to the last 365 days (`recent_days=365`) to keep ingest small.
 - Hosted Cloudflare worker not updated (CLI + local MCP only).
 
+## pbwatch (2026-11-16 PT, source scout)
+- **Source**: FDA Purple Book monthly data download. Discovery: `https://purplebooksearch.fda.gov/index.cfm?event=downloads`
+  lists every month's CSV/XLSX on `www.accessdata.fda.gov/drugsatfda_docs/PurpleBook/<year>/purplebook-search-<Month>-data-download.csv`.
+  Month casing is inconsistent (2025 and January 2026 lowercase, February-October 2026 capitalised), so `latest_link()`
+  picks the max (year, month) from the page. The vanity URL `purplebooksearch.fda.gov/downloads` serves a JS "resembles an
+  automated request" challenge to non-browser User-Agents; we do **not** spoof a browser. The `index.cfm?event=downloads`
+  page and the accessdata CSV answer our descriptive UA (checked 2026-11-16). If discovery fails, the client tries this
+  and the previous two months in both casings. accessdata answered one 401 to a back-to-back request on 2026-11-16, so
+  `_get` retries once after 2 s on 401/403/429/5xx.
+- **Format** (October 2026 file, 487 KB, 2,276 lines, UTF-8, sometimes with a BOM): title line "Purple Book Monthly
+  Historical Data Changes Report - <Month> <Year>", then a change section (N newly approved, R added in release, U updated;
+  14 rows in October) and the full database (2,256 product rows / 865 BLAs), both under the same 28-column header. Dates
+  are "October 22, 2026". `Exclusivity Expiration Date` was empty in every row; reference-product (36 rows),
+  first-interchangeable and orphan exclusivity columns are sparse because FDA lists only determinations it has made.
+- **Records**: key `pb:<BLA>`; tracked `licensure`, `license_types`, `interchangeable_approved`, three exclusivity dates,
+  `products` (licensed product numbers, so a product revocation shows as `products_change`), `marketing_status`,
+  `applicant`, `reference_product`. Watches include revoked BLAs so revocations are changes, not disappearances.
+  September → October 2026 real diff: 1 new BLA (Lucamzi), 4 aflibercept biosimilars gained interchangeability on
+  2026-10-22, Poherdy first-interchangeable exclusivity 2027-07-30, a Gonal-f product voluntarily revoked.
+- **Landscape**: biosimilars grouped by reference proper name with FDA's 4-letter suffix dropped; the originator is the
+  351(a) BLA with that core name, narrowed to the one whose proprietary name matches the biosimilars' reference product.
+  Orange Book pairing: biologics left the Orange Book in March 2020 (transition), so the Purple Book's reference
+  exclusivity + biosimilar count is the biologic LOE view; no join to `obwatch` is needed.
+- Hosted Cloudflare worker not updated (CLI + local MCP only).
+
 ## 0.3.4 (2026-10-28 PT, weekly review)
 - **Sponsor aliases in trial search** (`trialwatch.core.sponsor_queries` / `raw_search`): fixes the daily routine's `sponsor:Terns Pharmaceuticals` watch returning 0 trials. CLI `--no-aliases`; `company_trials` passes `sponsor_aliases=False` (it already loops over `ct_queries`). Hosted worker has a small `CT_SPONSOR` map mirroring the table (Terns + tickers).
 - **MCP schema quality** (`trialwatch/tooldocs.py`): Glama's Tool Definition Quality Score (scored 2026-10-23 UTC, 22 tools) was B 3.2/5, the recurring deduction being "0% schema description coverage" and "no annotations". All params now carry descriptions via `Annotated[..., Field(description=...)]` set on `__signature__` (works on mcp 1.x FastMCP and 2.x MCPServer); tools get `ToolAnnotations` by kind (read / local / snapshot). `tests/test_v034.py` fails if a new param lacks a description.

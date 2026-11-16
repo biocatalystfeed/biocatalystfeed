@@ -61,7 +61,7 @@ PARAMS: dict[str, str] = {
     "application": "NDA/BLA number, e.g. 'NDA 218705', 'BLA 761308' or '218705'.",
     "topic": "Deficiency topics to keep: facility, product_quality, clinical, clinical_pharmacology, nonclinical, safety, human_factors.",
     "include_text": "If true, include the full OCR letter text (large).",
-    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions or readouts.",
+    "tool": "Which change store to read: trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, fda-decisions or readouts.",
     "ingredient": "Active ingredient names, OR'd (e.g. 'semaglutide').",
     "trade_name": "Brand / trade names, OR'd (e.g. 'Ozempic').",
     "kind": "Listing kinds to keep: 'patent', 'exclusivity' (default both).",
@@ -76,7 +76,7 @@ PARAMS: dict[str, str] = {
 }
 
 TOOL_PARAMS: dict[str, dict[str, str]] = {
-    "list_watches": {"tool": "Optional: only watches of this tool (trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, fda-decisions, readouts). Omit for all."},
+    "list_watches": {"tool": "Optional: only watches of this tool (trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, fda-decisions, readouts). Omit for all."},
     "sponsor_pipeline": {"sponsor": PARAMS["sponsor"]},
     "fda_approvals": {"sponsor": "Drugs@FDA sponsor; alias-resolved for known companies and tickers (e.g. 'Lilly', 'MDGL').",
                       "since": f"Submission status date from ({_DATE}).", "until": f"Submission status date to ({_DATE})."},
@@ -114,6 +114,29 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
                               "include_admin": "If true, keep administrative NOCs (manufacturer name or ownership changes).", "include_veterinary": "If true, keep veterinary drugs."},
     "snapshot_health_canada": {"company": "Manufacturer names, OR'd.", "ingredient": "Medicinal ingredient names, OR'd.",
                                "submission": "Submission types: NDS, SNDS, ANDS, SANDS.", "new_active_substance": "If true, only new active substances."},
+    "purple_book_products": {"company": "Applicant / license holder names, OR'd (e.g. 'Amgen').",
+                             "product": "Proprietary or proper names, OR'd (e.g. 'Humira', 'adalimumab'; 'adalimumab' also matches biosimilars such as adalimumab-aaty).",
+                             "reference": "Reference product of biosimilars, OR'd (e.g. 'Stelara' or 'ustekinumab').",
+                             "license_type": "Any of '351(a)' (originator BLAs), 'biosimilar' (all 351(k), incl. interchangeables), 'interchangeable'.",
+                             "application": "'BLA 761378' or '761378'.", "center": "'CDER' or 'CBER'.",
+                             "since": f"Original approval date from ({_DATE}).", "until": f"Original approval date to ({_DATE}).",
+                             "recent_days": "Only BLAs first approved in the last N days (0-36500).",
+                             "monthly_changes": "If true, only BLAs FDA flagged in the current monthly report (N newly approved, R added, U updated).",
+                             "include_revoked": "If true, keep revoked / voluntarily revoked licenses.",
+                             "keyword": "Any word in proprietary, proper or reference name, or applicant."},
+    "purple_book_exclusivity": {"company": "Applicant names, OR'd.", "product": "Proprietary or proper names, OR'd.",
+                                "kind": "Exclusivity kinds to keep: 'reference' (12-year reference product), 'first_interchangeable', 'orphan' (default all).",
+                                "since": f"Expiry date from ({_DATE}; default today).", "until": f"Expiry date to ({_DATE}).",
+                                "upcoming_days": "Only exclusivities expiring from today to today+N days (0-3650).",
+                                "include_expired": "If true, also return exclusivities that have already expired.",
+                                "keyword": "Any word in proprietary, proper or reference name, or applicant."},
+    "purple_book_biosimilar_landscape": {"reference": "Reference products, OR'd (e.g. 'Stelara', 'ustekinumab').",
+                                         "company": "Originator or biosimilar applicant names, OR'd.",
+                                         "keyword": "Any word in reference / biosimilar names or applicants.",
+                                         "include_unchallenged": "If true, add originator BLAs with an FDA-listed reference exclusivity date and no biosimilar yet."},
+    "snapshot_purple_book": {"company": "Applicant names, OR'd.", "product": "Proprietary or proper names, OR'd.",
+                             "reference": "Reference product of biosimilars, OR'd.",
+                             "license_type": "Any of '351(a)', 'biosimilar', 'interchangeable' (default all)."},
     "fda_decisions": {"drug": "Drug name or code (e.g. 'tirzepatide', 'VK2735'); matched against filings, agendas, Drugs@FDA names and CRL text.",
                       "company": "Company name or ticker (alias-resolved; unknown US tickers are looked up in SEC's ticker list).",
                       "condition": "Condition / disease text (e.g. 'obesity'); coarse for approvals (Drugs@FDA has no indication field).",
@@ -128,7 +151,7 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",
-           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "health_canada_changes_since", "fda_decision_changes_since", "readout_changes_since"):
+           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "health_canada_changes_since", "purple_book_changes_since", "fda_decision_changes_since", "readout_changes_since"):
     TOOL_PARAMS.setdefault(_t, {})["since"] = f"Only changes detected on or after this date ({_DATE})."
 
 TOOL_PARAMS["snapshot_readouts"] = {k: v for k, v in TOOL_PARAMS["readout_calendar"].items() if k not in ("since", "until")}
