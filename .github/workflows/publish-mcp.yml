@@ -1,0 +1,151 @@
+# Publishes ./server.json to the official MCP Registry when a v* tag is pushed.
+# Authentication is GitHub Actions OIDC (`mcp-publisher login github-oidc`);
+# there is no registry token or other long-lived secret.
+#
+# This follows the registry's GitHub Actions guide and omits the package-registry
+# publish steps (PyPI is published separately):
+# https://modelcontextprotocol.io/registry/github-actions
+#
+# v0.4.3 was tagged before this file existed, so that tag will not run it.
+# After this workflow is on main, publish 0.4.3 with "Run workflow" on main
+# and version 0.4.3. Later v* tags publish on their own.
+
+name: Publish to MCP Registry
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the leading v (use 0.4.3 for the current package)"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Tag pushes always publish. A manual run only publishes from main, which
+    # is the tree that matches the already-released 0.4.3 package.
+    if: github.event_name == 'push' || github.ref_name == 'main'
+    permissions:
+      id-token: write # Required for OIDC authentication
+      contents: read
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+          archive="mcp-publisher_${os}_${arch}.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Resolve release version
+        id: release
+        env:
+          # Empty on tag pushes. Read only in the workflow_dispatch branch below.
+          INPUT_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || '' }}
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            version="${GITHUB_REF#refs/tags/v}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            version="${INPUT_VERSION}"
+          else
+            echo "This workflow only publishes from a v* tag or a manual run."
+            exit 1
+          fi
+          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.+-][0-9A-Za-z.]+)?$ ]]; then
+            echo "Release version '${version}' is not a dotted version like 0.4.3."
+            exit 1
+          fi
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+      # The tag (or the manual version) is the only version that may be published.
+      # pyproject.toml and server.json must already agree with it, so the registry
+      # metadata cannot drift from the package that was published to PyPI.
+      - name: Check version and GitHub OIDC namespace
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          version="${RELEASE_VERSION}"
+
+          package_version="$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          if [[ "${package_version}" != "${version}" ]]; then
+            echo "pyproject.toml version (${package_version}) does not match release version (${version})."
+            exit 1
+          fi
+
+          server_version="$(jq -r '.version' server.json)"
+          if [[ "${server_version}" != "${version}" ]]; then
+            echo "server.json version (${server_version}) does not match release version (${version})."
+            echo "Bump server.json to ${version} in the release commit; this workflow will not publish a drifted listing."
+            exit 1
+          fi
+
+          mismatched="$(jq -r --arg v "${version}" '.packages[] | select(.version != $v) | "\(.registryType):\(.identifier) \(.version)"' server.json)"
+          if [[ -n "${mismatched}" ]]; then
+            echo "server.json package versions do not match release version ${version}:"
+            echo "${mismatched}"
+            exit 1
+          fi
+
+          # OIDC grants io.github.<repository_owner>/* from the repository_owner
+          # claim, using that login's exact casing. This owner is the user
+          # biocatalystfeed, so io.github.biocatalystfeed/... is the granted namespace.
+          server_name="$(jq -r '.name' server.json)"
+          expected_prefix="io.github.${GITHUB_REPOSITORY_OWNER}/"
+          case "${server_name}" in
+            "${expected_prefix}"*) ;;
+            *)
+              echo "server.json name '${server_name}' is outside the GitHub OIDC namespace '${expected_prefix}*'."
+              echo "The registry permission uses the owner login's exact casing and is case-sensitive."
+              exit 1
+              ;;
+          esac
+
+          repo_url="$(jq -r '.repository.url' server.json)"
+          expected_url="https://github.com/${GITHUB_REPOSITORY}"
+          if [[ "${repo_url}" != "${expected_url}" ]]; then
+            echo "server.json repository.url (${repo_url}) is not ${expected_url}."
+            exit 1
+          fi
+
+          echo "Publishing ${server_name} version ${version}"
+
+      # Official optional step: write the release version into the file that is
+      # uploaded. The previous step has already rejected a mismatch.
+      - name: Set version in server.json
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          jq --arg v "${VERSION}" '.version = $v | .packages |= map(.version = $v)' server.json > server.tmp
+          mv server.tmp server.json
+          jq -e --arg v "${VERSION}" '.version == $v and all(.packages[]; .version == $v)' server.json > /dev/null
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish
