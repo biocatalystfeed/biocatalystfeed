@@ -9,9 +9,12 @@ ACTIVE = {"RECRUITING", "NOT_YET_RECRUITING", "ACTIVE_NOT_RECRUITING", "ENROLLIN
 
 
 def fda_approvals(client: OpenFDAClient, sponsor: str | None = None, since: str | None = None, until: str | None = None,
-                  application_number: str | None = None, novel_only: bool = False, max_apps: int = 500) -> list[dict]:
+                  application_number: str | None = None, novel_only: bool = False, max_apps: int | None = None) -> list[dict]:
     """Drugs@FDA submissions (approvals incl. supplements), newest first. sponsor is alias-resolved;
-    since/until filter the submission status date (YYYY-MM-DD)."""
+    since/until filter the submission status date (YYYY-MM-DD). max_apps caps the applications fetched: 500 for a
+    sponsor / application query, 5000 market-wide (openFDA returns applications unsorted, so a low cap silently dropped
+    recent approvals from market-wide windows before 0.4.3)."""
+    if max_apps is None: max_apps = 500 if (sponsor or application_number) else 5000
     al = resolve(sponsor) if sponsor else None
     names = al["fda_sponsors"] if al else None
     if al is not None and not names:

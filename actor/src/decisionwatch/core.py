@@ -63,11 +63,24 @@ def parse_when(text: str | None, guess: str | None = None) -> tuple[str | None, 
     return None, None
 
 
+# Common words (and enzyme / target names) that end in a drug-name suffix but are not drugs: 'disease' (-ase),
+# 'release', 'kinase', 'participant' (-pant), 'customer' (-mer), 'concept' (-cept) ... (0.4.3: PDUFA rows showed drug 'disease').
+NOT_DRUGS = frozenset("""disease diseases release releases increase decrease phase purchase database case base lease cease please
+ease phrase showcase kinase protease polymerase transferase lipase ligase phosphatase synthase reductase oxidase hydrolase
+peptidase nuclease helicase integrase esterase customer customers former summer consumer consumers timer polymer polymers
+participant participants except concept concepts accept intercept alone standalone spine alpine supine undone thermostat
+parcel napkin pumpkin""".split())
+
+
 def drug_of(context: str) -> str | None:
-    """Best-effort drug name near a PDUFA mention: 'Brand (generic)' or an INN-looking word."""
-    m = DRUG_RE.search(context or "")
-    if not m: return None
-    return m.group(2) and f"{m.group(0).split('(')[0].strip()} ({m.group(2)})" or m.group(0)
+    """Best-effort drug name near a PDUFA mention: 'Brand (generic)' or an INN-looking word (common words skipped)."""
+    for m in DRUG_RE.finditer(context or ""):
+        if m.group(2):
+            if m.group(2).lower() in NOT_DRUGS: continue
+            return f"{m.group(0).split('(')[0].strip()} ({m.group(2)})"
+        if m.group(0).lower() in NOT_DRUGS: continue
+        return m.group(0)
+    return None
 
 
 def resolve_company(company: str | None, sec=None) -> dict | None:

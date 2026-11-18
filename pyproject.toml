@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "biocatalystfeed"
-version = "0.4.2"
+version = "0.4.3"
 description = "Open-source monitors for biotech catalysts: ClinicalTrials.gov, openFDA, NIH RePORTER, PubMed/Europe PMC/bioRxiv, SEC EDGAR, EMA, FDA advisory committees (Federal Register). CLI + MCP server."
 readme = "README.md"
 license = "BUSL-1.1"
