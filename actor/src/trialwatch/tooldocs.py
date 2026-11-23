@@ -137,6 +137,20 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "snapshot_purple_book": {"company": "Applicant names, OR'd.", "product": "Proprietary or proper names, OR'd.",
                              "reference": "Reference product of biosimilars, OR'd.",
                              "license_type": "Any of '351(a)', 'biosimilar', 'interchangeable' (default all)."},
+    "orphan_designations": {"company": "Sponsor names, OR'd (e.g. 'Cardiff Oncology').", "product": "Generic or trade names, OR'd (e.g. 'onvansertib').",
+                            "condition": "Words in the designated condition or approved indication, OR'd (e.g. 'small cell lung cancer').",
+                            "status": "States to keep: 'designated' (active, not yet approved), 'approved', 'withdrawn' (withdrawn or revoked).",
+                            "country": "Sponsor countries, OR'd (e.g. 'China').", "since": f"Date from ({_DATE}); which date is set by date_by.",
+                            "until": f"Date to ({_DATE}).", "recent_days": "Only the last N days (0-16000) of the date chosen by date_by.",
+                            "date_by": "Which date filters and sorts: 'designated' (default), 'approved' (any orphan approval), 'withdrawn', 'any' (latest event).",
+                            "keyword": "Any word in product, designation, approved indication or sponsor."},
+    "orphan_exclusivity": {"company": "Sponsor names, OR'd.", "product": "Generic or trade names, OR'd.",
+                           "since": f"Exclusivity end date from ({_DATE}; default today).", "until": f"Exclusivity end date to ({_DATE}).",
+                           "upcoming_days": "Only exclusivities ending from today to today+N days (0-3650).",
+                           "include_expired": "If true, also return exclusivities that have already ended."},
+    "snapshot_orphan_designations": {"company": "Sponsor names, OR'd.", "product": "Generic or trade names, OR'd.",
+                                     "condition": "Words in the designated condition or approved indication, OR'd.",
+                                     "status": "States: 'designated', 'approved', 'withdrawn' (default all).", "country": "Sponsor countries, OR'd."},
     "fda_decisions": {"drug": "Drug name or code (e.g. 'tirzepatide', 'VK2735'); matched against filings, agendas, Drugs@FDA names and CRL text.",
                       "company": "Company name or ticker (alias-resolved; unknown US tickers are looked up in SEC's ticker list).",
                       "condition": "Condition / disease text (e.g. 'obesity'); coarse for approvals (Drugs@FDA has no indication field).",
@@ -151,7 +165,7 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",
-           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "health_canada_changes_since", "purple_book_changes_since", "fda_decision_changes_since", "readout_changes_since"):
+           "adcom_changes_since", "crl_changes_since", "orange_book_changes_since", "health_canada_changes_since", "purple_book_changes_since", "orphan_changes_since", "fda_decision_changes_since", "readout_changes_since"):
     TOOL_PARAMS.setdefault(_t, {})["since"] = f"Only changes detected on or after this date ({_DATE})."
 
 TOOL_PARAMS["snapshot_readouts"] = {k: v for k, v in TOOL_PARAMS["readout_calendar"].items() if k not in ("since", "until")}

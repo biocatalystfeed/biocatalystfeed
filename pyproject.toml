@@ -36,8 +36,9 @@ crlwatch = "crlwatch.cli:main"
 obwatch = "obwatch.cli:main"
 hcwatch = "hcwatch.cli:main"
 pbwatch = "pbwatch.cli:main"
+odwatch = "odwatch.cli:main"
 decisionwatch = "decisionwatch.cli:main"
 readoutwatch = "readoutwatch.cli:main"
 trialwatch-mcp = "trialwatch.mcp_server:main"
 [tool.setuptools]
-packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch", "obwatch", "hcwatch", "pbwatch", "decisionwatch", "readoutwatch"]
+packages = ["biocatalystfeed", "trialwatch", "fdawatch", "biowatch", "grantwatch", "paperwatch", "secwatch", "emawatch", "adcomwatch", "crlwatch", "obwatch", "hcwatch", "pbwatch", "odwatch", "decisionwatch", "readoutwatch"]

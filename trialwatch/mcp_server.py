@@ -12,10 +12,10 @@ from .report import sponsor_pipeline as _pipeline
 from .store import Store
 
 INSTRUCTIONS = (
-    "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book and Purple Book, Federal Register "
+    "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book, Purple Book and orphan designations, Federal Register "
     "AdComs, EMA, NIH RePORTER, PubMed/Europe PMC/preprints, SEC EDGAR). Not investment, legal or medical advice; "
     "always cite the record's source_url. How to choose a tool: "
-    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / health_canada_notices / purple_book_* / sec_pdufa_mentions "
+    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / health_canada_notices / purple_book_* / orphan_* / sec_pdufa_mentions "
     "(network, change nothing); "
     "(2) 'what is coming up' uses fda_decisions (PDUFA dates, AdComs, approvals, CRLs) and readout_calendar (trial "
     "primary completions); trials_at_risk flags stopped, overdue and slipping trials; company_profile merges everything "
@@ -521,6 +521,69 @@ def purple_book_changes_since(since: str, watch: str | None = None) -> list[dict
     return store(_db).changes(watch=watch, since=since)
 
 
+_od = None
+
+
+def _orphan():
+    global _od
+    if _od is None:
+        from odwatch.core import OOPDClient
+        _od = OOPDClient()
+    return _od
+
+
+@_tool("read")
+def orphan_designations(company: list[str] | None = None, product: list[str] | None = None, condition: list[str] | None = None,
+                        status: list[str] | None = None, country: list[str] | None = None, since: str | None = None,
+                        until: str | None = None, recent_days: int | None = None, date_by: str = "designated",
+                        keyword: str | None = None, exclude: list[str] | None = None, max_results: int = 50) -> list[dict]:
+    """FDA orphan drug designations (Office of Orphan Products Development database), one row per designation, newest
+    first: generic and trade names, designated condition, designation date, state (designated / approved / withdrawn)
+    with FDA's status text and withdrawn/revoked date, sponsor (city, state, country), and every orphan approval of it
+    (date, approved labeled indication, orphan exclusivity end date, exclusivity-protected indication), plus FDA's detail
+    page. New designations appear within days (small and mid-cap sponsors often announce them). A designation is not an
+    approval and says nothing about efficacy. Use date_by='approved' to list recent orphan approvals. Downloaded once a
+    day (cached 24 h). Source: FDA OOPD database (public domain)."""
+    from odwatch.core import designations
+    return designations(_orphan(), company=company, product=product, condition=condition, status=status, country=country,
+                        since=since, until=until, recent_days=None if recent_days is None else _clamp(recent_days, 16000, 0),
+                        date_by=date_by, keyword=keyword, exclude=exclude, max_records=_clamp(max_results, 500))
+
+
+@_tool("read")
+def orphan_exclusivity(company: list[str] | None = None, product: list[str] | None = None, since: str | None = None,
+                       until: str | None = None, upcoming_days: int | None = None, include_expired: bool = False,
+                       exclude: list[str] | None = None, max_results: int = 50) -> list[dict]:
+    """Orphan-drug exclusivity end dates (7 years from an orphan approval) from the FDA OOPD database, one row per
+    approval, soonest first: end date, approval date, generic / trade name, sponsor, exclusivity-protected indication and
+    the designation. Complements orange_book_loe and purple_book_exclusivity for loss-of-exclusivity views; generic or
+    biosimilar entry also depends on patents and other exclusivities. FDA lists protected indications for approvals from
+    2013 on. Source: FDA OOPD database (public domain)."""
+    from odwatch.core import exclusivities
+    return exclusivities(_orphan(), company=company, product=product, since=since, until=until,
+                         upcoming_days=None if upcoming_days is None else _clamp(upcoming_days, 3650, 0),
+                         include_expired=include_expired, exclude=exclude, max_records=_clamp(max_results, 500))
+
+
+@_tool("snapshot")
+def snapshot_orphan_designations(name: str, company: list[str] | None = None, product: list[str] | None = None,
+                                 condition: list[str] | None = None, status: list[str] | None = None,
+                                 country: list[str] | None = None) -> dict:
+    """Snapshot FDA orphan drug designations (all dates, one record per designation) into the local DB; returns new
+    designations and changes to status (approved, withdrawn/revoked), withdrawn date, approval dates, orphan exclusivity
+    end dates, trade names and sponsor (transfers) since the previous snapshot. Source: FDA OOPD database. Network call + local write: stores a new run under `name` in the local DB (BIOCATALYSTFEED_DB) and returns {run_id, baseline, records, changes, changes_detail}; the first call for a name is a baseline with no changes. Use orphan_designations for one-off lookups (no write) and orphan_changes_since to re-read stored changes later."""
+    from odwatch.core import run_watch, store
+    return run_watch(_orphan(), store(_db), name, company=company, product=product, condition=condition, status=status,
+                     country=country)
+
+
+@_tool("local")
+def orphan_changes_since(since: str, watch: str | None = None) -> list[dict]:
+    """Detected FDA orphan designation changes (new_designation, status_change, approved_change, withdrawn_change, approval_dates_change, sponsor_change, ...) since an ISO date. Reads the local snapshot DB only (no network call); changes exist only after snapshot_orphan_designations has run at least twice for a watch. Returns a list of change records {watch, key, kind, field, old, new, title, url, detected_at, run_id}, oldest first; an empty list means no changes were stored since that date. Create or refresh the watch with snapshot_orphan_designations."""
+    from odwatch.core import store
+    return store(_db).changes(watch=watch, since=since)
+
+
 
 def _dec_clients():
     from adcomwatch.core import FRClient
@@ -651,7 +714,7 @@ def list_watches(tool: str | None = None) -> list[dict]:
     number of runs, first/last run time, records in the last run, changes stored, the saved query, and which snapshot_* and
     *_changes_since tool to use for it. Call this before creating a watch (to reuse an existing name) or before reading
     changes (to find watch names). Reads the local DB only (no network call); an empty list means nothing has been watched yet.
-    tool: optional filter, one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, fda-decisions, readouts."""
+    tool: optional filter, one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, orphan, fda-decisions, readouts."""
     from biowatch.watches import list_watches as _lw, TOOLS
     if tool is not None and tool not in {v[0] for v in TOOLS.values()}:
         raise ValueError("tool must be one of " + ", ".join(v[0] for v in TOOLS.values()))
@@ -662,9 +725,9 @@ def list_watches(tool: str | None = None) -> list[dict]:
 def changes_feed(tool: str = "papers", since: str | None = None, watch: str | None = None, format: str = "json") -> str:
     """Digest of detected changes as a document: format 'json' = JSON Feed 1.1, 'rss' = RSS 2.0, 'markdown' = rendered
     Markdown digest, 'html' = rendered standalone HTML digest (email-ready; nothing is sent).
-    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | health-canada | purple-book | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
-    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "health-canada", "purple-book", "fda-decisions", "readouts"):
-        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, fda-decisions, readouts")
+    tool: trials | fda | grants | papers | sec | ema | adcom | crl | orange-book | health-canada | purple-book | orphan | fda-decisions | readouts. Reads the local snapshot DB only (no network call)."""
+    if tool not in ("trials", "fda", "grants", "papers", "sec", "ema", "adcom", "crl", "orange-book", "health-canada", "purple-book", "orphan", "fda-decisions", "readouts"):
+        raise ValueError("tool must be one of trials, fda, grants, papers, sec, ema, adcom, crl, orange-book, health-canada, purple-book, orphan, fda-decisions, readouts")
     if format not in ("json", "rss", "markdown", "html"): raise ValueError("format must be 'json', 'rss', 'markdown' or 'html'")
     from biowatch import digest
     import json as _json
@@ -672,7 +735,7 @@ def changes_feed(tool: str = "papers", since: str | None = None, watch: str | No
     elif tool == "fda":
         from fdawatch.store import FDAStore; ch = FDAStore(_db).changes(watch=watch, since=since)
     else:
-        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "health-canada": "hcwatch", "purple-book": "pbwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
+        mod = {"grants": "grantwatch", "papers": "paperwatch", "sec": "secwatch", "ema": "emawatch", "adcom": "adcomwatch", "crl": "crlwatch", "orange-book": "obwatch", "health-canada": "hcwatch", "purple-book": "pbwatch", "orphan": "odwatch", "fda-decisions": "decisionwatch", "readouts": "readoutwatch"}[tool]
         ch = __import__(f"{mod}.core", fromlist=["store"]).store(_db).changes(watch=watch, since=since)
     title = f"BioCatalystFeed {tool}: {watch or 'all watches'}"
     if format == "markdown": return digest.markdown(title, ch)

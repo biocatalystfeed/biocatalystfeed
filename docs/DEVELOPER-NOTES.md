@@ -202,6 +202,31 @@ fdawatch profile Lilly --basic                 # old trials + FDA only
   exclusivity + biosimilar count is the biologic LOE view; no join to `obwatch` is needed.
 - Hosted Cloudflare worker not updated (CLI + local MCP only).
 
+## odwatch (2026-11-23 ET, source scout)
+- **Source**: FDA OOPD "Orphan Drug Designations and Approvals" database, `https://www.accessdata.fda.gov/scripts/opdlisting/oopd/`.
+  FDA's "Instructions for Searchable Designation Database" page says a search with no criteria returns all designations, and
+  the form's `Output_Format=Excel` option ("Download Excel file") returns the whole table as one HTML `<table>` served as
+  `application/msexcel` (`Search_results.xls`). We POST the form once (`OOPD_Results.cfm`, designation dates 01/01/1983 to
+  today, `Search_param=DESDATE`, sort newest first) with the descriptive UA; on 2026-11-23 that returned 9.0 MB / 8,290 rows
+  in ~1.7 s, newest designation 2026-11-20. No cookies or session needed for the Excel output (the Short/Detailed HTML
+  outputs redirect into a session, not used). accessdata sets Akamai cookies but served no challenge; if it ever does, the
+  client raises (looks_like_oopd) instead of retrying with a browser UA. robots.txt does not disallow `/scripts/opdlisting/`;
+  one request per day (24 h cache `~/.cache/biocatalystfeed/fda_oopd.html`).
+- **Format**: 19 columns (Generic Name, Trade Name, Date Designated, Orphan Designation, Orphan Designation Status, Date
+  Designation Withdrawn or Revoked, FDA Orphan Approval Status, Approved Labeled Indication, Marketing Approval Date,
+  Exclusivity End Date, Exclusivity Protected Indication *..., Sponsor Company, Sponsor Address 1/2, City, State, Zip,
+  Country, CF Grid Key). Dates MM/DD/YYYY. Zip is wrapped as `' 02141 '` (not used). Status values: Designated,
+  Designated/Approved, Designated/Designation Withdrawn or Revoked, Designated/Approved/Designation Withdrawn or Revoked.
+  "FDA Orphan Approval Status" is blank for approved rows.
+- **Records**: one row per (designation, approval), so 8,290 rows = 7,918 designations. Grouped by CF Grid Key (FDA says
+  the column is "for FDA purposes only"; we use it only as the record key and for the public detail page
+  `detailedIndex.cfm?cfgridkey=<key>`, not displayed as data). Key `oopd:<grid>`; tracked `status`, `approved`,
+  `withdrawn`, `withdrawn_date`, `approval_dates`, `exclusivity_ends`, `trade_names`, `sponsor`. Watches cover all dates by
+  default (approvals of old designations are the interesting change, e.g. Gazyva's 2020 membranous nephropathy designation
+  approved 2026-11-13); two consecutive live runs gave 0 spurious changes.
+- **Not copied**: sponsor street address / zip (city, state, country kept).
+- Hosted Cloudflare worker not updated (CLI + local MCP only).
+
 ## 0.3.4 (2026-10-28 PT, weekly review)
 - **Sponsor aliases in trial search** (`trialwatch.core.sponsor_queries` / `raw_search`): fixes the daily routine's `sponsor:Terns Pharmaceuticals` watch returning 0 trials. CLI `--no-aliases`; `company_trials` passes `sponsor_aliases=False` (it already loops over `ct_queries`). Hosted worker has a small `CT_SPONSOR` map mirroring the table (Terns + tickers).
 - **MCP schema quality** (`trialwatch/tooldocs.py`): Glama's Tool Definition Quality Score (scored 2026-10-23 UTC, 22 tools) was B 3.2/5, the recurring deduction being "0% schema description coverage" and "no annotations". All params now carry descriptions via `Annotated[..., Field(description=...)]` set on `__signature__` (works on mcp 1.x FastMCP and 2.x MCPServer); tools get `ToolAnnotations` by kind (read / local / snapshot). `tests/test_v034.py` fails if a new param lacks a description.

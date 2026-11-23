@@ -17,6 +17,7 @@ TOOLS = {
     "ob": ("orange-book", "snapshot_orange_book", "orange_book_changes_since"),
     "hcnoc": ("health-canada", "snapshot_health_canada", "health_canada_changes_since"),
     "pb": ("purple-book", "snapshot_purple_book", "purple_book_changes_since"),
+    "oopd": ("orphan", "snapshot_orphan_designations", "orphan_changes_since"),
     "fdadec": ("fda-decisions", "snapshot_fda_decisions", "fda_decision_changes_since"),
     "readout": ("readouts", "snapshot_readouts", "readout_changes_since"),
 }
