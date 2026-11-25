@@ -162,6 +162,8 @@ TOOL_PARAMS: dict[str, dict[str, str]] = {
                          "upcoming_days": "Readouts from today to today+N days (default 90 when since/until are omitted; 0-1095)."},
     "trials_at_risk": {"sponsor": "Lead sponsor name or ticker (alias-resolved).",
                        "phases": "Phases to keep (default ['PHASE2','PHASE3']); ['any'] for all."},
+    "get_grant": {"ids": "NIH RePORTER IDs, up to 50: application ids ('11304574'), full project numbers ('5R01CA200994-11') or core project numbers ('R01CA200994', all years)."},
+    "get_paper": {"ids": "Paper IDs, up to 50: PMIDs ('35658024'), DOIs ('10.1056/NEJMoa2206038' or https://doi.org/...), PMCIDs ('PMC1234567') or Europe PMC preprint ids ('PPR123456')."},
     "changes_feed": {"since": f"Only changes detected on or after this date ({_DATE})."},
 }
 for _t in ("trial_changes_since", "fda_changes_since", "grant_changes_since", "paper_changes_since", "ema_changes_since",

@@ -126,6 +126,44 @@ def search_grants(client: ReporterClient, max_records: int = 200, pi_exact: bool
     return sort_grants(rows, today=today, include_future=include_future, by=sort)
 
 
+def classify_grant_id(x: str) -> tuple[str, str] | None:
+    """'11304574' -> ('appl_id', ...); '5R01CA200994-11' (full project number, one budget year) or 'R01CA200994'
+    (core project number, every year) -> ('project_num', uppercased, spaces dropped). Anything else -> None."""
+    t = re.sub(r"[\s]+", "", (x or "")).upper()
+    t = re.sub(r"^HTTPS?://REPORTER\.NIH\.GOV/PROJECT-DETAILS/", "", t)
+    if re.fullmatch(r"\d{5,9}", t): return ("appl_id", t)
+    if re.fullmatch(r"\d?[A-Z]\d{2}[A-Z]{2}\d{6}(-[0-9A-Z]+)?", t): return ("project_num", t)
+    return None
+
+
+def get_grants(client: ReporterClient, ids: list[str], max_records: int = 200) -> dict:
+    """NIH RePORTER grants by application id (appl_id) or project number (one search per ID type). A full project number
+    (5R01CA200994-11) returns that budget year; a core project number (R01CA200994) returns every year, newest first.
+    Returns {grants, not_found, invalid}."""
+    appl, nums, invalid, order = [], [], [], []
+    for x in ids or []:
+        c = classify_grant_id(str(x))
+        if not c: invalid.append(str(x)); continue
+        order.append((str(x), c))
+        (appl if c[0] == "appl_id" else nums).append(c[1])
+    if not order: return {"grants": [], "not_found": [], "invalid": invalid}
+    # RePORTER ANDs criteria, so application ids and project numbers are separate searches (at most two calls).
+    crits = ([{"appl_ids": [int(a) for a in dict.fromkeys(appl)]}] if appl else []) + \
+            ([{"project_nums": list(dict.fromkeys(nums))}] if nums else [])
+    rows, seen = [], set()
+    for crit in crits:
+        for p in client.search(crit, max_records=max_records, sort_field="fiscal_year"):
+            r = normalize(p)
+            if r["key"] not in seen: seen.add(r["key"]); rows.append(r)
+    def hit(c, r):
+        k, v = c
+        if k == "appl_id": return str(r.get("appl_id")) == v
+        return (r.get("project_num") or "").upper() == v or (r.get("core_project_num") or "").upper() == v
+    missing = [o for o, c in order if not any(hit(c, r) for r in rows)]
+    rows.sort(key=lambda r: (-(r.get("fiscal_year") or 0), str(r.get("project_num") or "")))
+    return {"grants": rows, "not_found": missing, "invalid": invalid}
+
+
 def company_grants(client: ReporterClient, alias: dict, max_records: int = 200) -> list[dict]:
     """Grants to a company's organisation names (alias field nih_orgs, exact match). Empty list if none configured."""
     orgs = alias.get("nih_orgs")

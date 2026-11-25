@@ -133,6 +133,51 @@ def norm_epmc(r: dict) -> dict:
             "keywords": list(((r.get("keywordList") or {}).get("keyword")) or [])}
 
 
+def classify_paper_id(x: str) -> tuple[str, str] | None:
+    """'35658024' / 'PMID:35658024' -> ('pmid', ...); '10.1056/...' / 'doi:...' / doi.org URL -> ('doi', lowercased);
+    'PMC1234567' -> ('pmcid', ...); 'PPR123456' -> ('ppr', ...). Anything else -> None."""
+    t = (x or "").strip()
+    t = re.sub(r"^https?://(dx\.)?doi\.org/", "", t, flags=re.I)
+    t = re.sub(r"^https?://pubmed\.ncbi\.nlm\.nih\.gov/(\d+)/?$", r"\1", t, flags=re.I)
+    m = re.fullmatch(r"(?:pmid:?\s*)?(\d{1,9})", t, flags=re.I)
+    if m: return ("pmid", m.group(1))
+    m = re.fullmatch(r"(?:doi:?\s*)?(10\.\d{4,9}/\S+)", t, flags=re.I)
+    if m: return ("doi", m.group(1).lower())
+    m = re.fullmatch(r"(?:pmcid:?\s*)?(PMC\d+)", t, flags=re.I)
+    if m: return ("pmcid", m.group(1).upper())
+    m = re.fullmatch(r"(PPR\d+)", t, flags=re.I)
+    if m: return ("ppr", m.group(1).upper())
+    return None
+
+
+def get_papers(pm: "PubMedClient | None", epmc: "EuropePMCClient | None", ids: list[str]) -> dict:
+    """Look up papers / preprints by identifier: PMIDs via PubMed E-utilities (one esummary call), DOIs, PMCIDs and
+    Europe PMC preprint ids (PPR...) via Europe PMC (one query per id). Returns {papers, not_found, invalid} in the
+    order given; metadata + links only."""
+    seen, kinds, invalid = set(), [], []
+    for x in ids or []:
+        c = classify_paper_id(str(x))
+        if not c: invalid.append(str(x)); continue
+        if c in seen: continue
+        seen.add(c); kinds.append((str(x), c))
+    found: dict = {}
+    pmids = [v for _, (k, v) in kinds if k == "pmid"]
+    if pmids and pm is not None:
+        for s in pm.esummary(pmids):
+            if s.get("error") or not s.get("title"): continue
+            found[("pmid", str(s["uid"]))] = norm_pubmed(s)
+    field = {"doi": "DOI", "pmcid": "PMCID", "ppr": "EXT_ID", "pmid": "EXT_ID"}
+    for _, (k, v) in kinds:
+        if (k, v) in found or epmc is None: continue
+        q = f'{field[k]}:"{v}"' + (" AND SRC:PPR" if k == "ppr" else " AND SRC:MED" if k == "pmid" else "")
+        _, res = epmc.search(q, max_records=1)
+        if res: found[(k, v)] = norm_epmc(res[0])
+    papers, missing = [], []
+    for orig, c in kinds:
+        (papers.append({**found[c], "requested_id": orig}) if c in found else missing.append(orig))
+    return {"papers": papers, "not_found": missing, "invalid": invalid}
+
+
 def search_europepmc(client: EuropePMCClient, affiliation=None, drug=None, keyword=None, since=None, until=None,
                      max_records: int = 100, preprints: str | None = None) -> dict:
     q = epmc_query(affiliation, drug, keyword, since, until, preprints)

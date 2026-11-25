@@ -15,7 +15,7 @@ INSTRUCTIONS = (
     "BioCatalystFeed: read-only public biotech data (ClinicalTrials.gov, openFDA, FDA Orange Book, Purple Book and orphan designations, Federal Register "
     "AdComs, EMA, NIH RePORTER, PubMed/Europe PMC/preprints, SEC EDGAR). Not investment, legal or medical advice; "
     "always cite the record's source_url. How to choose a tool: "
-    "(1) one-off lookups use search_* / get_trial / fda_* / ema_medicines / orange_book_* / health_canada_notices / purple_book_* / orphan_* / sec_pdufa_mentions "
+    "(1) one-off lookups use search_* / get_trial / get_paper / get_grant / fda_* / ema_medicines / orange_book_* / health_canada_notices / purple_book_* / orphan_* / sec_pdufa_mentions "
     "(network, change nothing); "
     "(2) 'what is coming up' uses fda_decisions (PDUFA dates, AdComs, approvals, CRLs) and readout_calendar (trial "
     "primary completions); trials_at_risk flags stopped, overdue and slipping trials; company_profile merges everything "
@@ -156,6 +156,13 @@ def search_grants(org: list[str] | None = None, pi: str | None = None, keyword: 
                include_future=include_future)
 
 
+@_tool("read")
+def get_grant(ids: list[str]) -> dict:
+    """Get NIH RePORTER grants by ID (up to 50): application id (appl_id, e.g. '11304574'), full project number (one budget year, e.g. '5R01CA200994-11') or core project number (every year, e.g. 'R01CA200994'). One network call per ID type, changes nothing. Returns {grants, not_found, invalid}; grant records have the same fields as search_grants (title, org_name, pis, agency, award_amount, award_notice_date, project dates, url). Use search_grants to find IDs by organization, PI or keyword."""
+    from grantwatch.core import ReporterClient, get_grants
+    return get_grants(ReporterClient(), list(ids or [])[:50])
+
+
 @_tool("snapshot")
 def snapshot_grants(name: str, org: list[str] | None = None, pi: str | None = None, keyword: str | None = None,
                     since: str | None = None, org_exact: bool = False) -> dict:
@@ -205,6 +212,13 @@ def search_papers(affiliation: list[str] | None = None, drug: list[str] | None =
         gc.annotate_papers(res["papers"], affs)
         if any(gc.is_global(r) for r in res["papers"]): res["global_disclaimer"] = gc.GLOBAL_DISCLAIMER
     return res
+
+
+@_tool("read")
+def get_paper(ids: list[str]) -> dict:
+    """Get papers or preprints by ID (up to 50): PubMed PMID ('35658024'), DOI ('10.1056/NEJMoa2206038' or a doi.org URL), PubMed Central PMCID ('PMC1234567') or Europe PMC preprint id ('PPR123456'). PMIDs go to PubMed E-utilities in one call; the other IDs go to Europe PMC (one call each). Changes nothing. Returns {papers, not_found, invalid}; paper records have the same fields as search_papers (title, authors, journal, date, doi, url, requested_id). Metadata and links only, no abstracts or full text. Use search_papers to find IDs by affiliation, drug or keyword."""
+    from paperwatch.core import PubMedClient, EuropePMCClient, get_papers
+    return get_papers(PubMedClient(), EuropePMCClient(), list(ids or [])[:50])
 
 
 @_tool("snapshot")
