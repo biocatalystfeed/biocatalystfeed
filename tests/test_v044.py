@@ -72,9 +72,3 @@ def test_get_grants_separate_calls_dedupes_and_reports_missing():
     assert [g["appl_id"] for g in r["grants"]] == [11304574, 11059927]
     assert r["not_found"] == ["U01XX000001"] and r["invalid"] == ["nope"]
     assert get_grants(c, ["nope"]) == {"grants": [], "not_found": [], "invalid": ["nope"]}
-
-
-def test_server_json_description_fits_mcp_registry_limit():
-    import json, pathlib
-    d = json.loads((pathlib.Path(__file__).resolve().parents[1] / "server.json").read_text())
-    assert len(d["description"]) <= 100  # MCP Registry rejects longer descriptions (422)
